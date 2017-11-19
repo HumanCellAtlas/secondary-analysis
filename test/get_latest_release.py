@@ -23,13 +23,15 @@ class Tag:
                 return True
         return False
 
-def run(repo):
+def run(repo, tag_prefix):
     url = 'https://api.github.com/repos/{0}/git/refs/tags/'.format(repo) 
     response = requests.get(url)
     if response.status_code != 200:
         raise ValueError('Return code was {0} for {1}, message:\n'.format(response.status_code, url, response.json()))
     
-    p = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+    if not tag_prefix:
+        tag_prefix = ''
+    p = re.compile(r'^' + tag_prefix + r'(\d+)\.(\d+)\.(\d+)$')
     tags = []
     max_tag = Tag(0, 0, 0)
     for tag_object in response.json():
@@ -43,6 +45,7 @@ def run(repo):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--repo')
+    parser.add_argument('--repo', required=True)
+    parser.add_argument('--tag_prefix')
     args = parser.parse_args()
-    run(args.repo)
+    run(args.repo, args.tag_prefix)
