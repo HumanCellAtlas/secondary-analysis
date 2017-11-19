@@ -5,7 +5,7 @@
 # 2. Get pipeline-tools version
 # 3. Build or pull Lira image
 # 4. Get pipeline versions
-# 5. Render config.json
+# 5. Create config.json
 # 6. Start Lira
 # 7. Send in notification
 # 8. Poll Cromwell for completion
@@ -16,7 +16,6 @@
 #
 # In addition to the parameters specified below, this script expects the following
 # files to be available:
-# -configtemplate.json, template for Lira config, will be rendered by this script
 # -${env}_config.json: environment config json file (contains environment-specific Lira config)
 # -${env}_secrets.json file (contains secrets for Lira)
 # 
@@ -35,10 +34,17 @@
 # lira_mode and lira_version
 # The lira_mode param can be "local", "image" or "github".
 # If "local" is specified, a local copy of the Lira code is used and
-# lira_version is ignored. If "image" is specified, this script will pull and run
+# lira_version is ignored.
+# 
+# If "image" is specified, this script will pull and run
 # a particular version of the Lira docker image specified by lira_version.
-# TODO: Modify so that if lira_mode == "image" and lira_version == "deployed",
-# then the script will use the currently deployed image in env.
+# If lira_version == "latest_released", then the script will scan the GitHub repo
+# for the highest tagged version and try to pull an image with the same version.
+# If lira_version == "latest_deployed", then the script will use the latest
+# deployed version in env, specified in the deployment tsv. If lira_version is
+# any other value, then it is assumed to be a docker image tag version and
+# this script will attempt to pull that version.
+#
 # Running in "github" mode is not fully implemented yet, but is intended to clone
 # the Lira repo and check out a specific branch, tag, or commit to use, specified
 # by lira_version.
@@ -55,14 +61,18 @@
 # version of the wrapper WDLs.
 #
 # tenx_mode and tenx_version
-# Mode is required to be "current" right now and tenx_version is ignored.
-# The script will check the deployment TSV to find the currently deployed version of
-# the 10x pipeline.
+# When tenx_mode == "local", this script will configure lira to use the 10x wdl
+# in a local directory specified by tenx_version.
+#
+# When tenx_mode == "github", this script will configure lira to use the 10x wdl
+# in the skylab repo, with branch, tag, or commit specified by tenx_version.
+# If tenx_version == "latest_deployed", then this script will find the latest
+# wdl version in the mint deployment TSV and configure lira to read that version
+# from GitHub.
 #
 # ss2_mode and ss2_version
-# Mode is required to be "current" right now and ss2_version is ignored.
-# The script will check the deployment TSV to find the currently deployed version of
-# the Smart-seq2 pipeline.
+# The ss2_mode and ss2_version params work in the same way as tenx_mode and
+# tenx_version.
 
 set -e
 
@@ -80,29 +90,46 @@ ss2_version=${10}
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# 1. Clone Lira if needed 
-# TODO: Create a repo for integration_test.sh to go in, so that we
-# can run in github mode. Currently we have to run in lira local mode.
+# 1. Clone Lira if needed
+if [ $lira_mode == "github" ]; then
+  git clone git@github.com:HumanCellAtlas/lira.git
+  lira_dir=lira
+  cd $lira_dir
+  if [ $lira_version == "latest_released" ]; then
+    lira_version=$(python $script_dir/get_latest_release.py HumanCellAtlas/lira)
+  elif [ $lira_version == "latest_deployed" ]; then
+    lira_version=$(python $script_dir/current_deployed_version.py lira)
+  fi
+  git checkout $lira_version
+  cd -
+elif [ $lira_mode == "local" ]; then
+  lira_dir=$lira_version
+fi
+
 lira_dir=$lira_version
 
 # 2. Get pipeline-tools version
 # TODO: Uncomment condition below once we have Lira reading wrapper WDLs from pipeline-tools repo
 #if [ $pipeline_tools_mode == "github" ] && [ $pipeline_tools_version == "current" ]; then
-  pipeline_tools_version=$(python $script_dir/current_deployed_pipeline_version.py \
+  pipeline_tools_version=$(python $script_dir/current_deployed_version.py \
                     --mint_deployment_dir $mint_deployment_dir \
                     --env $env \
-                    --pipeline_name pipeline_tools)
+                    --component_name pipeline_tools)
   echo "pipeline_tools_version: $pipeline_tools_version"
+  pipeline_tools_prefix="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${pipeline_tools_version}"
 #fi
 
 # 3. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
-  if [ $lira_version == "latest" ]; then
+  if [ $lira_version == "latest_released" ]; then
     lira_image_version=$(python $script_dir/get_latest_release.py HumanCellAtlas/lira)
+  elif [ $lira_version == "latest_deployed" ]; then
+    lira_image_version=$(python $script_dir/current_deployed_version.py lira)
   else
     lira_image_version=$lira_version
   fi
-  docker pull humancellatlas/lira:$lira_image_version
+  echo "Not pulling lira image -- fix this"
+  #docker pull humancellatlas/lira:$lira_image_version
 elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
   cd $lira_dir
   if [ $lira_mode == "local" ]; then
@@ -115,39 +142,47 @@ elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
   cd -
 fi
 
-# 4. Get deployed pipeline versions to use
-# (TODO: Create mint-deployment repo and use it here)
-if [ $tenx_mode == "current" ]; then
-  tenx_version=$(python $script_dir/current_deployed_pipeline_version.py \
-                    --mint_deployment_dir $mint_deployment_dir \
-                    --env $env \
-                    --pipeline_name 10x)
-  echo "10x version: $tenx_version"
-else
-  "Only tenx_mode==current is supported"
-fi
-if [ $ss2_mode == "current" ]; then
-  ss2_version=$(python $script_dir/current_deployed_pipeline_version.py \
-                    --mint_deployment_dir $mint_deployment_dir \
-                    --env $env \
-                    --pipeline_name ss2)
-  echo "ss2 version: $ss2_version"
-else
-  "Only ss2_mode==current is supported"
+# 4. Get analysis pipeline versions to use
+if [ $tenx_mode == "github" ]; then
+  if [ $tenx_version == "latest_deployed" ]; then
+    tenx_version=$(python $script_dir/current_deployed_version.py \
+                      --mint_deployment_dir $mint_deployment_dir \
+                      --env $env \
+                      --component_name 10x)
+    echo "10x version: $tenx_version"
+  fi
+  tenx_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${tenx_version}"
+elif [ $tenx_mode == "local" ]; then
+  tenx_prefix=$tenx_version
 fi
 
-# 5. Render config.json
+if [ $ss2_mode == "github" ]; then
+  if [ $ss2_version == "latest_deployed" ]; then
+    ss2_version=$(python $script_dir/current_deployed_version.py \
+                      --mint_deployment_dir $mint_deployment_dir \
+                      --env $env \
+                      --component_name ss2)
+    echo "ss2 version: $ss2_version"
+  fi
+  ss2_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${ss2_version}"
+elif [ $ss2_mode == "local" ]; then
+  ss2_dir=$ss2_version
+fi
+
+# 5. Create config.json
 # (TODO: Use Henry's script here)
 # TODO: use config file from config repo
 # dev_secrets.json will come from Vault eventually
-echo "Rendering Lira config"
-python $script_dir/render_lira_config.py \
-    --template_file configtemplate.json \
+echo "Creating Lira config"
+python $script_dir/create_lira_config.py \
     --env_config_file ${env}_config.json \
     --secrets_file ${env}_secrets.json \
-    --10x_version $tenx_version \
-    --ss2_version $ss2_version \
-    --pipeline_tools_version $pipeline_tools_version > config.json
+    --tenx_prefix $tenx_prefix \
+    --ss2_prefix $ss2_prefix \
+    --pipeline_tools_prefix $pipeline_tools_prefix > config.json
+
+echo "Exiting early"
+exit 0
 
 # 6. Start Lira
 echo "Starting Lira docker image"
