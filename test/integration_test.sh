@@ -45,20 +45,17 @@
 # any other value, then it is assumed to be a docker image tag version and
 # this script will attempt to pull that version.
 #
-# Running in "github" mode is not fully implemented yet, but is intended to clone
-# the Lira repo and check out a specific branch, tag, or commit to use, specified
-# by lira_version.
+# Running in "github" mode causes this script to clone the Lira repo and check
+# out a specific branch, tag, or commit to use, specified by lira_version.
 #
 # pipeline_tools_mode and pipeline_tools_version
-# Currently, pipeline_tools_mode is ignored and pipeline_tools_version is extracted
-# from the deployment TSV.
-# TODO: Modify so that if mode is "local", then a local copy of the repo is used,
-# with the path to the repo specified in pipeline_tools_version.
-# TODO: Modify so that if mode is "github", then the script configures Lira to read the
-# wrapper WDLS from GitHub and use version pipeline_tools_version. Also, if lira_mode
-# is "local", then it will get built using that pipeline_tools_version. If pipeline_tools_version
-# is "current", then the deployment TSV is consulted to find and use the currently deployed
-# version of the wrapper WDLs.
+# If pipeline_tools_mode == "local", then a local copy of the repo is used,
+# with the path to the repo specified in pipeline_tools_version. If pipeline_tools_version
+# is "latest_deployed" then the latest version from the deployment tsv is used.
+
+# If pipeline_tools_mode == "github", then the script configures Lira to read the
+# wrapper WDLS from GitHub and to use version pipeline_tools_version. Also, if lira_mode
+# is "local", then it will get built using that pipeline_tools_version.
 #
 # tenx_mode and tenx_version
 # When tenx_mode == "local", this script will configure lira to use the 10x wdl
@@ -106,18 +103,23 @@ elif [ $lira_mode == "local" ]; then
   lira_dir=$lira_version
 fi
 
-lira_dir=$lira_version
-
 # 2. Get pipeline-tools version
-# TODO: Uncomment condition below once we have Lira reading wrapper WDLs from pipeline-tools repo
-#if [ $pipeline_tools_mode == "github" ] && [ $pipeline_tools_version == "current" ]; then
-  pipeline_tools_version=$(python $script_dir/current_deployed_version.py \
-                    --mint_deployment_dir $mint_deployment_dir \
-                    --env $env \
-                    --component_name pipeline_tools)
-  echo "pipeline_tools_version: $pipeline_tools_version"
+if [ $pipeline_tools_mode == "github" ]; then
+  if [ $pipeline_tools_version == "latest_deployed" ]; then
+    pipeline_tools_version=$(python $script_dir/current_deployed_version.py \
+                      --mint_deployment_dir $mint_deployment_dir \
+                      --env $env \
+                      --component_name pipeline_tools)
+    echo "pipeline_tools_version: $pipeline_tools_version"
+  fi
   pipeline_tools_prefix="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${pipeline_tools_version}"
-#fi
+elif [ $pipeline_tools_mode == "local" ]; then
+  pipeline_tools_prefix="/pipeline-tools"
+  pipeline_tools_dir=$pipeline_tools_version
+  cd $pipeline_tools_dir
+  pipeline_tools_dir=$(pwd)
+  cd -
+fi
 
 # 3. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
@@ -153,7 +155,11 @@ if [ $tenx_mode == "github" ]; then
   fi
   tenx_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${tenx_version}"
 elif [ $tenx_mode == "local" ]; then
-  tenx_prefix=$tenx_version
+  tenx_dir=$tenx_version
+  cd $tenx_dir
+  tenx_dir=$(pwd)
+  cd -
+  tenx_prefix="/10x"
 fi
 
 if [ $ss2_mode == "github" ]; then
@@ -167,6 +173,10 @@ if [ $ss2_mode == "github" ]; then
   ss2_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${ss2_version}"
 elif [ $ss2_mode == "local" ]; then
   ss2_dir=$ss2_version
+  cd $ss2_dir
+  ss2_dir=$(pwd)
+  cd -
+  ss2_prefix="/ss2"
 fi
 
 # 5. Create config.json
@@ -181,17 +191,30 @@ python $script_dir/create_lira_config.py \
     --ss2_prefix $ss2_prefix \
     --pipeline_tools_prefix $pipeline_tools_prefix > config.json
 
-echo "Exiting early"
-exit 0
+#echo "Exiting early"
+#exit 0
 
 # 6. Start Lira
 echo "Starting Lira docker image"
+# TODO: If pipeline_tools_mode is local, mount pipeline-tools dir when running Lira
+if [ $pipeline_tools_mode == "local" ]; then
+  mount_pipeline_tools="-v $pipeline_tools_dir:/pipeline-tools"
+fi
+if [ $tenx_mode == "local" ]; then
+  mount_tenx="-v $tenx_dir:/10x"
+fi
+if [ $ss2_mode == "local" ]; then
+  mount_ss2="-v $ss2_dir:/ss2"
+fi
 lira_image_id=$(docker run \
                 -p 8080:8080 \
                 -d \
                 -e listener_config=/etc/secondary-analysis/config.json \
                 -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
                 -v $work_dir:/etc/secondary-analysis \
+                $(echo "$mount_pipeline_tools" | xargs) \
+                $(echo "$mount_tenx" | xargs) \
+                $(echo "$mount_ss2" | xargs) \
                 humancellatlas/lira:$lira_image_version)
 
 # 7. Send in notifications
@@ -207,7 +230,7 @@ tenx_workflow_id=$(python $script_dir/send_notification.py \
 ss2_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
                   --secrets_file ${env}_secrets.json \
-                  --notification $script_dir/test/ss2_notification_${env}.json)
+                  --notification $script_dir/ss2_notification_${env}.json)
 echo "tenx_workflow_id: $tenx_workflow_id"
 echo "ss2_workflow_id: $ss2_workflow_id"
 

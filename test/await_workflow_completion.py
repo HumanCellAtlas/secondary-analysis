@@ -41,7 +41,7 @@ def get_statuses(names, ids, cromwell_url, user, pw):
         response = requests.get(full_url, auth=requests.auth.HTTPBasicAuth(user, pw))
         if response.status_code != 200:
             msg = 'Could not get status for {0} workflow {1}. Cromwell at {2} returned status {3}'
-            print(msg.format(name, id, cromwell_url, status_code))
+            print(msg.format(name, id, cromwell_url, response.status_code))
             statuses.append('Unknown')
         else:
             response_json = response.json()
