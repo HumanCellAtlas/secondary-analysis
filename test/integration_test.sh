@@ -83,7 +83,7 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # 1. Clone Lira if needed 
 # TODO: Create a repo for integration_test.sh to go in, so that we
 # can run in github mode. Currently we have to run in lira local mode.
-lira_dir=$script_dir/../
+lira_dir=$lira_version
 
 # 2. Get pipeline-tools version
 # TODO: Uncomment condition below once we have Lira reading wrapper WDLs from pipeline-tools repo
@@ -98,16 +98,20 @@ lira_dir=$script_dir/../
 # 3. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
   if [ $lira_version == "latest" ]; then
-    lira_image_version=$(python $script_dir/get_latest_release.py HumanCellAtlas/secondary-analysis)
+    lira_image_version=$(python $script_dir/get_latest_release.py HumanCellAtlas/lira)
   else
     lira_image_version=$lira_version
   fi
-  docker pull humancellatlas/secondary-analysis:$lira_image_version
+  docker pull humancellatlas/lira:$lira_image_version
 elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
-  lira_image_version=$lira_version
-  echo "Building Lira version: $lira_image_version"
   cd $lira_dir
-  docker build -t humancellatlas/secondary-analysis:$lira_image_version .
+  if [ $lira_mode == "local" ]; then
+    lira_image_version=local
+  elif [ $lira_mode == "github" ]; then
+    lira_image_version=$lira_version
+  fi
+  echo "Building Lira version: $lira_image_version"
+  docker build -t humancellatlas/lira:$lira_image_version .
   cd -
 fi
 
@@ -153,7 +157,7 @@ lira_image_id=$(docker run \
                 -e listener_config=/etc/secondary-analysis/config.json \
                 -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
                 -v $work_dir:/etc/secondary-analysis \
-                humancellatlas/secondary-analysis:$lira_image_version)
+                humancellatlas/lira:$lira_image_version)
 
 # 7. Send in notifications
 # TODO: Check in notifications to repo where integration_test.sh will live so they are accessible outside Lira repo
@@ -164,11 +168,11 @@ pip install requests
 tenx_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
                   --secrets_file ${env}_secrets.json \
-                  --notification $lira_dir/test/10x_notification_${env}.json)
+                  --notification $script_dir/10x_notification_${env}.json)
 ss2_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
                   --secrets_file ${env}_secrets.json \
-                  --notification $lira_dir/test/ss2_notification_${env}.json)
+                  --notification $script_dir/test/ss2_notification_${env}.json)
 echo "tenx_workflow_id: $tenx_workflow_id"
 echo "ss2_workflow_id: $ss2_workflow_id"
 
