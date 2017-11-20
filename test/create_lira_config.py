@@ -21,7 +21,7 @@ def run(args, env_config, secrets_config):
       'wdls': [
         {
           'subscription_id': env_config['10x_subscription_id'],
-          'workflow_name': 'Wrapper10xCount',
+          'workflow_name': 'Adapter10xCount',
           'analysis_wdl': '{0}/10x/count/count.wdl'.format(tenx_prefix),
           'wdl_link': '{0}/adapter_pipelines/10x/adapter.wdl'.format(pipeline_tools_prefix),
           'wdl_default_inputs_link': '{0}/adapter_pipelines/10x/adapter_example_static.json'.format(pipeline_tools_prefix),
@@ -29,7 +29,7 @@ def run(args, env_config, secrets_config):
         },
         {
           'subscription_id': env_config['ss2_subscription_id'],
-          'workflow_name': 'WrapperSs2RsemSingleSample',
+          'workflow_name': 'AdapterSs2RsemSingleSample',
           'analysis_wdl': '{0}/smartseq2_single_sample/ss2_single_sample.wdl'.format(ss2_prefix),
           'wdl_link': '{0}/adapter_pipelines/smart_seq2/adapter.wdl'.format(pipeline_tools_prefix),
           'wdl_default_inputs_link': '{0}/adapter_pipelines/smart_seq2/adapter_example_static_demo.json'.format(pipeline_tools_prefix),
