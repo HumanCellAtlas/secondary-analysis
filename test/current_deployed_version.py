@@ -7,6 +7,7 @@ lira	10x	ss2
 0.1.2	1.0.0	2.0.0
 0.1.1 0.9.3	1.2.3
 
+If component_name is lira, returns "0.1.2"
 If component_name is 10x, returns "1.0.0".
 If component_name is ss2, returns "2.0.0".
 
