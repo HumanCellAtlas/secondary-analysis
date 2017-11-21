@@ -116,21 +116,21 @@ printf "\nScript directory: $script_dir"
 
 # 1. Clone Lira if needed
 if [ $lira_mode == "github" ]; then
-  printf "\n\nCloning lira"
+  printf "\n\nCloning lira\n"
   git clone git@github.com:HumanCellAtlas/lira.git
   lira_dir=lira
   cd $lira_dir
   if [ $lira_version == "latest_released" ]; then
-    printf "\nDetermining latest release tag"
+    printf "\nDetermining latest release tag\n"
     lira_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/lira)
   elif [ $lira_version == "latest_deployed" ]; then
-    printf "\nDetermining latest deployed version"
+    printf "\nDetermining latest deployed version\n"
     lira_version=$(python $script_dir/current_deployed_version.py \
                     --component_name lira
                     --env $env \
                     --mint_deployment_dir $mint_deployment_dir)
   fi
-  printf "\nChecking out $lira_version"
+  printf "\nChecking out $lira_version\n"
   git checkout $lira_version
   cd $work_dir
 elif [ $lira_mode == "local" ]; then
@@ -141,16 +141,16 @@ fi
 # 2. Get pipeline-tools version
 if [ $pipeline_tools_mode == "github" ]; then
   if [ $pipeline_tools_version == "latest_released" ]; then
-    printf "\n\nDetermining latest released version of pipeline-tools"
+    printf "\n\nDetermining latest released version of pipeline-tools\n"
     pipeline_tools_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/pipeline-tools)
   elif [ $pipeline_tools_version == "latest_deployed" ]; then
-    printf "\n\nDetermining latest deployed version of pipeline-tools"
+    printf "\n\nDetermining latest deployed version of pipeline-tools\n"
     pipeline_tools_version=$(python $script_dir/current_deployed_version.py \
                       --mint_deployment_dir $mint_deployment_dir \
                       --env $env \
                       --component_name pipeline_tools)
   fi
-  printf "\nConfiguring Lira to use adapter wdls from pipeline-tools GitHub repo, version: $pipeline_tools_version"
+  printf "\nConfiguring Lira to use adapter wdls from pipeline-tools GitHub repo, version: $pipeline_tools_version\n"
   pipeline_tools_prefix="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${pipeline_tools_version}"
 elif [ $pipeline_tools_mode == "local" ]; then
   pipeline_tools_prefix="/pipeline-tools"
@@ -158,16 +158,16 @@ elif [ $pipeline_tools_mode == "local" ]; then
   cd $pipeline_tools_dir
   pipeline_tools_dir=$(pwd)
   cd $work_dir
-  printf "\n\nConfiguring Lira to use adapter wdls in dir: $pipeline_tools_dir"
+  printf "\n\nConfiguring Lira to use adapter wdls in dir: $pipeline_tools_dir\n"
 fi
 
 # 3. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
   if [ $lira_version == "latest_released" ]; then
-    printf "\n\nDetermining latest released version of Lira"
+    printf "\n\nDetermining latest released version of Lira\n"
     lira_image_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/lira)
   elif [ $lira_version == "latest_deployed" ]; then
-    printf "\n\nDetermining latest deployed version of Lira"
+    printf "\n\nDetermining latest deployed version of Lira\n"
     lira_image_version=$(python $script_dir/current_deployed_version.py lira)
   else
     lira_image_version=$lira_version
@@ -189,38 +189,38 @@ fi
 # 4. Get analysis pipeline versions to use
 if [ $tenx_mode == "github" ]; then
   if [ $tenx_version == "latest_released" ]; then
-    printf "\n\nDetermining latest released version of 10x pipeline"
+    printf "\n\nDetermining latest released version of 10x pipeline\n"
     tenx_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_)
   elif [ $tenx_version == "latest_deployed" ]; then
-    printf "\n\nDetermining latest deployed version of 10x pipeline"
+    printf "\n\nDetermining latest deployed version of 10x pipeline\n"
     tenx_version=$(python $script_dir/current_deployed_version.py \
                       --mint_deployment_dir $mint_deployment_dir \
                       --env $env \
                       --component_name 10x)
   fi
   tenx_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${tenx_version}"
-  printf "\nConfiguring Lira to use 10x wdl from skylab Github repo, version: $tenx_version"
+  printf "\nConfiguring Lira to use 10x wdl from skylab Github repo, version: $tenx_version\n"
 elif [ $tenx_mode == "local" ]; then
   tenx_dir=$tenx_version
   cd $tenx_dir
   tenx_dir=$(pwd)
   cd $work_dir
   tenx_prefix="/10x"
-  printf "\n\nUsing 10x wdl in dir: $tenx_dir"
+  printf "\n\nUsing 10x wdl in dir: $tenx_dir\n"
 fi
 
 if [ $ss2_mode == "github" ]; then
   if [ $ss2_version == "latest_released" ]; then
-    printf "\n\nDetermining latest released version of ss2 pipeline"
+    printf "\n\nDetermining latest released version of ss2 pipeline\n"
     ss2_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix ss2_)
   elif [ $ss2_version == "latest_deployed" ]; then
-    printf "\n\nDetermining latest deployed version of ss2 pipeline"
+    printf "\n\nDetermining latest deployed version of ss2 pipeline\n"
     ss2_version=$(python $script_dir/current_deployed_version.py \
                       --mint_deployment_dir $mint_deployment_dir \
                       --env $env \
                       --component_name ss2)
   fi
-  printf "\nConfiguring Lira to use ss2 wdl from skylab GitHub repo, version: $ss2_version"
+  printf "\nConfiguring Lira to use ss2 wdl from skylab GitHub repo, version: $ss2_version\n"
   ss2_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${ss2_version}"
 elif [ $ss2_mode == "local" ]; then
   ss2_dir=$ss2_version
@@ -228,7 +228,7 @@ elif [ $ss2_mode == "local" ]; then
   ss2_dir=$(pwd)
   cd $work_dir
   ss2_prefix="/ss2"
-  printf "\n\nUsing ss2 wdl in dir: $ss2_dir"
+  printf "\n\nUsing ss2 wdl in dir: $ss2_dir\n"
 fi
 
 # 5. Create config.json
@@ -237,7 +237,7 @@ fi
 # dev_secrets.json will come from Vault eventually
 printf "\n\nCreating Lira config"
 printf "\nUsing $env_config_json"
-printf "\nUsing $secrets_json"
+printf "\nUsing $secrets_json\n"
 python $script_dir/create_lira_config.py \
     --env_config_file $env_config_json \
     --secrets_file $secrets_json \
@@ -246,18 +246,18 @@ python $script_dir/create_lira_config.py \
     --pipeline_tools_prefix $pipeline_tools_prefix > config.json
 
 # 6. Start Lira
-printf "\n\nStarting Lira docker image"
+printf "\n\nStarting Lira docker image\n"
 if [ $pipeline_tools_mode == "local" ]; then
   mount_pipeline_tools="-v $pipeline_tools_dir:/pipeline-tools"
-  printf "\nMounting pipeline_tools_dir: $pipeline_tools_dir"
+  printf "\nMounting pipeline_tools_dir: $pipeline_tools_dir\n"
 fi
 if [ $tenx_mode == "local" ]; then
   mount_tenx="-v $tenx_dir:/10x"
-  printf "\nMounting tenx_dir: $tenx_dir"
+  printf "\nMounting tenx_dir: $tenx_dir\n"
 fi
 if [ $ss2_mode == "local" ]; then
   mount_ss2="-v $ss2_dir:/ss2"
-  printf "\nMounting ss2_dir: $ss2_dir"
+  printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
 lira_container_id=$(docker run \
                 -p 8080:8080 \
@@ -272,17 +272,18 @@ lira_container_id=$(docker run \
 printf "\nLira container id: $lira_container_id"
 
 # 7. Send in notifications
-printf "\n\nSending in notifications\n"
+printf "\n\nCreating virtualenv to use for notification and polling steps\n"
 virtualenv integration-test-env
 source integration-test-env/bin/activate
 pip install requests
+printf "\n\nSending in notifications\n"
 #tenx_workflow_id=$(python $script_dir/send_notification.py \
 #                  --lira_url "http://localhost:8080/notifications" \
-#                  --secrets_file ${env}_secrets.json \
+#                  --secrets_file $secrets_json \
 #                  --notification $script_dir/10x_notification_${env}.json)
 ss2_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
-                  --secrets_file ${env}_secrets.json \
+                  --secrets_file $secrets_json \
                   --notification $script_dir/ss2_notification_${env}.json)
 printf "\ntenx_workflow_id: $tenx_workflow_id"
 printf "\nss2_workflow_id: $ss2_workflow_id"
@@ -303,13 +304,13 @@ trap "stop_lira_on_error $lira_container_id" ERR
 #  --workflow_ids $ss2_workflow_id,$tenx_workflow_id \
 #  --workflow_names ss2,10x \
 #  --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-#  --secrets_file ${env}_secrets.json \
+#  --secrets_file $secrets_json \
 #  --timeout_minutes 120
 python $script_dir/await_workflow_completion.py \
   --workflow_ids $ss2_workflow_id \
   --workflow_names ss2 \
   --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-  --secrets_file ${env}_secrets.json \
+  --secrets_file $secrets_json \
   --timeout_minutes 20 \
   --poll_interval_seconds 10
 
