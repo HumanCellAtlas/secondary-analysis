@@ -110,7 +110,7 @@ printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
 
 # 1. Clone mint-deployment
-print "\n\nCloning mint-deployment\n"
+printf "\n\nCloning mint-deployment\n"
 git clone git@github.com:HumanCellAtlas/mint-deployment.git
 mint_deployment_dir=mint-deployment
 
