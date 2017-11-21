@@ -28,8 +28,8 @@
 #
 # lira_mode and lira_version
 # The lira_mode param can be "local", "image" or "github".
-# If "local" is specified, a local copy of the Lira code is used and
-# lira_version is ignored.
+# If "local" is specified, a local copy of the Lira code is used. In this case,
+# lira_version should be the local path to the repo.
 # 
 # If "image" is specified, this script will pull and run
 # a particular version of the Lira docker image specified by lira_version.
