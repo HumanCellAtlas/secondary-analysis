@@ -4,21 +4,19 @@ script_dir=$1
 lira_branch=$2
 
 #env=$1
-#mint_deployment_dir=$2
-#lira_mode=$3
-#lira_version=$4
-#pipeline_tools_mode=$5
-#pipeline_tools_version=$6
-#tenx_mode=$7
-#tenx_version=$8
-#ss2_mode=$9
-#ss2_version=${10}
-#env_config_json=${11}
-#secrets_json=${12}
+#lira_mode=$2
+#lira_version=$3
+#infra_mode=$4
+#infra_version=$5
+#tenx_mode=$6
+#tenx_version=$7
+#ss2_mode=$8
+#ss2_version=$9
+#env_config_json=${10}
+#secrets_json=${11}
 
 bash $script_dir/integration_test.sh \
         "dev" \
-        "mint-deployment" \
         "github" \
         "$lira_branch" \
         "github" \

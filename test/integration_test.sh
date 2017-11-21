@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
 # This script carries out the following steps:
-# 1. Clone Lira if needed
-# 2. Get pipeline-tools version
-# 3. Build or pull Lira image
-# 4. Get pipeline versions
-# 5. Create config.json
-# 6. Start Lira
-# 7. Send in notification
-# 8. Poll Cromwell for completion
-# 9. Stop Lira
+# 1. Clone mint-deployment
+# 2. Clone Lira if needed
+# 3. Get pipeline-tools version
+# 4. Build or pull Lira image
+# 5. Get pipeline versions
+# 6. Create config.json
+# 7. Start Lira
+# 8. Send in notification
+# 9. Poll Cromwell for completion
+# 10. Stop Lira
 
 # This script currently only works when run locally on a developer's machine,
 # but is designed to be easy to adapt to running on a Jenkins or Travis VM.
@@ -21,10 +22,6 @@
 # The environment to use -- affects Cromwell url, buckets, Lira config.
 # When running from a PR, this will always be int. When running locally,
 # the developer can choose dev or int.
-#
-# mint_deployment_dir
-# Local directory where deployment TSVs can be found. Later, we'll
-# create a repo for this, and this script will be modified to look there.
 #
 # lira_mode and lira_version
 # The lira_mode param can be "local", "image" or "github".
@@ -83,23 +80,21 @@ date +"%Y-%m-%d %H:%M:%S"
 set -e
 
 env=$1
-mint_deployment_dir=$2
-lira_mode=$3
-lira_version=$4
-pipeline_tools_mode=$5
-pipeline_tools_version=$6
-tenx_mode=$7
-tenx_version=$8
-ss2_mode=$9
-ss2_version=${10}
-env_config_json=${11}
-secrets_json=${12}
+lira_mode=$2
+lira_version=$3
+pipeline_tools_mode=$4
+pipeline_tools_version=$5
+tenx_mode=$6
+tenx_version=$7
+ss2_mode=$8
+ss2_version=$9
+env_config_json=${10}
+secrets_json=${11}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 printf "\n\nenv: $env"
-printf "\nmint_deployment_dir: $mint_deployment_dir"
 printf "\nlira_mode: $lira_mode"
 printf "\nlira_version: $lira_version"
 printf "\npipeline_tools_mode: $pipeline_tools_mode"
@@ -114,7 +109,12 @@ printf "\nsecrets_json: $secrets_json"
 printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
 
-# 1. Clone Lira if needed
+# 1. Clone mint-deployment
+print "\n\nCloning mint-deployment\n"
+git clone git@github.com:HumanCellAtlas/mint-deployment.git
+mint_deployment_dir=mint-deployment
+
+# 2. Clone Lira if needed
 if [ $lira_mode == "github" ]; then
   printf "\n\nCloning lira\n"
   git clone git@github.com:HumanCellAtlas/lira.git
@@ -138,7 +138,7 @@ elif [ $lira_mode == "local" ]; then
   lira_dir=$lira_version
 fi
 
-# 2. Get pipeline-tools version
+# 3. Get pipeline-tools version
 if [ $pipeline_tools_mode == "github" ]; then
   if [ $pipeline_tools_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of pipeline-tools\n"
@@ -161,7 +161,7 @@ elif [ $pipeline_tools_mode == "local" ]; then
   printf "\n\nConfiguring Lira to use adapter wdls in dir: $pipeline_tools_dir\n"
 fi
 
-# 3. Build or pull Lira image
+# 4. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
   if [ $lira_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of Lira\n"
@@ -186,7 +186,7 @@ elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
   cd $work_dir
 fi
 
-# 4. Get analysis pipeline versions to use
+# 5. Get analysis pipeline versions to use
 if [ $tenx_mode == "github" ]; then
   if [ $tenx_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of 10x pipeline\n"
@@ -231,7 +231,7 @@ elif [ $ss2_mode == "local" ]; then
   printf "\n\nUsing ss2 wdl in dir: $ss2_dir\n"
 fi
 
-# 5. Create config.json
+# 6. Create config.json
 # (TODO: Use Henry's script here)
 # TODO: use config file from config repo
 # dev_secrets.json will come from Vault eventually
@@ -245,7 +245,7 @@ python $script_dir/create_lira_config.py \
     --ss2_prefix $ss2_prefix \
     --pipeline_tools_prefix $pipeline_tools_prefix > config.json
 
-# 6. Start Lira
+# 7. Start Lira
 printf "\n\nStarting Lira docker image\n"
 if [ $pipeline_tools_mode == "local" ]; then
   mount_pipeline_tools="-v $pipeline_tools_dir:/pipeline-tools"
@@ -271,16 +271,16 @@ lira_container_id=$(docker run \
                 humancellatlas/lira:$lira_image_version)
 printf "\nLira container id: $lira_container_id"
 
-# 7. Send in notifications
+# 8. Send in notifications
 printf "\n\nCreating virtualenv to use for notification and polling steps\n"
 virtualenv integration-test-env
 source integration-test-env/bin/activate
 pip install requests
 printf "\n\nSending in notifications\n"
-#tenx_workflow_id=$(python $script_dir/send_notification.py \
-#                  --lira_url "http://localhost:8080/notifications" \
-#                  --secrets_file $secrets_json \
-#                  --notification $script_dir/10x_notification_${env}.json)
+tenx_workflow_id=$(python $script_dir/send_notification.py \
+                  --lira_url "http://localhost:8080/notifications" \
+                  --secrets_file $secrets_json \
+                  --notification $script_dir/10x_notification_${env}.json)
 ss2_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
                   --secrets_file $secrets_json \
@@ -288,7 +288,7 @@ ss2_workflow_id=$(python $script_dir/send_notification.py \
 printf "\ntenx_workflow_id: $tenx_workflow_id"
 printf "\nss2_workflow_id: $ss2_workflow_id"
 
-# 8. Poll for completion
+# 9. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 set +e
 function stop_lira_on_error {
@@ -300,21 +300,21 @@ function stop_lira_on_error {
 }
 
 trap "stop_lira_on_error $lira_container_id" ERR
-#python $script_dir/await_workflow_completion.py \
-#  --workflow_ids $ss2_workflow_id,$tenx_workflow_id \
-#  --workflow_names ss2,10x \
-#  --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-#  --secrets_file $secrets_json \
-#  --timeout_minutes 120
 python $script_dir/await_workflow_completion.py \
-  --workflow_ids $ss2_workflow_id \
-  --workflow_names ss2 \
+  --workflow_ids $ss2_workflow_id,$tenx_workflow_id \
+  --workflow_names ss2,10x \
   --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
   --secrets_file $secrets_json \
-  --timeout_minutes 20 \
-  --poll_interval_seconds 10
+  --timeout_minutes 120
+#python $script_dir/await_workflow_completion.py \
+#  --workflow_ids $ss2_workflow_id \
+#  --workflow_names ss2 \
+#  --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
+#  --secrets_file $secrets_json \
+#  --timeout_minutes 20 \
+#  --poll_interval_seconds 10
 
-# 9. Stop Lira
+# 10. Stop Lira
 printf "\n\nStopping Lira\n"
 docker stop $lira_container_id
 printf "\n\nTest succeeded!\n\n"
