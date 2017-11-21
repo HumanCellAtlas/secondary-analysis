@@ -31,7 +31,7 @@ def run(args):
             print('All workflows succeeded!')
             break
         else:
-            time.sleep(10)
+            time.sleep(args.poll_interval_seconds)
 
 def get_statuses(names, ids, cromwell_url, user, pw):
     statuses = []
@@ -47,7 +47,8 @@ def get_statuses(names, ids, cromwell_url, user, pw):
             response_json = response.json()
             status = response_json['status']
             statuses.append(status)
-            print('{0} workflow {1}: {2}'.format(name, id, status))
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print('{0} {1} workflow {2}: {3}'.format(timestamp, name, id, status))
     return statuses
 
 def extract_credentials(secrets_file):
@@ -62,5 +63,6 @@ if __name__ == '__main__':
     parser.add_argument('--cromwell_url')
     parser.add_argument('--secrets_file')
     parser.add_argument('--timeout_minutes')
+    parser.add_argument('--poll_interval_seconds', type=int, default=10)
     args = parser.parse_args()
     run(args)
