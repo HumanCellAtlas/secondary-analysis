@@ -68,11 +68,8 @@
 # The ss2_mode and ss2_version params work in the same way as tenx_mode and
 # tenx_version.
 #
-# env_config_json
-# Path to file containing environment name and subscription ids
-#
-# secrets_json
-# Path to secrets file
+# vault_token
+# Vault token with read permission on secret/dsde/mint/$env/lira/*
 
 printf "\nStarting integration test\n"
 date +"%Y-%m-%d %H:%M:%S"
@@ -88,8 +85,7 @@ tenx_mode=$6
 tenx_version=$7
 ss2_mode=$8
 ss2_version=$9
-env_config_json=${10}
-secrets_json=${11}
+vault_token=$10
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -232,18 +228,11 @@ elif [ $ss2_mode == "local" ]; then
 fi
 
 # 6. Create config.json
-# (TODO: Use Henry's script here)
-# TODO: use config file from config repo
-# dev_secrets.json will come from Vault eventually
 printf "\n\nCreating Lira config"
-printf "\nUsing $env_config_json"
-printf "\nUsing $secrets_json\n"
-python $script_dir/create_lira_config.py \
-    --env_config_file $env_config_json \
-    --secrets_file $secrets_json \
-    --tenx_prefix $tenx_prefix \
-    --ss2_prefix $ss2_prefix \
-    --pipeline_tools_prefix $pipeline_tools_prefix > config.json
+docker run -it --rm -v $PWD:/working -e VAULT_TOKEN=$vault_token \
+    -e INPUT_PATH=/working/test/config \
+    -e OUT_PATH=/working/test  \
+    broadinstitute/dsde-toolbox render-templates.sh $env
 
 # 7. Start Lira
 printf "\n\nStarting Lira docker image\n"
