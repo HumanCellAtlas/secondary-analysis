@@ -1,7 +1,7 @@
 {{with $environment := env "ENVIRONMENT"}}
 {{with $liraSecrets := vault (printf "secret/dsde/mint/%s/lira/secrets" $environment)}}
 {
-  "env": "dev",
+  "env": "{{$environment}}",
   "10x_subscription_id": "3e3e176b-629f-46ea-b01d-e36bd650dc54",
   "ss2_subscription_id": "dd17bb03-7634-47a4-9fd3-a55580ac3b1c",
   "notification_token": "{{$liraSecrets.Data.notification_token}}",
