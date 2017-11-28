@@ -2,6 +2,7 @@
 
 script_dir=$1
 lira_branch=$2
+vault_token=$3
 
 #env=$1
 #lira_mode=$2
@@ -25,5 +26,4 @@ bash $script_dir/integration_test.sh \
         "master" \
         "github" \
         "master" \
-        "$script_dir/dev_config.json" \
-        "$script_dir/dev_secrets.json"
+        "$vault_token"

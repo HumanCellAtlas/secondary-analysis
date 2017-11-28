@@ -2,6 +2,7 @@
 
 script_dir=$1
 skylab_branch=$2
+vault_token=$3
 
 #env=$1
 #lira_mode=$2
@@ -12,8 +13,6 @@ skylab_branch=$2
 #tenx_version=$7
 #ss2_mode=$8
 #ss2_version=$9
-#env_config_json=${10}
-#secrets_json=${11}
 
 bash $script_dir/integration_test.sh \
         "dev" \
@@ -25,5 +24,4 @@ bash $script_dir/integration_test.sh \
         "$skylab_branch" \
         "github" \
         "$skylab_branch" \
-        "$script_dir/dev_config.json" \
-        "$script_dir/dev_secrets.json"
+        "$vault_token"

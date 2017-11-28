@@ -88,8 +88,7 @@ tenx_mode=$6
 tenx_version=$7
 ss2_mode=$8
 ss2_version=$9
-env_config_json=${10}
-secrets_json=${11}
+vault_token=${10}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -103,8 +102,7 @@ printf "\ntenx_mode: $tenx_mode"
 printf "\ntenx_version: $tenx_version"
 printf "\nss2_mode: $ss2_mode"
 printf "\nss2_version: $ss2_version"
-printf "\nenv_config_json: $env_config_json"
-printf "\nsecrets_json: $secrets_json"
+printf "\nvault_token: $vault_token"
 
 printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
@@ -232,18 +230,14 @@ elif [ $ss2_mode == "local" ]; then
 fi
 
 # 6. Create config.json
-# (TODO: Use Henry's script here)
-# TODO: use config file from config repo
-# dev_secrets.json will come from Vault eventually
 printf "\n\nCreating Lira config"
-printf "\nUsing $env_config_json"
-printf "\nUsing $secrets_json\n"
-python $script_dir/create_lira_config.py \
-    --env_config_file $env_config_json \
-    --secrets_file $secrets_json \
-    --tenx_prefix $tenx_prefix \
-    --ss2_prefix $ss2_prefix \
-    --pipeline_tools_prefix $pipeline_tools_prefix > config.json
+docker run -it --rm -v $PWD:/working -e VAULT_TOKEN=$vault_token \
+    -e INPUT_PATH=/working/configs \
+    -e OUT_PATH=/working/test/config.json  \
+    -e PIPELINE_TOOLS_PREFIX=$pipeline_tools_prefix \
+    -e TENX_PREFIX=$tenx_prefix \
+    -e SS2_PREFIX=$ss2_prefix \
+    broadinstitute/dsde-toolbox render-templates.sh $env
 
 # 7. Start Lira
 printf "\n\nStarting Lira docker image\n"
@@ -262,7 +256,7 @@ fi
 lira_container_id=$(docker run \
                 -p 8080:8080 \
                 -d \
-                -e listener_config=/etc/secondary-analysis/config.json \
+                -e listener_config=/etc/secondary-analysis/lira-config.json \
                 -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
                 -v $work_dir:/etc/secondary-analysis \
                 $(echo "$mount_pipeline_tools" | xargs) \
@@ -279,11 +273,11 @@ pip install requests
 printf "\n\nSending in notifications\n"
 tenx_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
-                  --secrets_file $secrets_json \
+                  --secrets_file lira-config.json \
                   --notification $script_dir/10x_notification_${env}.json)
 ss2_workflow_id=$(python $script_dir/send_notification.py \
                   --lira_url "http://localhost:8080/notifications" \
-                  --secrets_file $secrets_json \
+                  --secrets_file lira-config.json \
                   --notification $script_dir/ss2_notification_${env}.json)
 printf "\ntenx_workflow_id: $tenx_workflow_id"
 printf "\nss2_workflow_id: $ss2_workflow_id"
@@ -304,7 +298,7 @@ python $script_dir/await_workflow_completion.py \
   --workflow_ids $ss2_workflow_id,$tenx_workflow_id \
   --workflow_names ss2,10x \
   --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-  --secrets_file $secrets_json \
+  --secrets_file lira-config.json \
   --timeout_minutes 120
 #python $script_dir/await_workflow_completion.py \
 #  --workflow_ids $ss2_workflow_id \
