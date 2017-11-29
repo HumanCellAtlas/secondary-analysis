@@ -22,7 +22,7 @@ if [ $service = "lira" ]; then
     lira_branch=$branch
 fi
 pipeline_tools_branch=master
-if [ $service = "pipeline_tools" ]; then
+if [ $service = "pipeline-tools" ]; then
     pipeline_tools_branch=$branch
 fi
 skylab_branch=master
