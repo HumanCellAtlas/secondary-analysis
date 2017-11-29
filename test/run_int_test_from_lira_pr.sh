@@ -2,6 +2,7 @@
 
 script_dir=$1
 lira_branch=$2
+vault_token=$3
 
 #env=$1
 #lira_mode=$2
@@ -15,6 +16,8 @@ lira_branch=$2
 #env_config_json=${10}
 #secrets_json=${11}
 
+bash $script_dir/render-ctmpls.sh "dev" $vault_token
+
 bash $script_dir/integration_test.sh \
         "dev" \
         "github" \
@@ -26,4 +29,4 @@ bash $script_dir/integration_test.sh \
         "github" \
         "master" \
         "$script_dir/dev_config.json" \
-        "$script_dir/dev_secrets.json"
+        "$script_dir/lira-secrets.json"
