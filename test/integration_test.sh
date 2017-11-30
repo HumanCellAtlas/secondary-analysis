@@ -232,9 +232,7 @@ elif [ $ss2_mode == "local" ]; then
 fi
 
 # 6. Create config.json
-# (TODO: Use Henry's script here)
-# TODO: use config file from config repo
-# dev_secrets.json will come from Vault eventually
+# $secrets_json is pre-rendered from vault
 printf "\n\nCreating Lira config"
 printf "\nUsing $env_config_json"
 printf "\nUsing $secrets_json\n"
