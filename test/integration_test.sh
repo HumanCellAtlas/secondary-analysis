@@ -272,16 +272,18 @@ docker run -d \
 
 
 # 8. Send in notifications
+# note: we do not need the absolute path to the secrets file here
+secrets_json_suffix=$(basename $secrets_json)
 tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
-                    -e SECRETS_FILE=/app/$secrets_json \
+                    -e SECRETS_FILE=/app/$secrets_json_suffix \
                     -e NOTIFICATION=/app/10x_notification_${env}.json \
                     --link $lira_container_name:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
-                    -e SECRETS_FILE=/app/$secrets_json \
+                    -e SECRETS_FILE=/app/$secrets_json_suffix \
                     -e NOTIFICATION=/app/ss2_notification_${env}.json \
                     --link $lira_container_name:lira \
                     broadinstitute/python-requests /app/send_notification.py)
