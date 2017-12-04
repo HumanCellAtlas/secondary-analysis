@@ -259,7 +259,7 @@ if [ $ss2_mode == "local" ]; then
 fi
 
 lira_container_name=lira
-docker run --rm \
+docker run -d \
     -p 8080:8080 \
     -e listener_config=/etc/secondary-analysis/config.json \
     -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
@@ -296,6 +296,7 @@ function stop_lira_on_error {
   lira_container_name=$1
   printf "\n\nStopping Lira\n"
   docker stop $lira_container_name
+  docker rm -v $lira_container_name
   printf "\n\nTest failed!\n\n"
   exit 1
 }
