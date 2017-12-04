@@ -244,9 +244,6 @@ python $script_dir/create_lira_config.py \
     --pipeline_tools_prefix $pipeline_tools_prefix > config.json
 
 # 7. Start Lira
-printf "\n\nCreating docker network\n"
-docker network create int-tests
-
 printf "\n\nStarting Lira docker image\n"
 if [ $pipeline_tools_mode == "local" ]; then
   mount_pipeline_tools="-v $pipeline_tools_dir:/pipeline-tools"
@@ -266,7 +263,6 @@ lira_container_id=$(docker run \
                 -e listener_config=/etc/secondary-analysis/config.json \
                 -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
                 -v $work_dir:/etc/secondary-analysis \
-                --network=int-tests \
                 --name=lira \
                 $(echo "$mount_pipeline_tools" | xargs) \
                 $(echo "$mount_tenx" | xargs) \
@@ -279,14 +275,14 @@ tenx_workflow_id=$(docker run -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json \
                     -e NOTIFICATION=/app/10x_notification_${env}.json \
-                    --network=int-tests \
+                    --link lira:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
 ss2_workflow_id=$(docker run -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json \
                     -e NOTIFICATION=/app/ss2_notification_${env}.json \
-                    --network=int-tests \
+                    --link lira:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
 printf "\ntenx_workflow_id: $tenx_workflow_id"
@@ -299,8 +295,6 @@ function stop_lira_on_error {
   lira_container_id=$1
   printf "\n\nStopping Lira\n"
   docker stop $lira_container_id
-  printf "\n\nStopping docker network\n"
-  docker network rm int-tests
   printf "\n\nTest failed!\n\n"
   exit 1
 }
