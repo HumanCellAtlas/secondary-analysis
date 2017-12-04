@@ -258,7 +258,7 @@ if [ $ss2_mode == "local" ]; then
   printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
 
-lira_container_id=$(docker run \
+lira_container_id=$(docker run --rm \
                 -p 8080:8080 \
                 -d \
                 -e listener_config=/etc/secondary-analysis/config.json \
@@ -272,14 +272,14 @@ lira_container_id=$(docker run \
 printf "\nLira container id: $lira_container_id"
 
 # 8. Send in notifications
-tenx_workflow_id=$(docker run -v $script_dir:/app \
+tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json \
                     -e NOTIFICATION=/app/10x_notification_${env}.json \
                     --link lira:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
-ss2_workflow_id=$(docker run -v $script_dir:/app \
+ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json \
                     -e NOTIFICATION=/app/ss2_notification_${env}.json \
