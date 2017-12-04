@@ -258,32 +258,32 @@ if [ $ss2_mode == "local" ]; then
   printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
 
-lira_container_id=$(docker run --rm \
-                -p 8080:8080 \
-                -d \
-                -e listener_config=/etc/secondary-analysis/config.json \
-                -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
-                -v $work_dir:/etc/secondary-analysis \
-                --name=lira \
-                $(echo "$mount_pipeline_tools" | xargs) \
-                $(echo "$mount_tenx" | xargs) \
-                $(echo "$mount_ss2" | xargs) \
-                humancellatlas/lira:$lira_image_version)
-printf "\nLira container id: $lira_container_id"
+lira_container_name=lira
+docker run --rm \
+    -p 8080:8080 \
+    -e listener_config=/etc/secondary-analysis/config.json \
+    -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
+    -v $work_dir:/etc/secondary-analysis \
+    --name=$lira_container_name \
+    $(echo "$mount_pipeline_tools" | xargs) \
+    $(echo "$mount_tenx" | xargs) \
+    $(echo "$mount_ss2" | xargs) \
+    humancellatlas/lira:$lira_image_version
+
 
 # 8. Send in notifications
 tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json \
                     -e NOTIFICATION=/app/10x_notification_${env}.json \
-                    --link lira:lira \
+                    --link $lira_container_name:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json \
                     -e NOTIFICATION=/app/ss2_notification_${env}.json \
-                    --link lira:lira \
+                    --link $lira_container_name:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
 printf "\ntenx_workflow_id: $tenx_workflow_id"
@@ -293,14 +293,14 @@ printf "\nss2_workflow_id: $ss2_workflow_id"
 printf "\n\nAwaiting workflow completion\n"
 set +e
 function stop_lira_on_error {
-  lira_container_id=$1
+  lira_container_name=$1
   printf "\n\nStopping Lira\n"
-  docker stop $lira_container_id
+  docker stop $lira_container_name
   printf "\n\nTest failed!\n\n"
   exit 1
 }
 
-trap "stop_lira_on_error $lira_container_id" ERR
+trap "stop_lira_on_error $lira_container_name" ERR
 python $script_dir/await_workflow_completion.py \
   --workflow_ids $ss2_workflow_id,$tenx_workflow_id \
   --workflow_names ss2,10x \
@@ -317,6 +317,6 @@ python $script_dir/await_workflow_completion.py \
 
 # 10. Stop Lira
 printf "\n\nStopping Lira\n"
-docker stop $lira_container_id
-docker rm -v lira
+docker stop $lira_container_name
+docker rm -v $lira_container_name
 printf "\n\nTest succeeded!\n\n"
