@@ -257,6 +257,7 @@ if [ $ss2_mode == "local" ]; then
   mount_ss2="-v $ss2_dir:/ss2"
   printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
+docker rm -v lira 
 lira_container_id=$(docker run \
                 -p 8080:8080 \
                 -d \
@@ -317,4 +318,5 @@ python $script_dir/await_workflow_completion.py \
 # 10. Stop Lira
 printf "\n\nStopping Lira\n"
 docker stop $lira_container_id
+docker rm -v lira
 printf "\n\nTest succeeded!\n\n"
