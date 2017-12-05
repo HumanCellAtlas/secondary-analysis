@@ -272,7 +272,7 @@ docker run -d \
 
 
 # 8. Send in notifications
-# note: we do not need the absolute path to the secrets file here
+printf "\n\nSending in notifications\n"
 secrets_json_suffix=$(basename $secrets_json)
 tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
