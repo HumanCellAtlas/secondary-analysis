@@ -3,6 +3,7 @@
 import argparse
 import json
 import requests
+import os
 
 def run(args):
     with open(args.notification) as f:
@@ -24,8 +25,8 @@ def run(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lira_url')
-    parser.add_argument('--secrets_file')
-    parser.add_argument('--notification')
+    parser.add_argument('--lira_url', default=os.environ.get('LIRA_URL', None))
+    parser.add_argument('--secrets_file', default=os.environ.get('SECRETS_FILE', None))
+    parser.add_argument('--notification', default=os.environ.get('NOTIFICATION', None))
     args = parser.parse_args()
     run(args)
