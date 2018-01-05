@@ -22,7 +22,7 @@ def run(args, env_config, secrets_config):
         {
           'subscription_id': env_config['10x_subscription_id'],
           'workflow_name': 'Adapter10xCount',
-          'analysis_wdl': '{0}/10x/count/count.wdl'.format(tenx_prefix),
+          'analysis_wdls': ['{0}/10x/count/count.wdl'.format(tenx_prefix)],
           'wdl_link': '{0}/adapter_pipelines/10x/adapter.wdl'.format(pipeline_tools_prefix),
           'wdl_default_inputs_link': '{0}/adapter_pipelines/10x/adapter_example_static.json'.format(pipeline_tools_prefix),
           'options_link': '{0}/adapter_pipelines/10x/options.json'.format(pipeline_tools_prefix)
@@ -30,10 +30,17 @@ def run(args, env_config, secrets_config):
         {
           'subscription_id': env_config['ss2_subscription_id'],
           'workflow_name': 'AdapterSs2RsemSingleSample',
-          'analysis_wdl': '{0}/smartseq2_single_sample/ss2_single_sample.wdl'.format(ss2_prefix),
-          'wdl_link': '{0}/adapter_pipelines/smart_seq2/adapter.wdl'.format(pipeline_tools_prefix),
-          'wdl_default_inputs_link': '{0}/adapter_pipelines/smart_seq2/adapter_example_static_demo.json'.format(pipeline_tools_prefix),
-          'options_link': '{0}/adapter_pipelines/smart_seq2/options.json'.format(pipeline_tools_prefix)
+          'analysis_wdls': [
+              '{0}/smartseq2_single_sample/ss2_single_sample.wdl'.format(ss2_prefix),
+              '{0}/smartseq2_single_sample/pipelines/hisat2_QC_pipeline.wdl'.format(ss2_prefix),
+              '{0}/smartseq2_single_sample/pipelines/hisat2_rsem_pipeline.wdl'.format(ss2_prefix),
+              '{0}/pipelines/tasks/hisat2.wdl'.format(ss2_prefix),
+              '{0}/pipelines/tasks/picard.wdl'.format(ss2_prefix),
+              '{0}/pipelines/tasks/rsem.wdl'.format(ss2_prefix)
+          ],
+          'wdl_link': '{0}/adapter_pipelines/ss2_hisat_rsem/adapter.wdl'.format(pipeline_tools_prefix),
+          'wdl_default_inputs_link': '{0}/adapter_pipelines/ss2_hisat_rsem/adapter_example_static.json'.format(pipeline_tools_prefix),
+          'options_link': '{0}/adapter_pipelines/ss2_hisat_rsem/options.json'.format(pipeline_tools_prefix)
         }
       ]
     }

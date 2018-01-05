@@ -270,29 +270,6 @@ docker run -d \
     $(echo "$mount_ss2" | xargs) \
     humancellatlas/lira:$lira_image_version
 
-
-# 8. Send in notifications
-printf "\n\nSending in notifications\n"
-secrets_json_suffix=$(basename $secrets_json)
-tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
-                    -e LIRA_URL="http://lira:8080/notifications" \
-                    -e SECRETS_FILE=/app/$secrets_json_suffix \
-                    -e NOTIFICATION=/app/10x_notification_${env}.json \
-                    --link $lira_container_name:lira \
-                    broadinstitute/python-requests /app/send_notification.py)
-
-ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
-                    -e LIRA_URL="http://lira:8080/notifications" \
-                    -e SECRETS_FILE=/app/$secrets_json_suffix \
-                    -e NOTIFICATION=/app/ss2_notification_${env}.json \
-                    --link $lira_container_name:lira \
-                    broadinstitute/python-requests /app/send_notification.py)
-
-printf "\ntenx_workflow_id: $tenx_workflow_id"
-printf "\nss2_workflow_id: $ss2_workflow_id"
-
-# 9. Poll for completion
-printf "\n\nAwaiting workflow completion\n"
 set +e
 function stop_lira_on_error {
   lira_container_name=$1
@@ -302,21 +279,36 @@ function stop_lira_on_error {
   printf "\n\nTest failed!\n\n"
   exit 1
 }
-
 trap "stop_lira_on_error $lira_container_name" ERR
+
+# 8. Send in notifications
+printf "\n\nSending in notifications\n"
+secrets_json_suffix=$(basename $secrets_json)
+#tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
+#                    -e LIRA_URL="http://lira:8080/notifications" \
+#                    -e SECRETS_FILE=/app/$secrets_json_suffix \
+#                    -e NOTIFICATION=/app/10x_notification_${env}.json \
+#                    --link $lira_container_name:lira \
+#                    broadinstitute/python-requests /app/send_notification.py)
+ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
+                    -e LIRA_URL="http://lira:8080/notifications" \
+                    -e SECRETS_FILE=/app/$secrets_json_suffix \
+                    -e NOTIFICATION=/app/ss2_notification_${env}.json \
+                    --link $lira_container_name:lira \
+                    broadinstitute/python-requests /app/send_notification.py)
+
+#printf "\ntenx_workflow_id: $tenx_workflow_id"
+printf "\nss2_workflow_id: $ss2_workflow_id"
+
+# 9. Poll for completion
+printf "\n\nAwaiting workflow completion\n"
+
 python $script_dir/await_workflow_completion.py \
-  --workflow_ids $ss2_workflow_id,$tenx_workflow_id \
-  --workflow_names ss2,10x \
+  --workflow_ids $ss2_workflow_id \
+  --workflow_names ss2 \
   --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
   --secrets_file $secrets_json \
   --timeout_minutes 120
-#python $script_dir/await_workflow_completion.py \
-#  --workflow_ids $ss2_workflow_id \
-#  --workflow_names ss2 \
-#  --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-#  --secrets_file $secrets_json \
-#  --timeout_minutes 20 \
-#  --poll_interval_seconds 10
 
 # 10. Stop Lira
 printf "\n\nStopping Lira\n"
