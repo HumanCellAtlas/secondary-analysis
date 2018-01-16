@@ -41,11 +41,11 @@ def run(repo, tag_prefix):
             tag = Tag(int(m.group(1)), int(m.group(2)), int(m.group(3)))
             if tag > max_tag:
                 max_tag = tag
-    print(max_tag)
+    print('{0}{1}'.format(tag_prefix, max_tag))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--repo', required=True)
-    parser.add_argument('--tag_prefix')
+    parser.add_argument('--repo', required=True, help='e.g. HumanCellAtlas/lira')
+    parser.add_argument('--tag_prefix', default='v', help='e.g. smartseq2_v')
     args = parser.parse_args()
     run(args.repo, args.tag_prefix)
