@@ -173,7 +173,7 @@ if [ $lira_mode == "image" ]; then
   else
     lira_image_version=$lira_version
   fi
-  docker pull humancellatlas/lira:$lira_image_version
+  docker pull quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
 elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
   cd $lira_dir
   if [ $lira_mode == "local" ]; then
@@ -182,7 +182,7 @@ elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
     lira_image_version=$lira_version
   fi
   printf "\n\nBuilding Lira version \"$lira_image_version\" from dir: $lira_dir\n"
-  docker build -t humancellatlas/lira:$lira_image_version .
+  docker build -t quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version .
   cd $work_dir
 fi
 
@@ -190,7 +190,7 @@ fi
 if [ $tenx_mode == "github" ]; then
   if [ $tenx_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of 10x pipeline\n"
-    tenx_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_)
+    tenx_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_v)
   elif [ $tenx_version == "latest_deployed" ]; then
     printf "\n\nDetermining latest deployed version of 10x pipeline\n"
     tenx_version=$(python $script_dir/current_deployed_version.py \
@@ -212,7 +212,7 @@ fi
 if [ $ss2_mode == "github" ]; then
   if [ $ss2_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of ss2 pipeline\n"
-    ss2_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix ss2_)
+    ss2_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix smartseq2_v)
   elif [ $ss2_version == "latest_deployed" ]; then
     printf "\n\nDetermining latest deployed version of ss2 pipeline\n"
     ss2_version=$(python $script_dir/current_deployed_version.py \
@@ -268,7 +268,7 @@ docker run -d \
     $(echo "$mount_pipeline_tools" | xargs) \
     $(echo "$mount_tenx" | xargs) \
     $(echo "$mount_ss2" | xargs) \
-    humancellatlas/lira:$lira_image_version
+    quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
 
 set +e
 function stop_lira_on_error {

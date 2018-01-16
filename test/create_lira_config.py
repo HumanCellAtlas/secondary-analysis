@@ -29,7 +29,7 @@ def run(args, env_config, secrets_config):
         },
         {
           'subscription_id': env_config['ss2_subscription_id'],
-          'workflow_name': 'AdapterSs2RsemSingleSample',
+          'workflow_name': 'AdapterSmartSeq2SingleCell',
           'analysis_wdls': [
               '{0}/smartseq2_single_sample/ss2_single_sample.wdl'.format(ss2_prefix),
               '{0}/smartseq2_single_sample/pipelines/hisat2_QC_pipeline.wdl'.format(ss2_prefix),
@@ -38,9 +38,9 @@ def run(args, env_config, secrets_config):
               '{0}/pipelines/tasks/picard.wdl'.format(ss2_prefix),
               '{0}/pipelines/tasks/rsem.wdl'.format(ss2_prefix)
           ],
-          'wdl_link': '{0}/adapter_pipelines/ss2_hisat_rsem/adapter.wdl'.format(pipeline_tools_prefix),
-          'wdl_default_inputs_link': '{0}/adapter_pipelines/ss2_hisat_rsem/adapter_example_static.json'.format(pipeline_tools_prefix),
-          'options_link': '{0}/adapter_pipelines/ss2_hisat_rsem/options.json'.format(pipeline_tools_prefix)
+          'wdl_link': '{0}/adapter_pipelines/ss2_single_sample/adapter.wdl'.format(pipeline_tools_prefix),
+          'wdl_default_inputs_link': '{0}/adapter_pipelines/ss2_single_sample/adapter_example_static.json'.format(pipeline_tools_prefix),
+          'options_link': '{0}/adapter_pipelines/ss2_single_sample/options.json'.format(pipeline_tools_prefix)
         }
       ]
     }
