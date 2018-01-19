@@ -244,6 +244,12 @@ python $script_dir/create_lira_config.py \
     --pipeline_tools_prefix $pipeline_tools_prefix > config.json
 
 # 7. Start Lira
+
+# Check if an old container exists
+echo "checking for old container"
+docker stop lira || echo "container already stopped"
+docker rm -v lira || echo "container already removed"
+
 printf "\n\nStarting Lira docker image\n"
 if [ $pipeline_tools_mode == "local" ]; then
   mount_pipeline_tools="-v $pipeline_tools_dir:/pipeline-tools"
@@ -258,13 +264,12 @@ if [ $ss2_mode == "local" ]; then
   printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
 
-lira_container_name=lira
 docker run -d \
     -p 8080:8080 \
     -e listener_config=/etc/secondary-analysis/config.json \
     -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
     -v $work_dir:/etc/secondary-analysis \
-    --name=$lira_container_name \
+    --name=lira \
     $(echo "$mount_pipeline_tools" | xargs) \
     $(echo "$mount_tenx" | xargs) \
     $(echo "$mount_ss2" | xargs) \
@@ -272,14 +277,13 @@ docker run -d \
 
 set +e
 function stop_lira_on_error {
-  lira_container_name=$1
   printf "\n\nStopping Lira\n"
-  docker stop $lira_container_name
-  docker rm -v $lira_container_name
+  docker stop lira
+  docker rm -v lira
   printf "\n\nTest failed!\n\n"
   exit 1
 }
-trap "stop_lira_on_error $lira_container_name" ERR
+trap "stop_lira_on_error" ERR
 
 # 8. Send in notifications
 printf "\n\nSending in notifications\n"
@@ -288,13 +292,13 @@ secrets_json_suffix=$(basename $secrets_json)
 #                    -e LIRA_URL="http://lira:8080/notifications" \
 #                    -e SECRETS_FILE=/app/$secrets_json_suffix \
 #                    -e NOTIFICATION=/app/10x_notification_${env}.json \
-#                    --link $lira_container_name:lira \
+#                    --link lira:lira \
 #                    broadinstitute/python-requests /app/send_notification.py)
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e SECRETS_FILE=/app/$secrets_json_suffix \
                     -e NOTIFICATION=/app/ss2_notification_${env}.json \
-                    --link $lira_container_name:lira \
+                    --link lira:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
 #printf "\ntenx_workflow_id: $tenx_workflow_id"
@@ -312,6 +316,6 @@ python $script_dir/await_workflow_completion.py \
 
 # 10. Stop Lira
 printf "\n\nStopping Lira\n"
-docker stop $lira_container_name
-docker rm -v $lira_container_name
+docker stop lira
+docker rm -v lira
 printf "\n\nTest succeeded!\n\n"

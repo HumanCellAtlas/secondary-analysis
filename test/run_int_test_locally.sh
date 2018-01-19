@@ -24,7 +24,7 @@ bash $script_dir/integration_test.sh \
         "image" \
         "latest_released" \
         "github" \
-        "ajc-create-ss2hisatrsem-adapter" \
+        "master" \
         "github" \
         "latest_released" \
         "github" \
