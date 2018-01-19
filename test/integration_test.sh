@@ -244,6 +244,13 @@ python $script_dir/create_lira_config.py \
     --pipeline_tools_prefix $pipeline_tools_prefix > config.json
 
 # 7. Start Lira
+
+lira_container_name=lira
+
+# Check if an old container exists
+docker stop $lira_container_name || echo "container already stopped"
+docker rm -v $lira_container_name || echo "container already removed"
+
 printf "\n\nStarting Lira docker image\n"
 if [ $pipeline_tools_mode == "local" ]; then
   mount_pipeline_tools="-v $pipeline_tools_dir:/pipeline-tools"
@@ -258,7 +265,6 @@ if [ $ss2_mode == "local" ]; then
   printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
 
-lira_container_name=lira
 docker run -d \
     -p 8080:8080 \
     -e listener_config=/etc/secondary-analysis/config.json \
