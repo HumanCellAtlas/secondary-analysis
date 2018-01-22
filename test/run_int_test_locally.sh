@@ -22,7 +22,7 @@ bash $script_dir/render-ctmpls.sh "dev" $vault_token $repo_root
 bash $script_dir/integration_test.sh \
         "dev" \
         "image" \
-        "latest_released" \
+        "ds_use_gunicorn_358" \
         "github" \
         "master" \
         "github" \

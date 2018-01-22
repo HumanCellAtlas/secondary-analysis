@@ -267,13 +267,13 @@ fi
 docker run -d \
     -p 8080:8080 \
     -e listener_config=/etc/secondary-analysis/config.json \
-    -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
     -v $work_dir:/etc/secondary-analysis \
     --name=lira \
     $(echo "$mount_pipeline_tools" | xargs) \
     $(echo "$mount_tenx" | xargs) \
     $(echo "$mount_ss2" | xargs) \
-    quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
+    quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version \
+    -b '0.0.0.0:8080'
 
 set +e
 function stop_lira_on_error {
