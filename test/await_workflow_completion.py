@@ -7,11 +7,11 @@ from datetime import timedelta
 import requests
 import subprocess
 import time
+import os
 
 failed_statuses = ['Failed', 'Aborted', 'Aborting']
 
 def run(args):
-    cromwell_user, cromwell_pw = extract_credentials(args.secrets_file)
     workflow_ids = args.workflow_ids.split(',')
     workflow_names = args.workflow_names.split(',')
     start = datetime.now()
@@ -20,7 +20,7 @@ def run(args):
         if datetime.now() - start > timeout:
             msg = 'Unfinished workflows after {0} minutes.'
             raise Exception(msg.format(timeout))
-        statuses = get_statuses(workflow_names, workflow_ids, args.cromwell_url, cromwell_user, cromwell_pw)
+        statuses = get_statuses(workflow_names, workflow_ids, args.cromwell_url, args.cromwell_user, args.cromwell_password)
         all_succeeded = True
         for i, status in enumerate(statuses):
             if status in failed_statuses:
@@ -51,18 +51,14 @@ def get_statuses(names, ids, cromwell_url, user, pw):
             print('{0} {1} workflow {2}: {3}'.format(timestamp, name, id, status))
     return statuses
 
-def extract_credentials(secrets_file):
-    with open(secrets_file) as f:
-        secrets = json.load(f)
-        return secrets['cromwell_user'], secrets['cromwell_password']
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--workflow_ids')
     parser.add_argument('--workflow_names')
     parser.add_argument('--cromwell_url')
-    parser.add_argument('--secrets_file')
+    parser.add_argument('--cromwell_user', default=os.environ.get('cromwell_user', None))
+    parser.add_argument('--cromwell_password', default=os.environ.get('cromwell_password', None))
     parser.add_argument('--timeout_minutes')
-    parser.add_argument('--poll_interval_seconds', type=int, default=10)
+    parser.add_argument('--poll_interval_seconds', type=int, default=20)
     args = parser.parse_args()
     run(args)
