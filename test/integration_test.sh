@@ -19,9 +19,8 @@
 # Versions can be a branch name, tag, or commit hash
 #
 # env
-# The environment to use -- affects Cromwell url, buckets, Lira config.
-# When running from a PR, this will always be int. When running locally,
-# the developer can choose dev or int.
+# The instance of Cromwell to use. When running from a PR, this will always be dev.
+# When running locally, the developer can choose.
 #
 # lira_mode and lira_version
 # The lira_mode param can be "local", "image" or "github".
@@ -36,6 +35,10 @@
 # deployed version in env, specified in the deployment tsv. If lira_version is
 # any other value, then it is assumed to be a docker image tag version and
 # this script will attempt to pull that version.
+#
+# Note that in image mode, the Lira repo will still get cloned, but only to
+# make use of the Lira config template file, in order to generate a config file
+# to run Lira with.
 #
 # Running in "github" mode causes this script to clone the Lira repo and check
 # out a specific branch, tag, or commit to use, specified by lira_version.
@@ -68,11 +71,14 @@
 # The ss2_mode and ss2_version params work in the same way as tenx_mode and
 # tenx_version.
 #
-# env_config_json
-# Path to file containing environment name and subscription ids
+# ss2_sub_id
+# Smart-seq2 subscription id
 #
-# secrets_json
-# Path to secrets file
+# tenx_sub_id
+# 10x subscription id
+#
+# vault_token
+# Token for vault auth
 
 printf "\nStarting integration test\n"
 date +"%Y-%m-%d %H:%M:%S"
@@ -88,8 +94,9 @@ tenx_mode=$6
 tenx_version=$7
 ss2_mode=$8
 ss2_version=$9
-env_config_json=${10}
-secrets_json=${11}
+tenx_sub_id=${10}
+ss2_sub_id=${11}
+vault_token=${12}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -103,8 +110,8 @@ printf "\ntenx_mode: $tenx_mode"
 printf "\ntenx_version: $tenx_version"
 printf "\nss2_mode: $ss2_mode"
 printf "\nss2_version: $ss2_version"
-printf "\nenv_config_json: $env_config_json"
-printf "\nsecrets_json: $secrets_json"
+printf "\ntenx_sub_id: $tenx_sub_id"
+printf "\nss2_sub_id: $ss2_sub_id"
 
 printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
@@ -115,11 +122,12 @@ git clone git@github.com:HumanCellAtlas/mint-deployment.git
 mint_deployment_dir=mint-deployment
 
 # 2. Clone Lira if needed
-if [ $lira_mode == "github" ]; then
+if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
   printf "\n\nCloning lira\n"
   git clone git@github.com:HumanCellAtlas/lira.git
-  lira_dir=lira
-  cd $lira_dir
+  cd lira
+  lira_dir=$PWD
+  printf "\nlira_dir: $lira_dir\n"
   if [ $lira_version == "latest_released" ]; then
     printf "\nDetermining latest release tag\n"
     lira_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/lira)
@@ -232,16 +240,20 @@ elif [ $ss2_mode == "local" ]; then
 fi
 
 # 6. Create config.json
-# $secrets_json is pre-rendered from vault
-printf "\n\nCreating Lira config"
-printf "\nUsing $env_config_json"
-printf "\nUsing $secrets_json\n"
-python $script_dir/create_lira_config.py \
-    --env_config_file $env_config_json \
-    --secrets_file $secrets_json \
-    --tenx_prefix $tenx_prefix \
-    --ss2_prefix $ss2_prefix \
-    --pipeline_tools_prefix $pipeline_tools_prefix > config.json
+printf "\n\nCreating Lira config\n\n"
+
+docker run -i --rm \
+    -e INPUT_PATH=/working \
+    -e OUT_PATH=/working \
+    -e ENV=${env} \
+    -e PIPELINE_TOOLS_PREFIX=${pipeline_tools_prefix} \
+    -e SS2_PREFIX=${ss2_prefix} \
+    -e SS2_SUBSCRIPTION_ID=${ss2_sub_id} \
+    -e TENX_PREFIX=${tenx_prefix} \
+    -e TENX_SUBSCRIPTION_ID=${tenx_sub_id} \
+    -e VAULT_TOKEN=${vault_token} \
+    -v $lira_dir/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
+    /usr/local/bin/render-ctmpl.sh -k /working/listener-config.json.ctmpl
 
 # 7. Start Lira
 
@@ -264,16 +276,25 @@ if [ $ss2_mode == "local" ]; then
   printf "\nMounting ss2_dir: $ss2_dir\n"
 fi
 
+
 docker run -d \
     -p 8080:8080 \
-    -e listener_config=/etc/secondary-analysis/config.json \
-    -e GOOGLE_APPLICATION_CREDENTIALS=/etc/secondary-analysis/bucket-reader-key.json \
-    -v $work_dir:/etc/secondary-analysis \
+    -e listener_config=/etc/lira/listener-config.json \
+    -v $lira_dir/kubernetes/listener-config.json:/etc/lira/listener-config.json \
     --name=lira \
     $(echo "$mount_pipeline_tools" | xargs) \
     $(echo "$mount_tenx" | xargs) \
     $(echo "$mount_ss2" | xargs) \
     quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
+
+printf "\nWaiting for Lira to finish start up\n"
+sleep 3
+
+n=$(docker ps -f "name=lira" | wc -l)
+if [ $n -lt 2 ]; then
+    printf "\nLira container exited unexpectedly\n"
+    exit 1
+fi
 
 set +e
 function stop_lira_on_error {
@@ -285,33 +306,42 @@ function stop_lira_on_error {
 }
 trap "stop_lira_on_error" ERR
 
+
 # 8. Send in notifications
+printf "\n\nGetting notification token\n"
+
+notification_token=$(docker run -i --rm \
+      -e VAULT_TOKEN=$vault_token \
+      broadinstitute/dsde-toolbox \
+      vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
+
 printf "\n\nSending in notifications\n"
-secrets_json_suffix=$(basename $secrets_json)
-#tenx_workflow_id=$(docker run --rm -v $script_dir:/app \
-#                    -e LIRA_URL="http://lira:8080/notifications" \
-#                    -e SECRETS_FILE=/app/$secrets_json_suffix \
-#                    -e NOTIFICATION=/app/10x_notification_${env}.json \
-#                    --link lira:lira \
-#                    broadinstitute/python-requests /app/send_notification.py)
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
-                    -e SECRETS_FILE=/app/$secrets_json_suffix \
-                    -e NOTIFICATION=/app/ss2_notification_${env}.json \
+                    -e NOTIFICATION_TOKEN=$notification_token \
+                    -e NOTIFICATION=/app/ss2_notification_dss_staging.json \
                     --link lira:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
-#printf "\ntenx_workflow_id: $tenx_workflow_id"
 printf "\nss2_workflow_id: $ss2_workflow_id"
 
 # 9. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 
+export cromwell_user=$(docker run -i --rm \
+      -e VAULT_TOKEN=$vault_token \
+      broadinstitute/dsde-toolbox \
+      vault read -field=cromwell_user secret/dsde/mint/$env/common/htpasswd)
+
+export cromwell_password=$(docker run -i --rm \
+      -e VAULT_TOKEN=$vault_token \
+      broadinstitute/dsde-toolbox \
+      vault read -field=cromwell_password secret/dsde/mint/$env/common/htpasswd)
+
 python $script_dir/await_workflow_completion.py \
   --workflow_ids $ss2_workflow_id \
   --workflow_names ss2 \
   --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-  --secrets_file $secrets_json \
   --timeout_minutes 120
 
 # 10. Stop Lira

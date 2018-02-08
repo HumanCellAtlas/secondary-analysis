@@ -12,22 +12,22 @@ vault_token=$(cat ~/.vault-token)
 #tenx_version=$7
 #ss2_mode=$8
 #ss2_version=$9
-#env_config_json=${10}
-#secrets_json=${11}
+#tenx_sub_id=${10}
+#ss2_sub_id=${11}
+#vault_token=${12}
 
 script_dir=$repo_root/test
 
-bash $script_dir/render-ctmpls.sh "dev" $vault_token $repo_root
-
 bash $script_dir/integration_test.sh \
         "dev" \
-        "image" \
-        "latest_released" \
         "github" \
         "master" \
         "github" \
-        "latest_released" \
+        "master" \
         "github" \
-        "latest_released" \
-        "$script_dir/dev_config.json" \
-        "$script_dir/lira-secrets.json"
+        "master" \
+        "github" \
+        "master" \
+        $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
+        $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
+        "$vault_token"

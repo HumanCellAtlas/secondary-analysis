@@ -9,13 +9,11 @@ def run(args):
     with open(args.notification) as f:
         notification = json.load(f)
 
-    with open(args.secrets_file) as f:
-        secrets = json.load(f)
-        token = secrets['notification_token']
-        full_url = args.lira_url + '?auth={0}'.format(token)
+    token = args.notification_token
+    full_url = args.lira_url + '?auth={0}'.format(token)
 
     response = requests.post(full_url, json=notification)    
-    if response.status_code == 200:
+    if response.status_code == 201:
         response_json = response.json()
         workflow_id = response_json['id']
         print(workflow_id)
@@ -26,7 +24,7 @@ def run(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--lira_url', default=os.environ.get('LIRA_URL', None))
-    parser.add_argument('--secrets_file', default=os.environ.get('SECRETS_FILE', None))
+    parser.add_argument('--notification_token', default=os.environ.get('NOTIFICATION_TOKEN', None))
     parser.add_argument('--notification', default=os.environ.get('NOTIFICATION', None))
     args = parser.parse_args()
     run(args)
