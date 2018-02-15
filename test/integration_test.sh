@@ -19,7 +19,7 @@
 # Versions can be a branch name, tag, or commit hash
 #
 # env
-# The instance of Cromwell to use. When running from a PR, this will always be dev.
+# The instance of Cromwell to use. When running from a PR, this will always be staging.
 # When running locally, the developer can choose.
 #
 # lira_mode and lira_version
@@ -258,7 +258,7 @@ docker run -i --rm \
 # 7. Start Lira
 
 # Check if an old container exists
-echo "checking for old container"
+printf "\n\nChecking for old container"
 docker stop lira || echo "container already stopped"
 docker rm -v lira || echo "container already removed"
 
