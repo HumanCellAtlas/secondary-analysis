@@ -21,4 +21,6 @@ WORKDIR /certs
 
 RUN pip3 install awscli --upgrade && \
     git clone https://github.com/jed/certbot-route53.git && \
-    chmod u+x certbot-route53/certbot-route53.sh
+    cd certbot-route53 && \
+    git checkout 71cf925340a42c875fa3c5255537d7fa2ec1d81b && \
+    chmod u+x certbot-route53.sh
