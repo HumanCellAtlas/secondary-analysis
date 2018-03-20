@@ -15,6 +15,7 @@ vault_token=$(cat ~/.vault-token)
 #tenx_sub_id=${10}
 #ss2_sub_id=${11}
 #vault_token=${12}
+#submit_wdl_dir=${13}
 
 script_dir=$repo_root/test
 
@@ -30,4 +31,5 @@ bash $script_dir/integration_test.sh \
         "master" \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
-        "$vault_token"
+        "$vault_token" \
+        ""

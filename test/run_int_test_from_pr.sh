@@ -16,6 +16,7 @@ fi
 skylab_branch=master
 if [ $service = "skylab" ]; then
     skylab_branch=$branch
+    submit_wdl_dir="submit_stub/"
 fi
 
 #Arguments to integration_test.sh:
@@ -31,6 +32,7 @@ fi
 #tenx_sub_id=${10}
 #ss2_sub_id=${11}
 #vault_token=${12}
+#submit_wdl_dir=${13}
 
 bash $script_dir/integration_test.sh \
         "staging" \
@@ -44,4 +46,5 @@ bash $script_dir/integration_test.sh \
         "$skylab_branch" \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
-        "$vault_token"
+        "$vault_token" \
+        "$submit_wdl_dir"
