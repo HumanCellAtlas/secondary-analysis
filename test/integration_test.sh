@@ -79,6 +79,11 @@
 #
 # vault_token
 # Token for vault auth
+#
+# submit_wdl_dir
+# Should be an empty string except when testing skylab, in which case we use
+# "submit_stub/" so that we don't test submission, since it is not really
+# necessary for skylab PRs.
 
 printf "\nStarting integration test\n"
 date +"%Y-%m-%d %H:%M:%S"
@@ -97,6 +102,7 @@ ss2_version=$9
 tenx_sub_id=${10}
 ss2_sub_id=${11}
 vault_token=${12}
+submit_wdl_dir=${13}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -252,6 +258,7 @@ docker run -i --rm \
     -e TENX_PREFIX=${tenx_prefix} \
     -e TENX_SUBSCRIPTION_ID=${tenx_sub_id} \
     -e VAULT_TOKEN=${vault_token} \
+    -e SUBMIT_WDL_DIR=${submit_wdl_dir} \
     -v $lira_dir/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
     /usr/local/bin/render-ctmpl.sh -k /working/listener-config.json.ctmpl
 
