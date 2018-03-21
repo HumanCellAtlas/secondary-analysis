@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Runs an integration test for the secondary analysis service. Spins up a local instance of Lira,
+# sends in notifications to launch workflows and waits for them to succeed or fail.
+
 # This script carries out the following steps:
 # 1. Clone mint-deployment
 # 2. Clone Lira if needed
@@ -12,9 +15,6 @@
 # 9. Poll Cromwell for completion
 # 10. Stop Lira
 
-# This script currently only works when run locally on a developer's machine,
-# but is designed to be easy to adapt to running on a Jenkins or Travis VM.
-#
 # The following parameters are required. 
 # Versions can be a branch name, tag, or commit hash
 #
@@ -41,7 +41,8 @@
 # to run Lira with.
 #
 # Running in "github" mode causes this script to clone the Lira repo and check
-# out a specific branch, tag, or commit to use, specified by lira_version.
+# out a specific branch specified by lira_version. If the branch does not exist,
+# master will be used instead.
 #
 # pipeline_tools_mode and pipeline_tools_version
 # These parameters determine where Lira will look for adapter WDLs.
@@ -51,7 +52,8 @@
 # with the path to the repo specified in pipeline_tools_version.
 #
 # If pipeline_tools_mode == "github", then the script configures Lira to read the
-# wrapper WDLS from GitHub and to use version pipeline_tools_version.
+# wrapper WDLS from GitHub and to use branch pipeline_tools_version. If the branch
+# does not exist, master will be used instead.
 # If pipeline_tools_version is "latest_released", then the latest tagged release
 # in GitHub will be used. If pipeline_tools_version is "latest_deployed" then
 # the latest version from the deployment tsv is used.
@@ -61,7 +63,8 @@
 # in a local directory specified by tenx_version.
 #
 # When tenx_mode == "github", this script will configure lira to use the 10x wdl
-# in the skylab repo, with branch, tag, or commit specified by tenx_version.
+# in the skylab repo, with branch specified by tenx_version. If the branch does
+# not exist, master will be used instead.
 # If tenx_version == "latest_deployed", then this script will find the latest
 # wdl version in the mint deployment TSV and configure lira to read that version
 # from GitHub. If tenx_version == "latest_released" then this script will use
@@ -122,6 +125,20 @@ printf "\nss2_sub_id: $ss2_sub_id"
 printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
 
+function get_branch {
+  repo=$1
+  branch=$2
+  url="https://api.github.com/repos/HumanCellAtlas/$repo/branches/$branch"
+  status_code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+  if [ "$status_code" != "200" ]; then
+    # 1>&2 prints message to stderr so it doesn't interfere with return value
+    printf "\n\nCouldn't find $repo branch $branch. Using master instead.\n" 1>&2
+    echo "master"
+  else
+    echo "$branch"
+  fi
+}
+
 # 1. Clone mint-deployment
 printf "\n\nCloning mint-deployment\n"
 git clone git@github.com:HumanCellAtlas/mint-deployment.git
@@ -143,6 +160,8 @@ if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
                     --component_name lira
                     --env $env \
                     --mint_deployment_dir $mint_deployment_dir)
+  else
+    lira_version=$(get_branch lira $lira_version)
   fi
   printf "\nChecking out $lira_version\n"
   git checkout $lira_version
@@ -163,6 +182,8 @@ if [ $pipeline_tools_mode == "github" ]; then
                       --mint_deployment_dir $mint_deployment_dir \
                       --env $env \
                       --component_name pipeline_tools)
+  else
+    pipeline_tools_version=$(get_branch pipeline-tools $pipeline_tools_version)
   fi
   printf "\nConfiguring Lira to use adapter wdls from pipeline-tools GitHub repo, version: $pipeline_tools_version\n"
   pipeline_tools_prefix="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${pipeline_tools_version}"
@@ -211,6 +232,8 @@ if [ $tenx_mode == "github" ]; then
                       --mint_deployment_dir $mint_deployment_dir \
                       --env $env \
                       --component_name 10x)
+  else
+    tenx_version=$(get_branch skylab $tenx_version)
   fi
   tenx_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${tenx_version}"
   printf "\nConfiguring Lira to use 10x wdl from skylab Github repo, version: $tenx_version\n"
@@ -233,6 +256,8 @@ if [ $ss2_mode == "github" ]; then
                       --mint_deployment_dir $mint_deployment_dir \
                       --env $env \
                       --component_name ss2)
+  else
+    ss2_version=$(get_branch skylab $ss2_version)
   fi
   printf "\nConfiguring Lira to use ss2 wdl from skylab GitHub repo, version: $ss2_version\n"
   ss2_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${ss2_version}"
@@ -312,7 +337,6 @@ function stop_lira_on_error {
   exit 1
 }
 trap "stop_lira_on_error" ERR
-
 
 # 8. Send in notifications
 printf "\n\nGetting notification token\n"
