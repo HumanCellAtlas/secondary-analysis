@@ -33,7 +33,7 @@ fi
 #vault_token=${12}
 
 bash $script_dir/integration_test.sh \
-        "staging" \
+        "test" \
         "github" \
         "$lira_branch" \
         "github" \

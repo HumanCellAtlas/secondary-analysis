@@ -319,7 +319,7 @@ printf "\n\nSending in notifications\n"
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e NOTIFICATION_TOKEN=$notification_token \
-                    -e NOTIFICATION=/app/ss2_notification_dss_staging.json \
+                    -e NOTIFICATION=/app/ss2_notification_dss_${env}.json \
                     --link lira:lira \
                     broadinstitute/python-requests /app/send_notification.py)
 
