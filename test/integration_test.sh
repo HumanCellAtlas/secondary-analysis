@@ -125,17 +125,22 @@ printf "\nss2_sub_id: $ss2_sub_id"
 printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
 
-function get_branch {
+function get_version {
   repo=$1
-  branch=$2
-  url="https://api.github.com/repos/HumanCellAtlas/$repo/branches/$branch"
-  status_code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+  version=$2
+  base_url="https://api.github.com/repos/HumanCellAtlas/$repo"
+  branches_url="$base_url/branches/$version"
+  commits_url="$base_url/commits/$version"
+  status_code=$(curl -s -o /dev/null -w "%{http_code}" "$branches_url")
+  if [ "$status_code" != "200" ]; then
+    status_code=$(curl -s -o /dev/null -w "%{http_code}" "$commits_url")
+  fi
   if [ "$status_code" != "200" ]; then
     # 1>&2 prints message to stderr so it doesn't interfere with return value
-    printf "\n\nCouldn't find $repo branch $branch. Using master instead.\n" 1>&2
+    printf "\n\nCouldn't find $repo branch or commit $version. Using master instead.\n" 1>&2
     echo "master"
   else
-    echo "$branch"
+    echo "$version"
   fi
 }
 
@@ -161,7 +166,7 @@ if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
                     --env $env \
                     --mint_deployment_dir $mint_deployment_dir)
   else
-    lira_version=$(get_branch lira $lira_version)
+    lira_version=$(get_version lira $lira_version)
   fi
   printf "\nChecking out $lira_version\n"
   git checkout $lira_version
@@ -183,7 +188,7 @@ if [ $pipeline_tools_mode == "github" ]; then
                       --env $env \
                       --component_name pipeline_tools)
   else
-    pipeline_tools_version=$(get_branch pipeline-tools $pipeline_tools_version)
+    pipeline_tools_version=$(get_version pipeline-tools $pipeline_tools_version)
   fi
   printf "\nConfiguring Lira to use adapter wdls from pipeline-tools GitHub repo, version: $pipeline_tools_version\n"
   pipeline_tools_prefix="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${pipeline_tools_version}"
@@ -233,7 +238,7 @@ if [ $tenx_mode == "github" ]; then
                       --env $env \
                       --component_name 10x)
   else
-    tenx_version=$(get_branch skylab $tenx_version)
+    tenx_version=$(get_version skylab $tenx_version)
   fi
   tenx_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${tenx_version}"
   printf "\nConfiguring Lira to use 10x wdl from skylab Github repo, version: $tenx_version\n"
@@ -257,7 +262,7 @@ if [ $ss2_mode == "github" ]; then
                       --env $env \
                       --component_name ss2)
   else
-    ss2_version=$(get_branch skylab $ss2_version)
+    ss2_version=$(get_version skylab $ss2_version)
   fi
   printf "\nConfiguring Lira to use ss2 wdl from skylab GitHub repo, version: $ss2_version\n"
   ss2_prefix="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${ss2_version}"
