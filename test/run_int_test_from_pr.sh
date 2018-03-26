@@ -42,7 +42,7 @@ fi
 #submit_wdl_dir=${13}
 
 bash $script_dir/integration_test.sh \
-        "staging" \
+        "test" \
         "github" \
         "$branch" \
         "github" \

@@ -20,7 +20,7 @@ vault_token=$(cat ~/.vault-token)
 script_dir=$repo_root/test
 
 bash $script_dir/integration_test.sh \
-        "staging" \
+        "test" \
         "github" \
         "master" \
         "github" \
