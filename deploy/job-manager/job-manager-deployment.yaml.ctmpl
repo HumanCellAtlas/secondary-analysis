@@ -5,7 +5,7 @@ metadata:
   labels:
     app: job-manager
 spec:
-  replicas: 1 # For high-availability change set to 2-4
+  replicas: {{ env "REPLICAS" }} # For high-availability change set to 2-4
   selector:
     matchLabels:
       app: job-manager
@@ -24,13 +24,19 @@ spec:
         - name: jm-api-config
           mountPath: /etc/job-manager/api
           readOnly: true
+        - name: jm-api-capabilities-config
+          mountPath: /etc/job-manager/capabilities/capabilities-config.json
+          subPath: capabilities-config
+          readOnly: true
         env:
         - name: PATH_PREFIX
-          value: ${API_PATH_PREFIX:-"/api/v1"}
+          value: {{ env "API_PATH_PREFIX" }}
         - name: CROMWELL_CREDENTIALS
           value: /etc/job-manager/api/config.json
         - name: CROMWELL_URL
-          value: ${CROMWELL_URL:-"https://cromwell.mint-dev.broadinstitute.org"}/api/workflows/v1
+          value: {{ env "CROMWELL_URL" }}
+        - name: CAPABILITIES_CONFIG
+          value: /etc/job-manager/capabilities/capabilities-config.json
       - name: job-manager-ui
         image: {{ env "UI_DOCKER_IMAGE" }}
         ports:
@@ -39,6 +45,7 @@ spec:
         - name: jm-ui-config
           mountPath: /etc/nginx/nginx.conf
           subPath: jm-ui-config
+          readOnly: true
         - name: htpasswd
           mountPath: /etc/apache2/
           readOnly: true
@@ -52,16 +59,19 @@ spec:
       volumes:
       - name: jm-api-config
         secret:
-          secretName: {{env "API_CONFIG"}}
+          secretName: {{ env "API_CONFIG"}}
           items:
           - key: config
             path: config.json
       - name: htpasswd
         secret:
-          secretName: {{env "PROXY_CREDENTIALS_CONFIG"}}
+          secretName: {{ env "PROXY_CREDENTIALS_CONFIG"}}
           items:
           - key: htpasswd
             path: .htpasswd
       - name: jm-ui-config
         configMap:
-          name: {{env "UI_CONFIG"}}
+          name: {{ env "UI_CONFIG"}}
+      - name: jm-api-capabilities-config
+        configMap:
+          name: {{ env "API_CAPABILITIES_CONFIG"}}
