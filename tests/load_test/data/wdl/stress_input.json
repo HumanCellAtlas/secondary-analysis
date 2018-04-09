@@ -1,0 +1,22 @@
+{
+  "StressTestAdapterSmartSeq2SingleCell.gtf_file": "gs://hca-dcp-mint-test-data/reference/GRCh38_Gencode/gencode.v27.primary_assembly.annotation.gtf",
+  "StressTestAdapterSmartSeq2SingleCell.hisat2_ref_trans_name": "gencode_v27_trans_rsem",
+  "StressTestAdapterSmartSeq2SingleCell.rrna_intervals": "gs://hca-dcp-mint-test-data/reference/GRCh38_Gencode/gencode.v27.rRNA.interval_list",
+  "StressTestAdapterSmartSeq2SingleCell.hisat2_ref_index": "gs://hca-dcp-mint-test-data/reference/HISAT2/genome_snp_tran.tar.gz",
+  "StressTestAdapterSmartSeq2SingleCell.genome_ref_fasta": "gs://hca-dcp-mint-test-data/reference/GRCh38_Gencode/GRCh38.primary_assembly.genome.fa",
+  "StressTestAdapterSmartSeq2SingleCell.hisat2_ref_trans_index": "gs://hca-dcp-mint-test-data/reference/HISAT2/gencode_v27_trans_rsem.tar.gz",
+  "StressTestAdapterSmartSeq2SingleCell.rsem_ref_index": "gs://hca-dcp-mint-test-data/reference/GRCh38_Gencode/gencode_v27_primary.tar",
+  "StressTestAdapterSmartSeq2SingleCell.gene_ref_flat": "gs://hca-dcp-mint-test-data/reference/GRCh38_Gencode/GRCh38_gencode.v27.refFlat.txt",
+  "StressTestAdapterSmartSeq2SingleCell.hisat2_ref_name": "genome_snp_tran",
+  "StressTestAdapterSmartSeq2SingleCell.stranded":"NONE",
+  "StressTestAdapterSmartSeq2SingleCell.reference_bundle": "bf51d668-3e14-4843-9bc7-5d676fdf0e01",
+  "StressTestAdapterSmartSeq2SingleCell.format_map": "gs://hca-dcp-mint-test-data/adapters/file_format_map.json",
+  "StressTestAdapterSmartSeq2SingleCell.dss_url": "https://dss.dev.data.humancellatlas.org/v1",
+  "StressTestAdapterSmartSeq2SingleCell.submit_url": "http://api.ingest.dev.data.humancellatlas.org/",
+  "StressTestAdapterSmartSeq2SingleCell.method": "SmartSeq2SingleCell",
+  "StressTestAdapterSmartSeq2SingleCell.schema_version": "4.6.1",
+  "StressTestAdapterSmartSeq2SingleCell.run_type": "run",
+  "StressTestAdapterSmartSeq2SingleCell.retry_seconds": 10,
+  "StressTestAdapterSmartSeq2SingleCell.timeout_seconds": 1200,
+  "StressTestAdapterSmartSeq2SingleCell.opt_docker": "gcr.io/broad-dsde-mint-dev/python:3.6-slim"
+}
