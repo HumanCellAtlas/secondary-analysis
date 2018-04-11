@@ -1,0 +1,14 @@
+{
+  "content": {
+    "subscription_id": "stress-test-id",
+    "labels": {
+      "Comment": "Stress-Test"
+    },
+    "match": {
+      "bundle_uuid": "0dfd513d-88c2-4a13-a25a-d61bc84f5926",
+      "bundle_version": "2018-03-12T190927.412538Z"
+    }
+  },
+  "params": "",
+  "notification_ratio": 1000
+}

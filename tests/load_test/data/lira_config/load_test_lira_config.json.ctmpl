@@ -1,0 +1,24 @@
+{
+  "MAX_CONTENT_LENGTH": 10000,
+  "cromwell_password": "{{ env "CROMWELL_PASSWORD"}}",
+  "cromwell_url": "https://cromwell.mint-{{ env "ENV"}}.broadinstitute.org/api/workflows/v1",
+  "cromwell_user": "{{ env "CROMWELL_USERNAME"}}",
+  "env": "{{ env "ENV"}}",
+  "dry_run": "{{ env "DRY_RUN"}}",
+  "cache_wdls": true,
+  "notification_token": "{{ env "NOTIFICATION_TOKEN"}}",
+  "submit_wdl": "https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/v0.14.0/adapter_pipelines/submit.wdl",
+  "wdls": [
+    {
+      "analysis_wdls": [
+        "https://raw.githubusercontent.com/HumanCellAtlas/secondary-analysis/cw-implement-lira-load-test-608/tests/load_test/data/wdl/deps/MockSmartSeq2SingleSample.wdl",
+        "https://raw.githubusercontent.com/HumanCellAtlas/secondary-analysis/cw-implement-lira-load-test-608/tests/load_test/data/wdl/deps/SmartSeq2SingleCellTask.wdl"
+      ],
+      "options_link": "https://raw.githubusercontent.com/HumanCellAtlas/secondary-analysis/cw-implement-lira-load-test-608/tests/load_test/data/wdl/options.json",
+      "subscription_id": "stress-test-id",
+      "wdl_static_inputs_link": "https://raw.githubusercontent.com/HumanCellAtlas/secondary-analysis/cw-implement-lira-load-test-608/tests/load_test/data/wdl/stress_input.json",
+      "wdl_link": "https://raw.githubusercontent.com/HumanCellAtlas/secondary-analysis/cw-implement-lira-load-test-608/tests/load_test/data/wdl/stress_workflow.wdl",
+      "workflow_name": "StressTestAdapterSmartSeq2SingleCell"
+    }
+  ]
+}

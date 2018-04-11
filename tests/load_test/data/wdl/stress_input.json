@@ -18,5 +18,5 @@
   "StressTestAdapterSmartSeq2SingleCell.run_type": "run",
   "StressTestAdapterSmartSeq2SingleCell.retry_seconds": 10,
   "StressTestAdapterSmartSeq2SingleCell.timeout_seconds": 1200,
-  "StressTestAdapterSmartSeq2SingleCell.opt_docker": "gcr.io/broad-dsde-mint-dev/python:3.6-slim"
+  "StressTestAdapterSmartSeq2SingleCell.opt_docker": "python:3.6-slim"
 }
