@@ -1,0 +1,77 @@
+apiVersion: apps/v1 # Requires v1.9+ K8s node versions
+kind: Deployment
+metadata:
+  name: job-manager-deployment
+  labels:
+    app: job-manager
+spec:
+  replicas: {{ env "REPLICAS" }} # For high-availability change set to 2-4
+  selector:
+    matchLabels:
+      app: job-manager
+  template:
+    metadata:
+      labels:
+        app: job-manager
+    spec:
+      containers:
+      - name: job-manager-api
+        image: {{ env "API_DOCKER_IMAGE" }}
+        args: ["-b", ":8190", "-t", "60"]
+        ports:
+        - containerPort: 8190
+        volumeMounts:
+        - name: jm-api-config
+          mountPath: /etc/job-manager/api
+          readOnly: true
+        - name: jm-api-capabilities-config
+          mountPath: /etc/job-manager/capabilities/capabilities-config.json
+          subPath: capabilities-config
+          readOnly: true
+        env:
+        - name: PATH_PREFIX
+          value: {{ env "API_PATH_PREFIX" }}
+        - name: CROMWELL_CREDENTIALS
+          value: /etc/job-manager/api/config.json
+        - name: CROMWELL_URL
+          value: {{ env "CROMWELL_URL" }}
+        - name: CAPABILITIES_CONFIG
+          value: /etc/job-manager/capabilities/capabilities-config.json
+      - name: job-manager-ui
+        image: {{ env "UI_DOCKER_IMAGE" }}
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: jm-ui-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: jm-ui-config
+          readOnly: true
+        - name: htpasswd
+          mountPath: /etc/apache2/
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          timeoutSeconds: 10
+      volumes:
+      - name: jm-api-config
+        secret:
+          secretName: {{ env "API_CONFIG"}}
+          items:
+          - key: config
+            path: config.json
+      - name: htpasswd
+        secret:
+          secretName: {{ env "PROXY_CREDENTIALS_CONFIG"}}
+          items:
+          - key: htpasswd
+            path: .htpasswd
+      - name: jm-ui-config
+        configMap:
+          name: {{ env "UI_CONFIG"}}
+      - name: jm-api-capabilities-config
+        configMap:
+          name: {{ env "API_CAPABILITIES_CONFIG"}}
