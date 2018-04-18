@@ -6,6 +6,7 @@ metadata:
     app: job-manager
 spec:
   replicas: {{ env "REPLICAS" }} # For high-availability change set to 2-4
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: job-manager
@@ -56,6 +57,7 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 15
           timeoutSeconds: 10
+      terminationGracePeriodSeconds: 0
       volumes:
       - name: jm-api-config
         secret:
