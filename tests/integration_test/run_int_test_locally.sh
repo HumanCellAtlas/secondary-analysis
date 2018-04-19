@@ -17,7 +17,7 @@ vault_token=$(cat ~/.vault-token)
 #vault_token=${12}
 #submit_wdl_dir=${13}
 
-script_dir=$repo_root/test
+script_dir=$repo_root/tests/integration_test
 
 bash $script_dir/integration_test.sh \
         "test" \
