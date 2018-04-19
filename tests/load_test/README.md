@@ -48,7 +48,7 @@ To use the normal testing agent, you need to pass in the following parameters:
 ```bash
 python normal_loadtest.py \
     --counts=10 \
-    --url='http://pipelines.dev.data.humancellatlas.org/notifications' \
+    --url='https://pipelines.dev.data.humancellatlas.org/notifications' \
     --auth_token=${TOKEN_VALUE} \
     --payload_file='./data/notification/notification.json' \
     --result_folder='./data/' \

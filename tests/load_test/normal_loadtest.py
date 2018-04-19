@@ -31,7 +31,6 @@ def normal_loadtest(counts, url, auth_token, payload_file, result_folder, lira_v
         auth_token = {'auth': auth_token}
     else:
         auth_token = None
-    # FIXME: Using https in url here will run into a "RecursionError: maximum recursion depth exceeded" bug of requests
     payload = Payload(url=url, content=Path(payload_file), params=auth_token)
     agent = OrdinaryLoadTestAgent(payload=payload, scenario=scenario, counts=counts)
 

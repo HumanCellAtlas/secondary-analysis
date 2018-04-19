@@ -1,5 +1,8 @@
 import logging
 import json
+from locust import TaskSet, task
+# requests must be imported after locust or the test will run into an error, according to
+# https://github.com/gevent/gevent/issues/941
 import requests
 import urllib3
 from collections import deque
@@ -7,7 +10,6 @@ import sys
 import time
 import datetime
 import statistics
-from locust import TaskSet, task
 from pathlib import PosixPath
 from tqdm import tqdm
 
