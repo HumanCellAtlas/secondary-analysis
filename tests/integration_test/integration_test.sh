@@ -106,6 +106,8 @@ tenx_sub_id=${10}
 ss2_sub_id=${11}
 vault_token=${12}
 submit_wdl_dir=${13}
+use_caas=${14:-""}
+caas_collection_name=${15:-"test-lira-${env}-workflows"}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -121,6 +123,9 @@ printf "\nss2_mode: $ss2_mode"
 printf "\nss2_version: $ss2_version"
 printf "\ntenx_sub_id: $tenx_sub_id"
 printf "\nss2_sub_id: $ss2_sub_id"
+printf "\nsubmit_wdl_directory: $submit_wdl_dir"
+printf "\nuse_caas: $use_caas"
+printf "\ncaas_collection_name: $caas_collection_name"
 
 printf "\n\nWorking directory: $work_dir"
 printf "\nScript directory: $script_dir"
@@ -282,6 +287,8 @@ docker run -i --rm \
     -e INPUT_PATH=/working \
     -e OUT_PATH=/working \
     -e ENV=${env} \
+    -e USE_CAAS=${use_caas} \
+    -e COLLECTION_NAME=${caas_collection_name} \
     -e PIPELINE_TOOLS_PREFIX=${pipeline_tools_prefix} \
     -e SS2_PREFIX=${ss2_prefix} \
     -e SS2_SUBSCRIPTION_ID=${ss2_sub_id} \
@@ -314,15 +321,35 @@ if [ $ss2_mode == "local" ]; then
 fi
 
 
-docker run -d \
-    -p 8080:8080 \
-    -e listener_config=/etc/lira/listener-config.json \
-    -v $lira_dir/kubernetes/listener-config.json:/etc/lira/listener-config.json \
-    --name=lira \
-    $(echo "$mount_pipeline_tools" | xargs) \
-    $(echo "$mount_tenx" | xargs) \
-    $(echo "$mount_ss2" | xargs) \
-    quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
+if [ $use_caas ]; then
+    docker run -i --rm \
+        -e VAULT_TOKEN=$vault_token broadinstitute/dsde-toolbox vault read \
+        -format=json \
+        -field=value \
+        secret/dsde/mint/$env/listener/caas-${env}-key.json > $lira_dir/kubernetes/caas_key.json
+
+    docker run -d \
+        -p 8080:8080 \
+        -e listener_config=/etc/lira/listener-config.json \
+        -e caas_key=/etc/lira/caas_key.json \
+        -v $lira_dir/kubernetes/listener-config.json:/etc/lira/listener-config.json \
+        -v $lira_dir/kubernetes/caas_key.json:/etc/lira/caas_key.json \
+        --name=lira \
+        $(echo "$mount_pipeline_tools" | xargs) \
+        $(echo "$mount_tenx" | xargs) \
+        $(echo "$mount_ss2" | xargs) \
+        quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
+else
+    docker run -d \
+        -p 8080:8080 \
+        -e listener_config=/etc/lira/listener-config.json \
+        -v $lira_dir/kubernetes/listener-config.json:/etc/lira/listener-config.json \
+        --name=lira \
+        $(echo "$mount_pipeline_tools" | xargs) \
+        $(echo "$mount_tenx" | xargs) \
+        $(echo "$mount_ss2" | xargs) \
+        quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
+fi
 
 printf "\nWaiting for Lira to finish start up\n"
 sleep 3
