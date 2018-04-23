@@ -287,11 +287,14 @@ docker run -i --rm \
     -e INPUT_PATH=/working \
     -e OUT_PATH=/working \
     -e ENV=${env} \
+    -e LIRA_VERSION="int_test_lira" \
     -e USE_CAAS=${use_caas} \
     -e COLLECTION_NAME=${caas_collection_name} \
     -e PIPELINE_TOOLS_PREFIX=${pipeline_tools_prefix} \
+    -e SS2_VERSION=${ss2_version} \
     -e SS2_PREFIX=${ss2_prefix} \
     -e SS2_SUBSCRIPTION_ID=${ss2_sub_id} \
+    -e TENX_VERSION=${tenx_version} \
     -e TENX_PREFIX=${tenx_prefix} \
     -e TENX_SUBSCRIPTION_ID=${tenx_sub_id} \
     -e VAULT_TOKEN=${vault_token} \
