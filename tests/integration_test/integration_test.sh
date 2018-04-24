@@ -287,7 +287,7 @@ docker run -i --rm \
     -e INPUT_PATH=/working \
     -e OUT_PATH=/working \
     -e ENV=${env} \
-    -e LIRA_VERSION="int_test_lira" \
+    -e LIRA_VERSION=${lira_version} \
     -e USE_CAAS=${use_caas} \
     -e COLLECTION_NAME=${caas_collection_name} \
     -e PIPELINE_TOOLS_PREFIX=${pipeline_tools_prefix} \
