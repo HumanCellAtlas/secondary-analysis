@@ -16,6 +16,7 @@ vault_token=$(cat ~/.vault-token)
 #ss2_sub_id=${11}
 #vault_token=${12}
 #submit_wdl_dir=${13}
+#use_caas=${14}
 
 script_dir=$repo_root/tests/integration_test
 
@@ -32,4 +33,5 @@ bash $script_dir/integration_test.sh \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
         "$vault_token" \
-        ""
+        "" \
+        "true"
