@@ -394,21 +394,31 @@ printf "\nss2_workflow_id: $ss2_workflow_id"
 # 9. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 
-export cromwell_user=$(docker run -i --rm \
-      -e VAULT_TOKEN=$vault_token \
-      broadinstitute/dsde-toolbox \
-      vault read -field=cromwell_user secret/dsde/mint/$env/common/htpasswd)
+if [ $use_caas ]; then
+    python $script_dir/await_workflow_completion.py \
+      --workflow_ids $ss2_workflow_id \
+      --workflow_names ss2 \
+      --cromwell_url https://cromwell.caas-dev.broadinstitute.org \
+      --caas_key $lira_dir/kubernetes/caas_key.json \
+      --timeout_minutes 120
+else
+    export cromwell_user=$(docker run -i --rm \
+        -e VAULT_TOKEN=$vault_token \
+            broadinstitute/dsde-toolbox \
+            vault read -field=cromwell_user secret/dsde/mint/$env/common/htpasswd)
 
-export cromwell_password=$(docker run -i --rm \
-      -e VAULT_TOKEN=$vault_token \
-      broadinstitute/dsde-toolbox \
-      vault read -field=cromwell_password secret/dsde/mint/$env/common/htpasswd)
+    export cromwell_password=$(docker run -i --rm \
+        -e VAULT_TOKEN=$vault_token \
+        broadinstitute/dsde-toolbox \
+        vault read -field=cromwell_password secret/dsde/mint/$env/common/htpasswd)
 
-python $script_dir/await_workflow_completion.py \
-  --workflow_ids $ss2_workflow_id \
-  --workflow_names ss2 \
-  --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-  --timeout_minutes 120
+    python $script_dir/await_workflow_completion.py \
+      --workflow_ids $ss2_workflow_id \
+      --workflow_names ss2 \
+      --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
+      --timeout_minutes 120
+fi
+
 
 # 10. Stop Lira
 printf "\n\nStopping Lira\n"
