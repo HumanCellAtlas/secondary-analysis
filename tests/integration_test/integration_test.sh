@@ -107,7 +107,7 @@ ss2_sub_id=${11}
 vault_token=${12}
 submit_wdl_dir=${13}
 use_caas=${14:-""}
-caas_collection_name=${15:-"test-lira-${env}-workflows"}
+caas_collection_name=${15:-"lira-${env}-workflows"}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
