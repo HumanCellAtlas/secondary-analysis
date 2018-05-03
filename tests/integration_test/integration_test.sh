@@ -154,7 +154,14 @@ printf "\n\nCloning mint-deployment\n"
 git clone git@github.com:HumanCellAtlas/mint-deployment.git
 mint_deployment_dir=mint-deployment
 
-# 2. Clone Lira if needed
+# 2. Clone cromwell-tools
+printf "\Cloning cromwell-tools\n"
+git clone git@github.com:broadinstitute/cromwell-tools.git
+cd cromwell-tools
+git checkout tags/v0.3.1
+cd $work_dir
+
+# 3. Clone Lira if needed
 if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
   printf "\n\nCloning lira\n"
   git clone git@github.com:HumanCellAtlas/lira.git
@@ -181,7 +188,7 @@ elif [ $lira_mode == "local" ]; then
   lira_dir=$lira_version
 fi
 
-# 3. Get pipeline-tools version
+# 4. Get pipeline-tools version
 if [ $pipeline_tools_mode == "github" ]; then
   if [ $pipeline_tools_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of pipeline-tools\n"
@@ -207,7 +214,7 @@ elif [ $pipeline_tools_mode == "local" ]; then
   printf "\n\nConfiguring Lira to use adapter wdls in dir: $pipeline_tools_dir\n"
 fi
 
-# 4. Build or pull Lira image
+# 5. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
   if [ $lira_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of Lira\n"
@@ -231,7 +238,7 @@ elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
   cd $work_dir
 fi
 
-# 5. Get analysis pipeline versions to use
+# 6. Get analysis pipeline versions to use
 if [ $tenx_mode == "github" ]; then
   if [ $tenx_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of 10x pipeline\n"
@@ -280,7 +287,7 @@ elif [ $ss2_mode == "local" ]; then
   printf "\n\nUsing ss2 wdl in dir: $ss2_dir\n"
 fi
 
-# 6. Create config.json
+# 7. Create config.json
 printf "\n\nCreating Lira config\n\n"
 
 docker run -i --rm \
@@ -302,7 +309,7 @@ docker run -i --rm \
     -v $lira_dir/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
     /usr/local/bin/render-ctmpl.sh -k /working/listener-config.json.ctmpl
 
-# 7. Start Lira
+# 8. Start Lira
 
 # Check if an old container exists
 printf "\n\nChecking for old container"
@@ -373,7 +380,7 @@ function stop_lira_on_error {
 }
 trap "stop_lira_on_error" ERR
 
-# 8. Send in notifications
+# 9. Send in notifications
 printf "\n\nGetting notification token\n"
 
 notification_token=$(docker run -i --rm \
@@ -391,7 +398,7 @@ ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
 
 printf "\nss2_workflow_id: $ss2_workflow_id"
 
-# 9. Poll for completion
+# 10. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 
 if [ $use_caas ]; then
@@ -420,7 +427,7 @@ else
 fi
 
 
-# 10. Stop Lira
+# 11. Stop Lira
 printf "\n\nStopping Lira\n"
 docker stop lira
 docker rm -v lira
