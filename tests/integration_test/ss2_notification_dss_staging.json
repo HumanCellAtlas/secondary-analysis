@@ -4,6 +4,9 @@
   "match": {
     "bundle_uuid": "d0686b4d-a4b7-45e2-89b7-ac0ebdb4a6b7",
     "bundle_version": "2018-01-08T221736.018244Z"
+  },
+  "labels": {
+    "mintegration-test": "true"
   }
 }
 

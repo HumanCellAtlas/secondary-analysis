@@ -40,6 +40,7 @@ fi
 #ss2_sub_id=${11}
 #vault_token=${12}
 #submit_wdl_dir=${13}
+#use_caas=${14}
 
 bash $script_dir/integration_test.sh \
         "test" \
@@ -54,4 +55,5 @@ bash $script_dir/integration_test.sh \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
         "$vault_token" \
-        "$submit_wdl_dir"
+        "$submit_wdl_dir" \
+        "true"
