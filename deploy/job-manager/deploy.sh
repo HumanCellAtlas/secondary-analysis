@@ -21,13 +21,13 @@ function stderr() {
 }
 
 function configure_mint_kubernetes() {
-    local ENV=$1
+    local GCLOUD_PROJECT=$1
 
-    stdout "Setting to use Google project: project broad-dsde-mint-${ENV}"
-    gcloud config set project broad-dsde-mint-${ENV}
+    stdout "Setting to use Google project: project ${GCLOUD_PROJECT}"
+    gcloud config set project ${GCLOUD_PROJECT}
 
-    stdout "Setting to use GKE cluster: project gke_broad-dsde-mint-${ENV}_us-central1-b_listener"
-    kubectl config use-context gke_broad-dsde-mint-${ENV}_us-central1-b_listener
+    stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_listener"
+    kubectl config use-context gke_${GCLOUD_PROJECT}_us-central1-b_listener
 }
 
 function update_submodule() {
@@ -51,7 +51,7 @@ function render_environment_ts() {
 }
 
 function inject_angular_and_build_UI() {
-    local ENV=$1
+    local GCLOUD_PROJECT=$1
     local DOCKER_TAG=$2
     local TOP_LEVEL=$(git rev-parse --show-toplevel)
 
@@ -61,11 +61,11 @@ function inject_angular_and_build_UI() {
     stdout "Injecting environment.prod.ts into submodule for Job Manager UI"
     cp "${TOP_LEVEL}/deploy/job-manager/environment.template.ts" "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/src/environments/environment.prod.ts"
 
-    stdout "Building UI docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}"
-    docker build -t gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager/ui" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/Dockerfile"
+    stdout "Building UI docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
+    docker build -t gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager/ui" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/Dockerfile"
 
-    stdout "Pushing UI docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}"
-    docker push gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}
+    stdout "Pushing UI docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
+    docker push gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}
 
     stdout "Resetting the state of submodule after injection"
     pushd ${TOP_LEVEL}/deploy/job-manager/job-manager
@@ -74,16 +74,16 @@ function inject_angular_and_build_UI() {
 }
 
 function build_API() {
-    local ENV=$1
+    local GCLOUD_PROJECT=$1
     local DOCKER_TAG=$2
     local TOP_LEVEL=$(git rev-parse --show-toplevel)
 
     # Let gcloud to build and push the API container
-    stdout "Building API docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}"
-    docker build -t gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/servers/cromwell/Dockerfile"
+    stdout "Building API docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
+    docker build -t gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/servers/cromwell/Dockerfile"
 
-    stdout "Pushing API docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}"
-    docker push gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}
+    stdout "Pushing API docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
+    docker push gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}
 }
 
 function create_API_config() {
@@ -140,7 +140,7 @@ function create_UI_proxy() {
 }
 
 function apply_kube_deployment() {
-    local ENV=$1
+    local CROMWELL_URL=$1
     local API_DOCKER_IMAGE=$2
     local API_CONFIG=$3
     local API_CAPABILITIES_CONFIG=$4
@@ -148,7 +148,6 @@ function apply_kube_deployment() {
     local PROXY_CREDENTIALS_CONFIG=$6
     local UI_CONFIG=$7
     local API_PATH_PREFIX="/api/v1"
-    local CROMWELL_URL="https://cromwell.mint-${ENV}.broadinstitute.org/api/workflows/v1"
     local REPLICAS=1
 
     stdout "Rendering job-manager-deployment.yaml file"
@@ -175,9 +174,9 @@ function apply_kube_service() {
 }
 
 function apply_kube_ingress() {
-    local ENV=$1
+    local TLS_SECRET_NAME=$1
     local EXTERNAL_IP_NAME="job-manager"
-    local TLS_SECRET_NAME="${ENV}-mint-ssl"
+
     # TODO: Mount tls cert and key files from Vault and create TLS SECRET k8s cluster
     # local VAULT_TOKEN_FILE
 
@@ -223,16 +222,18 @@ function main() {
     local JM_TAG=$2
     local JMUI_USR=$3
     local JMUI_PWD=$4
-    local VAULT_TOKEN_FILE=${5:-"$HOME/.vault-token"}
+    local GCLOUD_PROJECT=$5
+    local CROMWELL_URL=$6
+    local VAULT_TOKEN_FILE=${7:-"$HOME/.vault-token"}
 
     local DOCKER_TAG=${JM_TAG}
-    local API_DOCKER_IMAGE="gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}"
-    local UI_DOCKER_IMAGE="gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}"
+    local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
+    local UI_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
 
     set -e
 
     line
-    configure_mint_kubernetes ${ENV}
+    configure_mint_kubernetes ${GCLOUD_PROJECT}
 
     line
     update_submodule ${JM_TAG}
@@ -241,10 +242,10 @@ function main() {
     render_environment_ts
 
     line
-    inject_angular_and_build_UI ${ENV} ${DOCKER_TAG}
+    inject_angular_and_build_UI ${GCLOUD_PROJECT} ${DOCKER_TAG}
 
     line
-    build_API ${ENV} ${DOCKER_TAG}
+    build_API ${GCLOUD_PROJECT} ${DOCKER_TAG}
 
     local API_CONFIG="cromwell-credentials-$(date '+%Y-%m-%d-%H-%M')"
 
@@ -272,12 +273,12 @@ function main() {
     apply_kube_service
 
     line
-    apply_kube_deployment ${ENV} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG}
+    apply_kube_deployment ${CROMWELL_URL} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG}
 
 #    line
 #    Each re-deployment to the ingress will cause a ~10 minuted downtime to the Job Manager. So this script assumes that you have created your ingress before using this it. This functions is here just for completeness.
 #    TODO: Add back the ingress set up step if needed
-#    apply_kube_ingress ${ENV}
+#    apply_kube_ingress ${TLS_SECRET_NAME}
 
     line
     tear_down_rendered_files
@@ -314,4 +315,4 @@ if [ $error -eq 1 ]; then
     exit 1
 fi
 
-main $1 $2 $3 $4 $5
+main $1 $2 $3 $4 $5 $6
