@@ -3,7 +3,7 @@
 # This script is designed to be run by Jenkins to deploy a new Job Manager kubernetes deployment
 # =======================================
 # Example Usage:
-# bash deploy.sh dev v0.0.4 username password
+# bash deploy.sh broad-dsde-mint-dev v0.0.4 "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev
 # =======================================
 
 function line() {
@@ -87,12 +87,12 @@ function build_API() {
 }
 
 function create_API_config() {
-    local ENV=$1
+    local VAULT_ENV=$1
     local CONFIG_NAME=$2
     local VAULT_TOKEN_FILE=$3
 
-    CROMWELL_USR=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_user secret/dsde/mint/${ENV}/common/htpasswd)
-    CROMWELL_PWD=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_password secret/dsde/mint/${ENV}/common/htpasswd)
+    CROMWELL_USR=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_user secret/dsde/mint/${VAULT_ENV}/common/htpasswd)
+    CROMWELL_PWD=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_password secret/dsde/mint/${VAULT_ENV}/common/htpasswd)
 
     stdout "Rendering API's config.json file"
     docker run -i --rm \
@@ -147,6 +147,8 @@ function apply_kube_deployment() {
     local UI_DOCKER_IMAGE=$5
     local PROXY_CREDENTIALS_CONFIG=$6
     local UI_CONFIG=$7
+    local USE_CAAS=$8
+    local USE_PROXY=$9
     local API_PATH_PREFIX="/api/v1"
     local REPLICAS=1
 
@@ -161,6 +163,8 @@ function apply_kube_deployment() {
         -e PROXY_CREDENTIALS_CONFIG=${PROXY_CREDENTIALS_CONFIG} \
         -e UI_CONFIG=${UI_CONFIG} \
         -e API_CAPABILITIES_CONFIG=${API_CAPABILITIES_CONFIG} \
+        -e USE_CAAS=${USE_CAAS} \
+        -e USE_PROXY=${USE_PROXY} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/job-manager-deployment.yaml.ctmpl
 
@@ -218,13 +222,15 @@ function tear_down_rendered_files() {
 
 # The main function to execute all steps of a deployment of Job Manager
 function main() {
-    local ENV=$1
+    local GCLOUD_PROJECT=$1
     local JM_TAG=$2
-    local JMUI_USR=$3
-    local JMUI_PWD=$4
-    local GCLOUD_PROJECT=$5
-    local CROMWELL_URL=$6
-    local VAULT_TOKEN_FILE=${7:-"$HOME/.vault-token"}
+    local CROMWELL_URL=$3
+    local USE_CAAS=$4
+    local USE_PROXY=$5
+    local JMUI_USR=$6
+    local JMUI_PWD=$7
+    local VAULT_ENV=$8
+    local VAULT_TOKEN_FILE=${9:-"$HOME/.vault-token"}
 
     local DOCKER_TAG=${JM_TAG}
     local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
@@ -248,23 +254,47 @@ function main() {
     build_API ${GCLOUD_PROJECT} ${DOCKER_TAG}
 
     local API_CONFIG="cromwell-credentials-$(date '+%Y-%m-%d-%H-%M')"
-
     local CAPABILITIES_CONFIG="capabilities-config-$(date '+%Y-%m-%d-%H-%M')"
 
-    local USERNAME=${JMUI_USR}
-    local PASSWORD=${JMUI_PWD}
     local UI_PROXY="jm-htpasswd-$(date '+%Y-%m-%d-%H-%M')"
-
     local UI_CONFIG="jm-ui-config-$(date '+%Y-%m-%d-%H-%M')"
 
     line
-    if create_API_config ${ENV} ${API_CONFIG} ${VAULT_TOKEN_FILE} && create_API_capabilities_conf ${CAPABILITIES_CONFIG} && create_UI_proxy ${USERNAME} ${PASSWORD} ${UI_PROXY} && create_UI_conf ${UI_CONFIG} ${JM_TAG}
+
+    if [ ${USE_PROXY} == "true" ]; then
+        local USERNAME=${JMUI_USR}
+        local PASSWORD=${JMUI_PWD}
+        if create_UI_proxy ${USERNAME} ${PASSWORD} ${UI_PROXY}
+        then
+            stdout "Successfully created UI proxy."
+        else
+            tear_down_kube_secret ${UI_PROXY}
+            stderr
+        fi
+    fi
+
+    if [ ${USE_CAAS} == "false" ]; then
+        if create_API_config ${VAULT_ENV} ${API_CONFIG} ${VAULT_TOKEN_FILE}
+        then
+            stdout "Successfully created API config."
+        else
+            tear_down_kube_secret ${API_CONFIG}
+            stderr
+        fi
+    fi
+
+    if create_API_capabilities_conf ${CAPABILITIES_CONFIG}
     then
-        stdout "Successfully created all config files on Kubernetes cluster"
+        stdout "Successfully created API capabilities config."
     else
-        tear_down_kube_secret ${API_CONFIG}
-        tear_down_kube_secret ${UI_PROXY}
         tear_down_kube_configMap ${CAPABILITIES_CONFIG}
+        stderr
+    fi
+
+    if create_UI_conf ${UI_CONFIG} ${JM_TAG}
+    then
+        stdout "Successfully created UI config"
+    else
         tear_down_kube_configMap ${UI_CONFIG}
         stderr
     fi
@@ -273,7 +303,7 @@ function main() {
     apply_kube_service
 
     line
-    apply_kube_deployment ${CROMWELL_URL} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG}
+    apply_kube_deployment ${CROMWELL_URL} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG} ${USE_CAAS} ${USE_PROXY}
 
 #    line
 #    Each re-deployment to the ingress will cause a ~10 minuted downtime to the Job Manager. So this script assumes that you have created your ingress before using this it. This functions is here just for completeness.
@@ -287,7 +317,7 @@ function main() {
 # Main Runner:
 error=0
 if [ -z $1 ]; then
-    echo -e "\nYou must specify a deployment environment!"
+    echo -e "\nYou must specify a gcloud project to use for the deployment!"
     error=1
 fi
 
@@ -297,22 +327,47 @@ if [ -z $2 ]; then
 fi
 
 if [ -z $3 ]; then
-    echo -e "\nYou must specify a desired username for Job Manager UI!"
+    echo -e "\nYou must specify the url for the Cromwell instance to use with the Job Manager UI!"
     error=1
 fi
 
 if [ -z $4 ]; then
-    echo -e "\nYou must specify a desired password for Job Manager UI!"
+    echo -e "\nYou must specify whether to use Cromwell-as-a-Service with Job Manager UI!"
     error=1
 fi
 
 if [ -z $5 ]; then
-    echo -e "\nMissing the Vault token file under $HOME/.vault-token, you need to make sure you have passed in the path to the token file as the 5th argument of this script!"
+    echo -e "\nYou must specify whether to use a UI proxy!"
+    error=1
 fi
 
+if [ $5 == "true" ]; then
+    if [ -z $6 ]; then
+    echo -e "\nYou must specify a desired username for Job Manager UI in order to use a UI proxy!"
+    error=1
+    fi
+
+    if [ -z $7 ]; then
+    echo -e "\nYou must specify a desired password for Job Manager UI in order to use a UI proxy!"
+    error=1
+    fi
+fi
+
+if [ $4 == "false" ]; then
+    if [ -z $8 ]; then
+        echo -e "\nYou must specify the deployment environment for retrieving Cromwell credentials from vault, if not using Cromwell-as-a-Service!"
+        error=1
+    fi
+
+    if [ -z $9 ]; then
+        echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
+    fi
+fi
+
+
 if [ $error -eq 1 ]; then
-    echo -e "\nUsage: bash deploy.sh ENV(dev/staging/test) GIT_TAG USERNAME PASSWORD VAULT_TOKEN_FILE(optional)\n"
+    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT JM_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) VAULT_TOKEN_FILE(optional)\n"
     exit 1
 fi
 
-main $1 $2 $3 $4 $5 $6
+main $1 $2 $3 $4 $5 $6 $7 $8 $9
