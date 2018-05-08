@@ -404,6 +404,7 @@ if [ $use_caas == "true" ]; then
         -e CROMWELL_URL=https://cromwell.caas-dev.broadinstitute.org \
         -e CAAS_KEY=/etc/lira/caas_key.json \
         -e TIMEOUT_MINUTES=120 \
+        -e PYTHONUNBUFFERED=0 \
         --link lira:lira \
         broadinstitute/python-requests /app/await_workflow_completion.py
 
@@ -425,6 +426,7 @@ else
         -e CROMWELL_USER=$CROMWELL_USER \
         -e CROMWELL_PASSWORD=$CROMWELL_PASSWORD \
         -e TIMEOUT_MINUTES=120 \
+        -e PYTHONUNBUFFERED=0 \
         --link lira:lira \
         broadinstitute/python-requests /app/await_workflow_completion.py
 fi
