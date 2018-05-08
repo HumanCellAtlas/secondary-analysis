@@ -14,11 +14,11 @@ def prep_json(query_json):
     }
 
 
-def get_bundles(js, dss_url, output_format, replica):
+def get_bundles(query_json, dss_url, output_format, replica):
     """ Search for bundles in the HCA Data Storage Service using an elasticsearch query.
 
     Args:
-        js (dict): Elasticsearch JSON query.
+        query_json (dict): Elasticsearch JSON query.
         dss_url (str): URL for the HCA Data Storage Service.
         output_format (str): Format of the query results, either "summary" for a list of UUIDs or "raw" to include'
             the bundle JSON metadata.
@@ -30,17 +30,21 @@ def get_bundles(js, dss_url, output_format, replica):
     """
     search_url = '{}/v1/search?output_format={}&replica={}&per_page=500'.format(dss_url.strip('/'), output_format, replica)
     headers = {'Content-type': 'application/json'}
-    response = requests.post(search_url, json=js, headers=headers)
+    response = requests.post(search_url, json=query_json, headers=headers)
     results = response.json()['results']
     total_hits = response.json()['total_hits']
     logging.info('{} matching bundles found in {}'.format(total_hits, dss_url))
     bundles = [format_bundle(r['bundle_fqid']) for r in results]
 
+    # The 'link' header refers to the next page of results to fetch. If there is no link header present,
+    # all results have been fetched.
+    # Example:
+    # link: <https://dss.dev.data.humancellatlas.org/v1/search?output_format=summary&replica=gcs&per_page=500&scroll_id=123>; rel="next"
     link_header = response.headers.get('link', None)
     while link_header:
         next_link = link_header.split(';')[0]
         next_url = next_link.strip('<').strip('>')
-        response = requests.post(next_url, json=js, headers=headers)
+        response = requests.post(next_url, json=query_json, headers=headers)
         results = response.json()['results']
         bundles.extend(format_bundle(r['bundle_fqid']) for r in results)
         link_header = response.headers.get('link', None)
@@ -48,12 +52,10 @@ def get_bundles(js, dss_url, output_format, replica):
 
 
 def format_bundle(bundle_fqid):
-    bundle_components = bundle_fqid.split('.')
-    bundle_uuid = bundle_components[0]
-    bundle_version = '.'.join(bundle_components[1:])
+    bundle_components = bundle_fqid.split('.', 1)
     return {
-        'bundle_uuid': bundle_uuid,
-        'bundle_version': bundle_version
+        'bundle_uuid': bundle_components[0],
+        'bundle_version': bundle_components[1]
     }
 
 
@@ -66,8 +68,9 @@ if __name__ == '__main__':
                         help=('Format of the query results, either "summary" for a list of UUIDs or "raw" to ' +
                               'include the bundle JSON metadata.'))
     parser.add_argument("--replica", required=False, default='gcp', help='The cloud replica to search in, either "gcp" or "aws".')
+    parser.add_argument("--output_file_path", required=False, default="bundles.json", help="Path to output JSON file.")
     args = parser.parse_args()
-    js = prep_json(args.query_json)
-    bundles_list = get_bundles(js, args.dss_url, args.output_format, args.replica)
-    with open('bundles.json', 'w') as f:
+    es_query = prep_json(args.query_json)
+    bundles_list = get_bundles(es_query, args.dss_url, args.output_format, args.replica)
+    with open(args.output_file_path, 'w') as f:
         json.dump(bundles_list, f, indent=2)
