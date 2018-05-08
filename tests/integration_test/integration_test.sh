@@ -106,7 +106,7 @@ tenx_sub_id=${10}
 ss2_sub_id=${11}
 vault_token=${12}
 submit_wdl_dir=${13}
-use_caas=${14:-""}
+use_caas=${14:-"false"}
 caas_collection_name=${15:-"lira-${env}-workflows"}
 
 work_dir=$(pwd)
@@ -382,6 +382,7 @@ notification_token=$(docker run -i --rm \
       vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
 
 printf "\n\nSending in notifications\n"
+# Uses the docker image https://hub.docker.com/r/broadinstitute/python-requests/
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e NOTIFICATION_TOKEN=$notification_token \
@@ -394,7 +395,8 @@ printf "\nss2_workflow_id: $ss2_workflow_id"
 # 9. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 
-if [ $use_caas ]; then
+# Uses the docker image https://hub.docker.com/r/broadinstitute/python-requests/
+if [ $use_caas == "true" ]; then
     docker run --rm -v $script_dir:/app \
         -v $lira_dir/kubernetes/caas_key.json:/etc/lira/caas_key.json \
         -e WORKFLOW_IDS=$ss2_workflow_id \
@@ -419,7 +421,9 @@ else
     docker run --rm -v $script_dir:/app \
         -e WORKFLOW_IDS=$ss2_workflow_id \
         -e WORKFLOW_NAMES=ss2 \
-        -e CROMWELL_URL=https://cromwell.caas-dev.broadinstitute.org \
+        -e CROMWELL_URL=https://cromwell.mint-$env.broadinstitute.org \
+        -e CROMWELL_USER=$CROMWELL_USER \
+        -e CROMWELL_PASSWORD=$CROMWELL_PASSWORD \
         -e TIMEOUT_MINUTES=120 \
         --link lira:lira \
         broadinstitute/python-requests /app/await_workflow_completion.py
