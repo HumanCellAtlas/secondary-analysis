@@ -106,7 +106,7 @@ tenx_sub_id=${10}
 ss2_sub_id=${11}
 vault_token=${12}
 submit_wdl_dir=${13}
-use_caas=${14:-""}
+use_caas=${14:-"false"}
 caas_collection_name=${15:-"lira-${env}-workflows"}
 
 work_dir=$(pwd)
@@ -154,14 +154,7 @@ printf "\n\nCloning mint-deployment\n"
 git clone git@github.com:HumanCellAtlas/mint-deployment.git
 mint_deployment_dir=mint-deployment
 
-# 2. Clone cromwell-tools
-printf "\Cloning cromwell-tools\n"
-git clone git@github.com:broadinstitute/cromwell-tools.git
-cd cromwell-tools
-git checkout tags/v0.3.1
-cd $work_dir
-
-# 3. Clone Lira if needed
+# 2. Clone Lira if needed
 if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
   printf "\n\nCloning lira\n"
   git clone git@github.com:HumanCellAtlas/lira.git
@@ -188,7 +181,7 @@ elif [ $lira_mode == "local" ]; then
   lira_dir=$lira_version
 fi
 
-# 4. Get pipeline-tools version
+# 3. Get pipeline-tools version
 if [ $pipeline_tools_mode == "github" ]; then
   if [ $pipeline_tools_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of pipeline-tools\n"
@@ -214,7 +207,7 @@ elif [ $pipeline_tools_mode == "local" ]; then
   printf "\n\nConfiguring Lira to use adapter wdls in dir: $pipeline_tools_dir\n"
 fi
 
-# 5. Build or pull Lira image
+# 4. Build or pull Lira image
 if [ $lira_mode == "image" ]; then
   if [ $lira_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of Lira\n"
@@ -238,7 +231,7 @@ elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
   cd $work_dir
 fi
 
-# 6. Get analysis pipeline versions to use
+# 5. Get analysis pipeline versions to use
 if [ $tenx_mode == "github" ]; then
   if [ $tenx_version == "latest_released" ]; then
     printf "\n\nDetermining latest released version of 10x pipeline\n"
@@ -287,7 +280,7 @@ elif [ $ss2_mode == "local" ]; then
   printf "\n\nUsing ss2 wdl in dir: $ss2_dir\n"
 fi
 
-# 7. Create config.json
+# 6. Create config.json
 printf "\n\nCreating Lira config\n\n"
 
 docker run -i --rm \
@@ -309,7 +302,7 @@ docker run -i --rm \
     -v $lira_dir/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
     /usr/local/bin/render-ctmpl.sh -k /working/listener-config.json.ctmpl
 
-# 8. Start Lira
+# 7. Start Lira
 
 # Check if an old container exists
 printf "\n\nChecking for old container"
@@ -380,7 +373,7 @@ function stop_lira_on_error {
 }
 trap "stop_lira_on_error" ERR
 
-# 9. Send in notifications
+# 8. Send in notifications
 printf "\n\nGetting notification token\n"
 
 notification_token=$(docker run -i --rm \
@@ -389,6 +382,7 @@ notification_token=$(docker run -i --rm \
       vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
 
 printf "\n\nSending in notifications\n"
+# Uses the docker image https://hub.docker.com/r/broadinstitute/python-requests/
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e NOTIFICATION_TOKEN=$notification_token \
@@ -398,36 +392,47 @@ ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
 
 printf "\nss2_workflow_id: $ss2_workflow_id"
 
-# 10. Poll for completion
+# 9. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 
-if [ $use_caas ]; then
-    python $script_dir/await_workflow_completion.py \
-      --workflow_ids $ss2_workflow_id \
-      --workflow_names ss2 \
-      --cromwell_url https://cromwell.caas-dev.broadinstitute.org \
-      --caas_key $lira_dir/kubernetes/caas_key.json \
-      --timeout_minutes 120
+# Uses the docker image https://hub.docker.com/r/broadinstitute/python-requests/
+if [ $use_caas == "true" ]; then
+    docker run --rm -v $script_dir:/app \
+        -v $lira_dir/kubernetes/caas_key.json:/etc/lira/caas_key.json \
+        -e WORKFLOW_IDS=$ss2_workflow_id \
+        -e WORKFLOW_NAMES=ss2 \
+        -e CROMWELL_URL=https://cromwell.caas-dev.broadinstitute.org \
+        -e CAAS_KEY=/etc/lira/caas_key.json \
+        -e TIMEOUT_MINUTES=120 \
+        -e PYTHONUNBUFFERED=0 \
+        --link lira:lira \
+        broadinstitute/python-requests /app/await_workflow_completion.py
+
 else
-    export cromwell_user=$(docker run -i --rm \
+    export CROMWELL_USER=$(docker run -i --rm \
         -e VAULT_TOKEN=$vault_token \
             broadinstitute/dsde-toolbox \
             vault read -field=cromwell_user secret/dsde/mint/$env/common/htpasswd)
 
-    export cromwell_password=$(docker run -i --rm \
+    export CROMWELL_PASSWORD=$(docker run -i --rm \
         -e VAULT_TOKEN=$vault_token \
         broadinstitute/dsde-toolbox \
         vault read -field=cromwell_password secret/dsde/mint/$env/common/htpasswd)
 
-    python $script_dir/await_workflow_completion.py \
-      --workflow_ids $ss2_workflow_id \
-      --workflow_names ss2 \
-      --cromwell_url https://cromwell.mint-$env.broadinstitute.org \
-      --timeout_minutes 120
+    docker run --rm -v $script_dir:/app \
+        -e WORKFLOW_IDS=$ss2_workflow_id \
+        -e WORKFLOW_NAMES=ss2 \
+        -e CROMWELL_URL=https://cromwell.mint-$env.broadinstitute.org \
+        -e CROMWELL_USER=$CROMWELL_USER \
+        -e CROMWELL_PASSWORD=$CROMWELL_PASSWORD \
+        -e TIMEOUT_MINUTES=120 \
+        -e PYTHONUNBUFFERED=0 \
+        --link lira:lira \
+        broadinstitute/python-requests /app/await_workflow_completion.py
 fi
 
 
-# 11. Stop Lira
+# 10. Stop Lira
 printf "\n\nStopping Lira\n"
 docker stop lira
 docker rm -v lira
