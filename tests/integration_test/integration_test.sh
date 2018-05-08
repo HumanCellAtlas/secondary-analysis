@@ -388,7 +388,7 @@ ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e NOTIFICATION_TOKEN=$notification_token \
                     -e NOTIFICATION=/app/ss2_notification_dss_${env}.json \
                     --link lira:lira \
-                    broadinstitute/python-requests /app/send_notification.py)
+                    broadinstitute/python-requests:3 /app/send_notification.py)
 
 printf "\nss2_workflow_id: $ss2_workflow_id"
 
@@ -406,7 +406,7 @@ if [ $use_caas == "true" ]; then
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
         --link lira:lira \
-        broadinstitute/python-requests /app/await_workflow_completion.py
+        broadinstitute/python-requests:3 /app/await_workflow_completion.py
 
 else
     export CROMWELL_USER=$(docker run -i --rm \
@@ -428,7 +428,7 @@ else
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
         --link lira:lira \
-        broadinstitute/python-requests /app/await_workflow_completion.py
+        broadinstitute/python-requests:3 /app/await_workflow_completion.py
 fi
 
 
