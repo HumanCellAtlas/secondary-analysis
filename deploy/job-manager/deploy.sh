@@ -31,13 +31,13 @@ function configure_mint_kubernetes() {
 }
 
 function update_submodule() {
-    local JM_TAG=$1
+    local JMUI_TAG=$1
     local TOP_LEVEL=$(git rev-parse --show-toplevel)
 
     stdout "Updating submodule"
     git submodule update --recursive --remote
 
-    cd "${TOP_LEVEL}/deploy/job-manager/job-manager" && git checkout ${JM_TAG} && cd -
+    cd "${TOP_LEVEL}/deploy/job-manager/job-manager" && git checkout ${JMUI_TAG} && cd -
 }
 
 function render_environment_ts() {
@@ -114,11 +114,11 @@ function create_API_capabilities_conf() {
 
 function create_UI_conf() {
     local CONFIG_NAME=$1
-    local JM_VERSION=$2
+    local JMUI_VERSION=$2
 
     stdout "Rendering UI's nginx.conf file"
     docker run -i --rm \
-        -e JM_VERSION=${JM_VERSION} \
+        -e JMUI_VERSION=${JMUI_VERSION} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/nginx.conf.ctmpl
 
@@ -223,7 +223,7 @@ function tear_down_rendered_files() {
 # The main function to execute all steps of a deployment of Job Manager
 function main() {
     local GCLOUD_PROJECT=$1
-    local JM_TAG=$2
+    local JMUI_TAG=$2
     local CROMWELL_URL=$3
     local USE_CAAS=$4
     local USE_PROXY=$5
@@ -232,7 +232,7 @@ function main() {
     local VAULT_ENV=$8
     local VAULT_TOKEN_FILE=${9:-"$HOME/.vault-token"}
 
-    local DOCKER_TAG=${JM_TAG}
+    local DOCKER_TAG=${JMUI_TAG}
     local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
     local UI_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
 
@@ -242,7 +242,7 @@ function main() {
     configure_mint_kubernetes ${GCLOUD_PROJECT}
 
     line
-    update_submodule ${JM_TAG}
+    update_submodule ${JMUI_TAG}
 
     line
     render_environment_ts
@@ -291,7 +291,7 @@ function main() {
         stderr
     fi
 
-    if create_UI_conf ${UI_CONFIG} ${JM_TAG}
+    if create_UI_conf ${UI_CONFIG} ${JMUI_TAG}
     then
         stdout "Successfully created UI config"
     else
@@ -341,32 +341,28 @@ if [ -z $5 ]; then
     error=1
 fi
 
-if [ $5 == "true" ]; then
-    if [ -z $6 ]; then
+if [ -z $6 ]; then
     echo -e "\nYou must specify a desired username for Job Manager UI in order to use a UI proxy!"
     error=1
-    fi
-
-    if [ -z $7 ]; then
-    echo -e "\nYou must specify a desired password for Job Manager UI in order to use a UI proxy!"
-    error=1
-    fi
 fi
 
-if [ $4 == "false" ]; then
-    if [ -z $8 ]; then
-        echo -e "\nYou must specify the deployment environment for retrieving Cromwell credentials from vault, if not using Cromwell-as-a-Service!"
-        error=1
-    fi
+if [ -z $7 ]; then
+    echo -e "\nYou must specify a desired password for Job Manager UI in order to use a UI proxy!"
+    error=1
+fi
 
-    if [ -z $9 ]; then
-        echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
-    fi
+if [ -z $8 ]; then
+    echo -e "\nYou must specify the deployment environment for retrieving Cromwell credentials from vault, if not using Cromwell-as-a-Service!"
+    error=1
+fi
+
+if [ -z $9 ]; then
+    echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
 fi
 
 
 if [ $error -eq 1 ]; then
-    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT JM_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) VAULT_TOKEN_FILE(optional)\n"
+    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) VAULT_TOKEN_FILE(optional)\n"
     exit 1
 fi
 
