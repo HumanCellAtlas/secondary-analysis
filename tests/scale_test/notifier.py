@@ -86,7 +86,7 @@ import click
 import logging
 from tqdm import tqdm
 import time
-import utils
+from utils import utils
 from collections import deque
 import concurrent.futures
 import functools

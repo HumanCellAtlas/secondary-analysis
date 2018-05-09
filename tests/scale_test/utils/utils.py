@@ -49,7 +49,7 @@ def load_es_query(es_query_path):
     return query_obj
 
 
-def prepare_notification(bundle_uuid, bundle_version, es_query_path,subscription_id, label=None, transaction_id=None):
+def prepare_notification(bundle_uuid, bundle_version, es_query_path, subscription_id, label=None, transaction_id=None):
     """Compose the notification content from given values.
 
     Args:
