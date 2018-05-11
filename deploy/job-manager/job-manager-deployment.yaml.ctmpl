@@ -43,7 +43,7 @@ spec:
         - name: CAPABILITIES_CONFIG
           value: /etc/job-manager/capabilities/capabilities-config.json
         - name: USE_CAAS
-          value: {{ env "USE_CAAS" }}
+          value: "{{ env "USE_CAAS" }}"
       - name: job-manager-ui
         image: {{ env "UI_DOCKER_IMAGE" }}
         ports:

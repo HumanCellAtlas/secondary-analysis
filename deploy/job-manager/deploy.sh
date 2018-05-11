@@ -3,7 +3,8 @@
 # This script is designed to be run by Jenkins to deploy a new Job Manager kubernetes deployment
 # =======================================
 # Example Usage:
-# bash deploy.sh broad-dsde-mint-dev v0.0.4 "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev
+# bash deploy.sh broad-dsde-mint-dev gke_broad-dsde-mint-dev_us-central1-b_listener v0.0.4 \
+# "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev
 # =======================================
 
 function line() {
@@ -20,14 +21,15 @@ function stderr() {
     exit 1
 }
 
-function configure_mint_kubernetes() {
+function configure_kubernetes() {
     local GCLOUD_PROJECT=$1
+    local GKE_CONTEXT=$2
 
     stdout "Setting to use Google project: project ${GCLOUD_PROJECT}"
     gcloud config set project ${GCLOUD_PROJECT}
 
     stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_listener"
-    kubectl config use-context gke_${GCLOUD_PROJECT}_us-central1-b_listener
+    kubectl config use-context ${GKE_CONTEXT}
 }
 
 function update_submodule() {
@@ -41,7 +43,7 @@ function update_submodule() {
 }
 
 function render_environment_ts() {
-    local CLIENT_ID=""
+    local CLIENT_ID="652421484530-nnetfth6psch0h0rjt1chc4hru9r0j0o.apps.googleusercontent.com"
 
     stdout "Rendering environment.prod.ts for Job Manager UI"
     docker run -i --rm \
@@ -115,10 +117,12 @@ function create_API_capabilities_conf() {
 function create_UI_conf() {
     local CONFIG_NAME=$1
     local JMUI_VERSION=$2
+    local USE_PROXY=$3
 
     stdout "Rendering UI's nginx.conf file"
     docker run -i --rm \
         -e JMUI_VERSION=${JMUI_VERSION} \
+        -e USE_PROXY=${USE_PROXY} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/nginx.conf.ctmpl
 
@@ -223,14 +227,15 @@ function tear_down_rendered_files() {
 # The main function to execute all steps of a deployment of Job Manager
 function main() {
     local GCLOUD_PROJECT=$1
-    local JMUI_TAG=$2
-    local CROMWELL_URL=$3
-    local USE_CAAS=$4
-    local USE_PROXY=$5
-    local JMUI_USR=$6
-    local JMUI_PWD=$7
-    local VAULT_ENV=$8
-    local VAULT_TOKEN_FILE=${9:-"$HOME/.vault-token"}
+    local GKE_CONTEXT=$2
+    local JMUI_TAG=$3
+    local CROMWELL_URL=$4
+    local USE_CAAS=$5
+    local USE_PROXY=$6
+    local JMUI_USR=$7
+    local JMUI_PWD=$8
+    local VAULT_ENV=$9
+    local VAULT_TOKEN_FILE=${10:-"$HOME/.vault-token"}
 
     local DOCKER_TAG=${JMUI_TAG}
     local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
@@ -239,7 +244,7 @@ function main() {
     set -e
 
     line
-    configure_mint_kubernetes ${GCLOUD_PROJECT}
+    configure_kubernetes ${GCLOUD_PROJECT} ${GKE_CONTEXT}
 
     line
     update_submodule ${JMUI_TAG}
@@ -291,7 +296,7 @@ function main() {
         stderr
     fi
 
-    if create_UI_conf ${UI_CONFIG} ${JMUI_TAG}
+    if create_UI_conf ${UI_CONFIG} ${JMUI_TAG} ${USE_PROXY}
     then
         stdout "Successfully created UI config"
     else
@@ -311,7 +316,7 @@ function main() {
 #    apply_kube_ingress ${TLS_SECRET_NAME}
 
     line
-    tear_down_rendered_files
+#    tear_down_rendered_files
 }
 
 # Main Runner:
@@ -322,48 +327,53 @@ if [ -z $1 ]; then
 fi
 
 if [ -z $2 ]; then
-    echo -e "\nYou must specify a Job Manager Git Tag!"
+    echo -e "\nYou must specify the gke context to use for the deployment! E.g. gke_{gcloud-project-id}_{zone}_{clustername}"
     error=1
 fi
 
 if [ -z $3 ]; then
-    echo -e "\nYou must specify the url for the Cromwell instance to use with the Job Manager UI!"
+    echo -e "\nYou must specify a Job Manager Git Tag!"
     error=1
 fi
 
 if [ -z $4 ]; then
-    echo -e "\nYou must specify whether to use Cromwell-as-a-Service with Job Manager UI!"
+    echo -e "\nYou must specify the url for the Cromwell instance to use with the Job Manager UI!"
     error=1
 fi
 
 if [ -z $5 ]; then
-    echo -e "\nYou must specify whether to use a UI proxy!"
+    echo -e "\nYou must specify whether to use Cromwell-as-a-Service with Job Manager UI!"
     error=1
 fi
 
 if [ -z $6 ]; then
-    echo -e "\nYou must specify a desired username for Job Manager UI in order to use a UI proxy!"
+    echo -e "\nYou must specify whether to use a UI proxy!"
     error=1
 fi
 
 if [ -z $7 ]; then
-    echo -e "\nYou must specify a desired password for Job Manager UI in order to use a UI proxy!"
+    echo -e "\nYou must specify a desired username for Job Manager UI in order to use a UI proxy!"
     error=1
 fi
 
 if [ -z $8 ]; then
-    echo -e "\nYou must specify the deployment environment for retrieving Cromwell credentials from vault, if not using Cromwell-as-a-Service!"
+    echo -e "\nYou must specify a desired password for Job Manager UI in order to use a UI proxy!"
     error=1
 fi
 
 if [ -z $9 ]; then
+    echo -e "\nYou must specify the deployment environment for retrieving Cromwell credentials from vault, if not using Cromwell-as-a-Service!"
+    error=1
+fi
+
+if [ -z ${10} ]; then
     echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
 fi
 
 
 if [ $error -eq 1 ]; then
-    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) VAULT_TOKEN_FILE(optional)\n"
+    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT GKE_CONTEXT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) VAULT_TOKEN_FILE(optional)\n"
     exit 1
 fi
 
-main $1 $2 $3 $4 $5 $6 $7 $8 $9
+main $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10}
