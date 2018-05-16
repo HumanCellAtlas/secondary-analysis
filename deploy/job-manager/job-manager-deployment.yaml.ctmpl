@@ -18,6 +18,7 @@ spec:
       containers:
       - name: job-manager-api
         image: {{ env "API_DOCKER_IMAGE" }}
+        imagePullPolicy: Always
         args: ["-b", ":8190", "-t", "60"]
         ports:
         - containerPort: 8190
@@ -46,6 +47,7 @@ spec:
           value: "{{ env "USE_CAAS" }}"
       - name: job-manager-ui
         image: {{ env "UI_DOCKER_IMAGE" }}
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         volumeMounts:

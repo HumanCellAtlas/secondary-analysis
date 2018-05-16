@@ -9,6 +9,10 @@
       "display": "Submitted"
     },
     {
+      "field": "end",
+      "display": "End Time"
+    },
+    {
       "field": "labels.cromwell-workflow-id",
       "display": "Workflow ID"
     },
@@ -25,6 +29,10 @@
       "display": "Bundle UUID"
     },
     {
+      "field": "labels.caas-collection-name",
+      "display": "CaaS Collection"
+    },
+    {
       "field": "labels.comment",
       "display": "Comment"
     }
@@ -35,7 +43,16 @@
     "bundle-version",
     "workflow-version",
     "workflow-name",
-    "comment"
+    "comment",
+    "caas-collection-name"
   ],
-  "queryExtensions": []
+  "queryExtensions": [],
+  "authentication": {
+    "isRequired": true,
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  }
 }

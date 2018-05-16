@@ -8,7 +8,7 @@
 # =======================================
 
 function line() {
-    echo -ne "=======================================\n"
+    printf %"$(tput cols)"s |tr " " "="
 }
 
 function stdout() {
@@ -43,7 +43,7 @@ function update_submodule() {
 }
 
 function render_environment_ts() {
-    local CLIENT_ID="652421484530-nnetfth6psch0h0rjt1chc4hru9r0j0o.apps.googleusercontent.com"
+    local CLIENT_ID=${1:-""}
 
     stdout "Rendering environment.prod.ts for Job Manager UI"
     docker run -i --rm \
@@ -109,9 +109,15 @@ function create_API_config() {
 
 function create_API_capabilities_conf() {
     local CONFIG_NAME=$1
+    local USE_CAAS=$2
+    local CONFIG_FILE=capabilities_config.json
+
+    if [ ${USE_CAAS} == "true" ]; then
+        local CONFIG_FILE=capabilities_config_caas.json
+    fi
 
     stdout "Creating API Capabilities config configMap object: ${CONFIG_NAME}"
-    kubectl create configmap ${CONFIG_NAME} --from-file=capabilities-config=capabilities_config.json
+    kubectl create configmap ${CONFIG_NAME} --from-file=capabilities-config=${CONFIG_FILE}
 }
 
 function create_UI_conf() {
@@ -235,7 +241,8 @@ function main() {
     local JMUI_USR=$7
     local JMUI_PWD=$8
     local VAULT_ENV=$9
-    local VAULT_TOKEN_FILE=${10:-"$HOME/.vault-token"}
+    local CLIENT_ID=${10:-""}
+    local VAULT_TOKEN_FILE=${11:-"$HOME/.vault-token"}
 
     local DOCKER_TAG=${JMUI_TAG}
     local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
@@ -250,7 +257,7 @@ function main() {
     update_submodule ${JMUI_TAG}
 
     line
-    render_environment_ts
+    render_environment_ts ${CLIENT_ID}
 
     line
     inject_angular_and_build_UI ${GCLOUD_PROJECT} ${DOCKER_TAG}
@@ -288,7 +295,7 @@ function main() {
         fi
     fi
 
-    if create_API_capabilities_conf ${CAPABILITIES_CONFIG}
+    if create_API_capabilities_conf ${CAPABILITIES_CONFIG} ${USE_CAAS}
     then
         stdout "Successfully created API capabilities config."
     else
@@ -316,7 +323,7 @@ function main() {
 #    apply_kube_ingress ${TLS_SECRET_NAME}
 
     line
-#    tear_down_rendered_files
+    tear_down_rendered_files
 }
 
 # Main Runner:
@@ -367,13 +374,17 @@ if [ -z $9 ]; then
 fi
 
 if [ -z ${10} ]; then
+    echo -e "\nYou must specify a Client ID if authentication is required in the capabilities config, using default value ''."
+fi
+
+if [ -z ${11} ]; then
     echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
 fi
 
 
 if [ $error -eq 1 ]; then
-    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT GKE_CONTEXT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) VAULT_TOKEN_FILE(optional)\n"
+    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT GKE_CONTEXT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) CLIENT_ID(optional) VAULT_TOKEN_FILE(optional)\n"
     exit 1
 fi
 
-main $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10}
+main $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
