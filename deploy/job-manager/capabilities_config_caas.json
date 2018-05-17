@@ -1,0 +1,58 @@
+{
+  "displayFields": [
+    {
+      "field": "status",
+      "display": "Status"
+    },
+    {
+      "field": "submission",
+      "display": "Submitted"
+    },
+    {
+      "field": "end",
+      "display": "End Time"
+    },
+    {
+      "field": "labels.cromwell-workflow-id",
+      "display": "Workflow ID"
+    },
+    {
+      "field": "labels.workflow-version",
+      "display": "Workflow Version"
+    },
+    {
+      "field": "labels.bundle-version",
+      "display": "Bundle Version"
+    },
+    {
+      "field": "labels.bundle-uuid",
+      "display": "Bundle UUID"
+    },
+    {
+      "field": "labels.caas-collection-name",
+      "display": "CaaS Collection"
+    },
+    {
+      "field": "labels.comment",
+      "display": "Comment"
+    }
+  ],
+  "commonLabels": [
+    "cromwell-workflow-id",
+    "bundle-uuid",
+    "bundle-version",
+    "workflow-version",
+    "workflow-name",
+    "comment",
+    "caas-collection-name"
+  ],
+  "queryExtensions": [],
+  "authentication": {
+    "isRequired": true,
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  }
+}

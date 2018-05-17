@@ -3,11 +3,12 @@
 # This script is designed to be run by Jenkins to deploy a new Job Manager kubernetes deployment
 # =======================================
 # Example Usage:
-# bash deploy.sh dev v0.0.4 username password
+# bash deploy.sh broad-dsde-mint-dev gke_broad-dsde-mint-dev_us-central1-b_listener v0.0.4 \
+# "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev
 # =======================================
 
 function line() {
-    echo -ne "=======================================\n"
+    printf %"$(tput cols)"s |tr " " "="
 }
 
 function stdout() {
@@ -20,28 +21,29 @@ function stderr() {
     exit 1
 }
 
-function configure_mint_kubernetes() {
-    local ENV=$1
+function configure_kubernetes() {
+    local GCLOUD_PROJECT=$1
+    local GKE_CONTEXT=$2
 
-    stdout "Setting to use Google project: project broad-dsde-mint-${ENV}"
-    gcloud config set project broad-dsde-mint-${ENV}
+    stdout "Setting to use Google project: project ${GCLOUD_PROJECT}"
+    gcloud config set project ${GCLOUD_PROJECT}
 
-    stdout "Setting to use GKE cluster: project gke_broad-dsde-mint-${ENV}_us-central1-b_listener"
-    kubectl config use-context gke_broad-dsde-mint-${ENV}_us-central1-b_listener
+    stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_listener"
+    kubectl config use-context ${GKE_CONTEXT}
 }
 
 function update_submodule() {
-    local JM_TAG=$1
+    local JMUI_TAG=$1
     local TOP_LEVEL=$(git rev-parse --show-toplevel)
 
     stdout "Updating submodule"
     git submodule update --recursive --remote
 
-    cd "${TOP_LEVEL}/deploy/job-manager/job-manager" && git checkout ${JM_TAG} && cd -
+    cd "${TOP_LEVEL}/deploy/job-manager/job-manager" && git checkout ${JMUI_TAG} && cd -
 }
 
 function render_environment_ts() {
-    local CLIENT_ID=""
+    local CLIENT_ID=${1:-""}
 
     stdout "Rendering environment.prod.ts for Job Manager UI"
     docker run -i --rm \
@@ -51,7 +53,7 @@ function render_environment_ts() {
 }
 
 function inject_angular_and_build_UI() {
-    local ENV=$1
+    local GCLOUD_PROJECT=$1
     local DOCKER_TAG=$2
     local TOP_LEVEL=$(git rev-parse --show-toplevel)
 
@@ -61,11 +63,11 @@ function inject_angular_and_build_UI() {
     stdout "Injecting environment.prod.ts into submodule for Job Manager UI"
     cp "${TOP_LEVEL}/deploy/job-manager/environment.template.ts" "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/src/environments/environment.prod.ts"
 
-    stdout "Building UI docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}"
-    docker build -t gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager/ui" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/Dockerfile"
+    stdout "Building UI docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
+    docker build -t gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager/ui" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/Dockerfile"
 
-    stdout "Pushing UI docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}"
-    docker push gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}
+    stdout "Pushing UI docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
+    docker push gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}
 
     stdout "Resetting the state of submodule after injection"
     pushd ${TOP_LEVEL}/deploy/job-manager/job-manager
@@ -74,25 +76,25 @@ function inject_angular_and_build_UI() {
 }
 
 function build_API() {
-    local ENV=$1
+    local GCLOUD_PROJECT=$1
     local DOCKER_TAG=$2
     local TOP_LEVEL=$(git rev-parse --show-toplevel)
 
     # Let gcloud to build and push the API container
-    stdout "Building API docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}"
-    docker build -t gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/servers/cromwell/Dockerfile"
+    stdout "Building API docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
+    docker build -t gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/servers/cromwell/Dockerfile"
 
-    stdout "Pushing API docker image: gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}"
-    docker push gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}
+    stdout "Pushing API docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
+    docker push gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}
 }
 
 function create_API_config() {
-    local ENV=$1
+    local VAULT_ENV=$1
     local CONFIG_NAME=$2
     local VAULT_TOKEN_FILE=$3
 
-    CROMWELL_USR=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_user secret/dsde/mint/${ENV}/common/htpasswd)
-    CROMWELL_PWD=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_password secret/dsde/mint/${ENV}/common/htpasswd)
+    CROMWELL_USR=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_user secret/dsde/mint/${VAULT_ENV}/common/htpasswd)
+    CROMWELL_PWD=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_password secret/dsde/mint/${VAULT_ENV}/common/htpasswd)
 
     stdout "Rendering API's config.json file"
     docker run -i --rm \
@@ -107,18 +109,26 @@ function create_API_config() {
 
 function create_API_capabilities_conf() {
     local CONFIG_NAME=$1
+    local USE_CAAS=$2
+    local CONFIG_FILE=capabilities_config.json
+
+    if [ ${USE_CAAS} == "true" ]; then
+        local CONFIG_FILE=capabilities_config_caas.json
+    fi
 
     stdout "Creating API Capabilities config configMap object: ${CONFIG_NAME}"
-    kubectl create configmap ${CONFIG_NAME} --from-file=capabilities-config=capabilities_config.json
+    kubectl create configmap ${CONFIG_NAME} --from-file=capabilities-config=${CONFIG_FILE}
 }
 
 function create_UI_conf() {
     local CONFIG_NAME=$1
-    local JM_VERSION=$2
+    local JMUI_VERSION=$2
+    local USE_PROXY=$3
 
     stdout "Rendering UI's nginx.conf file"
     docker run -i --rm \
-        -e JM_VERSION=${JM_VERSION} \
+        -e JMUI_VERSION=${JMUI_VERSION} \
+        -e USE_PROXY=${USE_PROXY} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/nginx.conf.ctmpl
 
@@ -140,15 +150,16 @@ function create_UI_proxy() {
 }
 
 function apply_kube_deployment() {
-    local ENV=$1
+    local CROMWELL_URL=$1
     local API_DOCKER_IMAGE=$2
     local API_CONFIG=$3
     local API_CAPABILITIES_CONFIG=$4
     local UI_DOCKER_IMAGE=$5
     local PROXY_CREDENTIALS_CONFIG=$6
     local UI_CONFIG=$7
+    local USE_CAAS=$8
+    local USE_PROXY=$9
     local API_PATH_PREFIX="/api/v1"
-    local CROMWELL_URL="https://cromwell.mint-${ENV}.broadinstitute.org/api/workflows/v1"
     local REPLICAS=1
 
     stdout "Rendering job-manager-deployment.yaml file"
@@ -162,6 +173,8 @@ function apply_kube_deployment() {
         -e PROXY_CREDENTIALS_CONFIG=${PROXY_CREDENTIALS_CONFIG} \
         -e UI_CONFIG=${UI_CONFIG} \
         -e API_CAPABILITIES_CONFIG=${API_CAPABILITIES_CONFIG} \
+        -e USE_CAAS=${USE_CAAS} \
+        -e USE_PROXY=${USE_PROXY} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/job-manager-deployment.yaml.ctmpl
 
@@ -175,9 +188,9 @@ function apply_kube_service() {
 }
 
 function apply_kube_ingress() {
-    local ENV=$1
+    local TLS_SECRET_NAME=$1
     local EXTERNAL_IP_NAME="job-manager"
-    local TLS_SECRET_NAME="${ENV}-mint-ssl"
+
     # TODO: Mount tls cert and key files from Vault and create TLS SECRET k8s cluster
     # local VAULT_TOKEN_FILE
 
@@ -219,51 +232,81 @@ function tear_down_rendered_files() {
 
 # The main function to execute all steps of a deployment of Job Manager
 function main() {
-    local ENV=$1
-    local JM_TAG=$2
-    local JMUI_USR=$3
-    local JMUI_PWD=$4
-    local VAULT_TOKEN_FILE=${5:-"$HOME/.vault-token"}
+    local GCLOUD_PROJECT=$1
+    local GKE_CONTEXT=$2
+    local JMUI_TAG=$3
+    local CROMWELL_URL=$4
+    local USE_CAAS=$5
+    local USE_PROXY=$6
+    local JMUI_USR=$7
+    local JMUI_PWD=$8
+    local VAULT_ENV=$9
+    local CLIENT_ID=${10:-""}
+    local VAULT_TOKEN_FILE=${11:-"$HOME/.vault-token"}
 
-    local DOCKER_TAG=${JM_TAG}
-    local API_DOCKER_IMAGE="gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-api:${DOCKER_TAG}"
-    local UI_DOCKER_IMAGE="gcr.io/broad-dsde-mint-${ENV}/jm-cromwell-ui:${DOCKER_TAG}"
+    local DOCKER_TAG=${JMUI_TAG}
+    local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
+    local UI_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
 
     set -e
 
     line
-    configure_mint_kubernetes ${ENV}
+    configure_kubernetes ${GCLOUD_PROJECT} ${GKE_CONTEXT}
 
     line
-    update_submodule ${JM_TAG}
+    update_submodule ${JMUI_TAG}
 
     line
-    render_environment_ts
+    render_environment_ts ${CLIENT_ID}
 
     line
-    inject_angular_and_build_UI ${ENV} ${DOCKER_TAG}
+    inject_angular_and_build_UI ${GCLOUD_PROJECT} ${DOCKER_TAG}
 
     line
-    build_API ${ENV} ${DOCKER_TAG}
+    build_API ${GCLOUD_PROJECT} ${DOCKER_TAG}
 
     local API_CONFIG="cromwell-credentials-$(date '+%Y-%m-%d-%H-%M')"
-
     local CAPABILITIES_CONFIG="capabilities-config-$(date '+%Y-%m-%d-%H-%M')"
 
-    local USERNAME=${JMUI_USR}
-    local PASSWORD=${JMUI_PWD}
     local UI_PROXY="jm-htpasswd-$(date '+%Y-%m-%d-%H-%M')"
-
     local UI_CONFIG="jm-ui-config-$(date '+%Y-%m-%d-%H-%M')"
 
     line
-    if create_API_config ${ENV} ${API_CONFIG} ${VAULT_TOKEN_FILE} && create_API_capabilities_conf ${CAPABILITIES_CONFIG} && create_UI_proxy ${USERNAME} ${PASSWORD} ${UI_PROXY} && create_UI_conf ${UI_CONFIG} ${JM_TAG}
+
+    if [ ${USE_PROXY} == "true" ]; then
+        local USERNAME=${JMUI_USR}
+        local PASSWORD=${JMUI_PWD}
+        if create_UI_proxy ${USERNAME} ${PASSWORD} ${UI_PROXY}
+        then
+            stdout "Successfully created UI proxy."
+        else
+            tear_down_kube_secret ${UI_PROXY}
+            stderr
+        fi
+    fi
+
+    if [ ${USE_CAAS} == "false" ]; then
+        if create_API_config ${VAULT_ENV} ${API_CONFIG} ${VAULT_TOKEN_FILE}
+        then
+            stdout "Successfully created API config."
+        else
+            tear_down_kube_secret ${API_CONFIG}
+            stderr
+        fi
+    fi
+
+    if create_API_capabilities_conf ${CAPABILITIES_CONFIG} ${USE_CAAS}
     then
-        stdout "Successfully created all config files on Kubernetes cluster"
+        stdout "Successfully created API capabilities config."
     else
-        tear_down_kube_secret ${API_CONFIG}
-        tear_down_kube_secret ${UI_PROXY}
         tear_down_kube_configMap ${CAPABILITIES_CONFIG}
+        stderr
+    fi
+
+    if create_UI_conf ${UI_CONFIG} ${JMUI_TAG} ${USE_PROXY}
+    then
+        stdout "Successfully created UI config"
+    else
         tear_down_kube_configMap ${UI_CONFIG}
         stderr
     fi
@@ -272,12 +315,12 @@ function main() {
     apply_kube_service
 
     line
-    apply_kube_deployment ${ENV} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG}
+    apply_kube_deployment ${CROMWELL_URL} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG} ${USE_CAAS} ${USE_PROXY}
 
 #    line
 #    Each re-deployment to the ingress will cause a ~10 minuted downtime to the Job Manager. So this script assumes that you have created your ingress before using this it. This functions is here just for completeness.
 #    TODO: Add back the ingress set up step if needed
-#    apply_kube_ingress ${ENV}
+#    apply_kube_ingress ${TLS_SECRET_NAME}
 
     line
     tear_down_rendered_files
@@ -286,32 +329,62 @@ function main() {
 # Main Runner:
 error=0
 if [ -z $1 ]; then
-    echo -e "\nYou must specify a deployment environment!"
+    echo -e "\nYou must specify a gcloud project to use for the deployment!"
     error=1
 fi
 
 if [ -z $2 ]; then
-    echo -e "\nYou must specify a Job Manager Git Tag!"
+    echo -e "\nYou must specify the gke context to use for the deployment! E.g. gke_{gcloud-project-id}_{zone}_{clustername}"
     error=1
 fi
 
 if [ -z $3 ]; then
-    echo -e "\nYou must specify a desired username for Job Manager UI!"
+    echo -e "\nYou must specify a Job Manager Git Tag!"
     error=1
 fi
 
 if [ -z $4 ]; then
-    echo -e "\nYou must specify a desired password for Job Manager UI!"
+    echo -e "\nYou must specify the url for the Cromwell instance to use with the Job Manager UI!"
     error=1
 fi
 
 if [ -z $5 ]; then
-    echo -e "\nMissing the Vault token file under $HOME/.vault-token, you need to make sure you have passed in the path to the token file as the 5th argument of this script!"
+    echo -e "\nYou must specify whether to use Cromwell-as-a-Service with Job Manager UI!"
+    error=1
 fi
 
+if [ -z $6 ]; then
+    echo -e "\nYou must specify whether to use a UI proxy!"
+    error=1
+fi
+
+if [ -z $7 ]; then
+    echo -e "\nYou must specify a desired username for Job Manager UI in order to use a UI proxy!"
+    error=1
+fi
+
+if [ -z $8 ]; then
+    echo -e "\nYou must specify a desired password for Job Manager UI in order to use a UI proxy!"
+    error=1
+fi
+
+if [ -z $9 ]; then
+    echo -e "\nYou must specify the deployment environment for retrieving Cromwell credentials from vault, if not using Cromwell-as-a-Service!"
+    error=1
+fi
+
+if [ -z ${10} ]; then
+    echo -e "\nYou must specify a Client ID if authentication is required in the capabilities config, using default value ''."
+fi
+
+if [ -z ${11} ]; then
+    echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
+fi
+
+
 if [ $error -eq 1 ]; then
-    echo -e "\nUsage: bash deploy.sh ENV(dev/staging/test) GIT_TAG USERNAME PASSWORD VAULT_TOKEN_FILE(optional)\n"
+    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT GKE_CONTEXT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) CLIENT_ID(optional) VAULT_TOKEN_FILE(optional)\n"
     exit 1
 fi
 
-main $1 $2 $3 $4 $5
+main $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
