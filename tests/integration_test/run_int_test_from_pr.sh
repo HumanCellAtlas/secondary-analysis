@@ -20,7 +20,7 @@
 script_dir=$1
 service=$2
 branch=$3
-vault_token=$4
+vault_token_path=$4
 
 if [ $service = "skylab" ]; then
     submit_wdl_dir="submit_stub/"
@@ -38,7 +38,7 @@ fi
 #ss2_version=$9
 #tenx_sub_id=${10}
 #ss2_sub_id=${11}
-#vault_token=${12}
+#vault_token_path=${12}
 #submit_wdl_dir=${13}
 #use_caas=${14}
 
@@ -54,6 +54,6 @@ bash $script_dir/integration_test.sh \
         "$branch" \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
-        "$vault_token" \
+        "$vault_token_path" \
         "$submit_wdl_dir" \
         "true"
