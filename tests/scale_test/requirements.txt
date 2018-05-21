@@ -2,3 +2,7 @@ click==6.7
 tqdm==4.19.4
 pytest>=3.4.2
 requests-mock>=1.4.0
+arrow==0.12.1
+requests==2.18.4
+git+git://github.com/broadinstitute/cromwell-tools.git@v0.3.1
+git+git://github.com/broadinstitute/pipeline-tools.git@v0.19.0
