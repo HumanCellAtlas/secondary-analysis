@@ -80,8 +80,8 @@
 # tenx_sub_id
 # 10x subscription id
 #
-# vault_token
-# Token for vault auth
+# vault_token_path
+# Path to token file for vault auth
 #
 # submit_wdl_dir
 # Should be an empty string except when testing skylab, in which case we use
@@ -104,7 +104,7 @@ ss2_mode=$8
 ss2_version=$9
 tenx_sub_id=${10}
 ss2_sub_id=${11}
-vault_token=${12}
+vault_token_path=${12}
 submit_wdl_dir=${13}
 use_caas=${14:-"false"}
 caas_collection_name=${15:-"lira-${env}-workflows"}
@@ -123,6 +123,7 @@ printf "\nss2_mode: $ss2_mode"
 printf "\nss2_version: $ss2_version"
 printf "\ntenx_sub_id: $tenx_sub_id"
 printf "\nss2_sub_id: $ss2_sub_id"
+printf "\nvault_token_path: $vault_token_path"
 printf "\nsubmit_wdl_directory: $submit_wdl_dir"
 printf "\nuse_caas: $use_caas"
 printf "\ncaas_collection_name: $caas_collection_name"
@@ -297,7 +298,7 @@ docker run -i --rm \
     -e TENX_VERSION=${tenx_version} \
     -e TENX_PREFIX=${tenx_prefix} \
     -e TENX_SUBSCRIPTION_ID=${tenx_sub_id} \
-    -e VAULT_TOKEN=${vault_token} \
+    -e VAULT_TOKEN=$(cat $vault_token_path) \
     -e SUBMIT_WDL_DIR=${submit_wdl_dir} \
     -v $lira_dir/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
     /usr/local/bin/render-ctmpl.sh -k /working/listener-config.json.ctmpl
@@ -326,7 +327,8 @@ fi
 
 if [ $use_caas ]; then
     docker run -i --rm \
-        -e VAULT_TOKEN=$vault_token broadinstitute/dsde-toolbox vault read \
+        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        broadinstitute/dsde-toolbox vault read \
         -format=json \
         -field=value \
         secret/dsde/mint/$env/listener/caas-${env}-key.json > $lira_dir/kubernetes/caas_key.json
@@ -377,7 +379,7 @@ trap "stop_lira_on_error" ERR
 printf "\n\nGetting notification token\n"
 
 notification_token=$(docker run -i --rm \
-      -e VAULT_TOKEN=$vault_token \
+      -e VAULT_TOKEN=$(cat $vault_token_path) \
       broadinstitute/dsde-toolbox \
       vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
 
@@ -410,12 +412,12 @@ if [ $use_caas == "true" ]; then
 
 else
     export CROMWELL_USER=$(docker run -i --rm \
-        -e VAULT_TOKEN=$vault_token \
+        -e VAULT_TOKEN=$(cat $vault_token_path) \
             broadinstitute/dsde-toolbox \
             vault read -field=cromwell_user secret/dsde/mint/$env/common/htpasswd)
 
     export CROMWELL_PASSWORD=$(docker run -i --rm \
-        -e VAULT_TOKEN=$vault_token \
+        -e VAULT_TOKEN=$(cat $vault_token_path) \
         broadinstitute/dsde-toolbox \
         vault read -field=cromwell_password secret/dsde/mint/$env/common/htpasswd)
 

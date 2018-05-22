@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 repo_root=$1
-vault_token=$(cat ~/.vault-token)
+vault_token_path=$2
 
 #env=$1
 #lira_mode=$2
@@ -14,7 +14,7 @@ vault_token=$(cat ~/.vault-token)
 #ss2_version=$9
 #tenx_sub_id=${10}
 #ss2_sub_id=${11}
-#vault_token=${12}
+#vault_token_path=${12}
 #submit_wdl_dir=${13}
 #use_caas=${14}
 
@@ -32,6 +32,6 @@ bash $script_dir/integration_test.sh \
         "master" \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
-        "$vault_token" \
+        "$vault_token_path" \
         "" \
         "true"
