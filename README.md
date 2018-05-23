@@ -8,3 +8,4 @@ Other Secondary Analysis Service repos:
 * [skylab-analysis](https://github.com/HumanCellAtlas/skylab-analysis): Analysis and benchmarking reports for Skylab pipelines
 * [pipeline-tools](https://github.com/HumanCellAtlas/pipeline-tools): DCP adapter pipelines and associated tools
 * [sctools](https://github.com/HumanCellAtlas/sctools): Tools for single cell data analysis
+* [cromwell-tools](https://github.com/broadinstitute/cromwell-tools): Tools for working with the Cromwell workflow engine
