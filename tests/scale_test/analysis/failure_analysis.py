@@ -1,7 +1,19 @@
+"""
+This script queries cromwell for workflows based on the input parameters (e.g. name, statuses, start, end) and produces
+a CSV file listing the following for each:
+    - workflow id
+    - bundle id
+    - status
+    - failed task (only for failed or aborted workflows)
+    - failure message (only for failed or aborted workflows)
+
+Additionally, this script will create an additional file containing the stderr messages for each failed workflow to
+facilitate further analysis if the "record_std_err" parameter is set to true.
+"""
+
 import os
 import logging
 import argparse
-import json
 import collections
 import arrow
 import requests
@@ -276,21 +288,21 @@ def main(cromwell_url, auth, headers, output_file, record_std_err=True, start=No
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cromwell_url', default='https://cromwell.caas-dev.broadinstitute.org/api/workflows/v1')
-    parser.add_argument('--cromwell_user', required=False)
-    parser.add_argument('--cromwell_password', required=False)
-    parser.add_argument('--caas_key', required=False)
-    parser.add_argument('--bucket_reader_key', required=True)
-    parser.add_argument('--output_file', default='workflow_failures.csv')
-    parser.add_argument('--start', required=False)
-    parser.add_argument('--end', required=False)
-    parser.add_argument('--name', required=False)
-    parser.add_argument('--statuses', nargs='+', required=False)
-    parser.add_argument('--labels', nargs='+', required=False)
+    parser.add_argument('--cromwell_url', default='https://cromwell.caas-dev.broadinstitute.org/api/workflows/v1', help='Cromwell API URL')
+    parser.add_argument('--cromwell_user', required=False, help='Username for the specified Cromwell url')
+    parser.add_argument('--cromwell_password', required=False, help='Password for the specified Cromwell url')
+    parser.add_argument('--caas_key', required=False, help='Path to a service account JSON key for Cromwell-as-a-Service')
+    parser.add_argument('--bucket_reader_key', required=True, help='Path to a service account JSON key for reading from the gcloud workflow execution bucket')
+    parser.add_argument('--output_file', default='workflow_failures.csv', help='Path to the output CSV file')
+    parser.add_argument('--start', required=False, help='Start time to query by')
+    parser.add_argument('--end', required=False, help='End time to query by')
+    parser.add_argument('--name', required=False, help='Workflow name to query by')
+    parser.add_argument('--statuses', nargs='+', required=False, help='Workflow statuses to query by')
+    parser.add_argument('--labels', nargs='+', required=False, help='Workflow labels to query by, in the format key:value')
     parser.add_argument('--page_size', required=False)
     parser.add_argument('--page', required=False)
-    parser.add_argument('--expand_subworkflows', default=True)
-    parser.add_argument('--record_std_err', default=True)
+    parser.add_argument('--expand_subworkflows', default=True, help='Whether to include subworkflow metadata in the Cromwell metadata')
+    parser.add_argument('--record_std_err', default=True, help="Whether to save the stderr messages from the failed workflows to a file")
     args = parser.parse_args()
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.bucket_reader_key
     auth, headers = cromwell_tools._get_auth_credentials(cromwell_user=args.cromwell_user, cromwell_password=args.cromwell_password, caas_key=args.caas_key)
