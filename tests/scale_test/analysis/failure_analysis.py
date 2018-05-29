@@ -41,16 +41,28 @@ def get_gcs_file(gs_link):
     return result
 
 
+class Query(object):
+    def factory(start=None, end=None, name=None, statuses=None, labels=None, page_size=None, page=None):
+        query = collections.namedtuple('Query', ['start', 'end', 'name', 'statuses', 'labels', 'page_size', 'page'], verbose=False)
+        query.__new__.__defaults__ = (None,) * len(query._fields)
+        return query(start=local_time(start, 'US/Eastern') if start else None,
+                     end=local_time(end, 'US/Eastern') if end else None,
+                     name=name,
+                     statuses=statuses,
+                     labels=labels,
+                     page_size=page_size,
+                     page=page)
+    factory = staticmethod(factory)
+
+
 def query_workflows(cromwell_url, auth, headers, start=None, end=None, name=None, statuses=None, labels=None, page_size=None, page=None):
-    Query = collections.namedtuple('Query', ['start', 'end', 'name', 'statuses', 'labels', 'page_size', 'page'], verbose=False)
-    Query.__new__.__defaults__ = (None,) * len(Query._fields)
-    query = Query(start=convert_utc_to_local_time(start, 'US/Eastern') if start else None,
-                  end=convert_utc_to_local_time(end, 'US/Eastern') if end else None,
-                  name=name,
-                  statuses=statuses,
-                  labels=labels,
-                  page_size=page_size,
-                  page=page)
+    query = Query.factory(start=local_time(start, 'US/Eastern') if start else None,
+                          end=local_time(end, 'US/Eastern') if end else None,
+                          name=name,
+                          statuses=statuses,
+                          labels=labels,
+                          page_size=page_size,
+                          page=page)
     result = requests.post(url='{}/query'.format(cromwell_url), json=cromwell_query_params(query), auth=auth, headers=headers)
     result.raise_for_status()
     total_results = result.json()['totalResultsCount']
@@ -141,7 +153,7 @@ def parse_task(task_name, task_metadata, root_workflow_id, bundle_id):
     }
 
 
-def convert_utc_to_local_time(time_string, time_zone='US/Eastern'):
+def local_time(time_string, time_zone='US/Eastern'):
     return arrow.get(time_string).replace(tzinfo=time_zone)
 
 
@@ -268,7 +280,7 @@ if __name__ == '__main__':
     parser.add_argument('--cromwell_user', required=False)
     parser.add_argument('--cromwell_password', required=False)
     parser.add_argument('--caas_key', required=False)
-    parser.add_argument('--bucket_reader_key', required=False)
+    parser.add_argument('--bucket_reader_key', required=True)
     parser.add_argument('--output_file', default='workflow_failures.csv')
     parser.add_argument('--start', required=False)
     parser.add_argument('--end', required=False)
