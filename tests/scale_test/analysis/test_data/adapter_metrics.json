@@ -1,0 +1,672 @@
+[
+  {
+    "name": "AdapterSmartSeq2SingleCell",
+    "submission": "2018-05-14T16:23:19.491Z",
+    "start": "2018-05-14T16:23:19.984Z",
+    "end": "2018-05-14T17:06:25.129Z",
+    "id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+    "status": "Succeeded",
+    "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7",
+    "calls": [
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "submit.create_submission",
+        "start": "2018-05-14T16:45:40.832Z",
+        "end": "2018-05-14T16:49:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-submit/submit/06b7f2e7-025e-4f73-aa6f-561de8fc85cd/call-create_submission/create_submission-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-submit/submit/06b7f2e7-025e-4f73-aa6f-561de8fc85cd/call-create_submission/create_submission-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "submit.get_metadata",
+        "start": "2018-05-14T16:43:33.332Z",
+        "end": "2018-05-14T16:45:39.512Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-submit/submit/06b7f2e7-025e-4f73-aa6f-561de8fc85cd/call-get_metadata/get_metadata-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-submit/submit/06b7f2e7-025e-4f73-aa6f-561de8fc85cd/call-get_metadata/get_metadata-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "submit.stage_and_confirm",
+        "start": "2018-05-14T16:49:04.832Z",
+        "end": "2018-05-14T17:06:21.483Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-submit/submit/06b7f2e7-025e-4f73-aa6f-561de8fc85cd/call-stage_and_confirm/stage_and_confirm-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-submit/submit/06b7f2e7-025e-4f73-aa6f-561de8fc85cd/call-stage_and_confirm/stage_and_confirm-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "AdapterSmartSeq2SingleCell.prep",
+        "start": "2018-05-14T16:23:27.511Z",
+        "end": "2018-05-14T16:26:06.490Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-prep/prep-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-prep/prep-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "SmartSeq2SingleCell.RSEMExpression",
+        "start": "2018-05-14T16:31:41.392Z",
+        "end": "2018-05-14T16:40:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-RSEMExpression/RSEMExpression-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-RSEMExpression/RSEMExpression-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "SmartSeq2SingleCell.CollectRnaMetrics",
+        "start": "2018-05-14T16:36:10.702Z",
+        "end": "2018-05-14T16:40:39.509Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-CollectRnaMetrics/CollectRnaMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-CollectRnaMetrics/CollectRnaMetrics-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "SmartSeq2SingleCell.HISAT2PairedEnd",
+        "start": "2018-05-14T16:26:10.912Z",
+        "end": "2018-05-14T16:36:09.497Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-HISAT2PairedEnd/HISAT2PairedEnd-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-HISAT2PairedEnd/HISAT2PairedEnd-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "SmartSeq2SingleCell.HISAT2Transcriptome",
+        "start": "2018-05-14T16:26:10.912Z",
+        "end": "2018-05-14T16:31:39.498Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-HISAT2Transcriptome/HISAT2Transcriptome-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-HISAT2Transcriptome/HISAT2Transcriptome-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "SmartSeq2SingleCell.CollectDuplicationMetrics",
+        "start": "2018-05-14T16:36:10.701Z",
+        "end": "2018-05-14T16:42:18.518Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      },
+      {
+        "root_workflow_id": "6396a5f5-4ec0-4688-8faa-f2e3a4347a53",
+        "name": "SmartSeq2SingleCell.CollectMultipleMetrics",
+        "start": "2018-05-14T16:36:10.702Z",
+        "end": "2018-05-14T16:43:27.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-CollectMultipleMetrics/CollectMultipleMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/6396a5f5-4ec0-4688-8faa-f2e3a4347a53/call-analysis/SmartSeq2SingleCell/ddedcaed-ec30-4815-9105-b89bdc0a8c54/call-CollectMultipleMetrics/CollectMultipleMetrics-stderr.log",
+        "bundle_id": "aded6425-ba1a-43af-8444-d843a27d38b7"
+      }
+    ]
+  },
+  {
+    "name": "AdapterSmartSeq2SingleCell",
+    "submission": "2018-05-14T16:23:16.559Z",
+    "start": "2018-05-14T16:23:19.984Z",
+    "end": "2018-05-14T17:14:50.126Z",
+    "id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+    "status": "Succeeded",
+    "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac",
+    "calls": [
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "submit.create_submission",
+        "start": "2018-05-14T16:50:11.132Z",
+        "end": "2018-05-14T16:52:24.500Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-submit/submit/0ac21533-8992-48ed-8a3b-30d81542da67/call-create_submission/create_submission-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-submit/submit/0ac21533-8992-48ed-8a3b-30d81542da67/call-create_submission/create_submission-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "submit.get_metadata",
+        "start": "2018-05-14T16:48:00.571Z",
+        "end": "2018-05-14T16:50:09.521Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-submit/submit/0ac21533-8992-48ed-8a3b-30d81542da67/call-get_metadata/get_metadata-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-submit/submit/0ac21533-8992-48ed-8a3b-30d81542da67/call-get_metadata/get_metadata-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "submit.stage_and_confirm",
+        "start": "2018-05-14T16:52:25.771Z",
+        "end": "2018-05-14T17:14:42.483Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-submit/submit/0ac21533-8992-48ed-8a3b-30d81542da67/call-stage_and_confirm/stage_and_confirm-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-submit/submit/0ac21533-8992-48ed-8a3b-30d81542da67/call-stage_and_confirm/stage_and_confirm-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "AdapterSmartSeq2SingleCell.prep",
+        "start": "2018-05-14T16:23:27.561Z",
+        "end": "2018-05-14T16:26:06.490Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-prep/prep-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-prep/prep-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "SmartSeq2SingleCell.RSEMExpression",
+        "start": "2018-05-14T16:37:49.621Z",
+        "end": "2018-05-14T16:47:54.503Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 2,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-RSEMExpression/attempt-2/RSEMExpression-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-RSEMExpression/attempt-2/RSEMExpression-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "SmartSeq2SingleCell.CollectRnaMetrics",
+        "start": "2018-05-14T16:35:02.331Z",
+        "end": "2018-05-14T16:38:57.496Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-CollectRnaMetrics/CollectRnaMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-CollectRnaMetrics/CollectRnaMetrics-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "SmartSeq2SingleCell.HISAT2PairedEnd",
+        "start": "2018-05-14T16:26:10.912Z",
+        "end": "2018-05-14T16:35:00.499Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-HISAT2PairedEnd/HISAT2PairedEnd-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-HISAT2PairedEnd/HISAT2PairedEnd-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "SmartSeq2SingleCell.HISAT2Transcriptome",
+        "start": "2018-05-14T16:26:10.912Z",
+        "end": "2018-05-14T16:32:15.496Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-HISAT2Transcriptome/HISAT2Transcriptome-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-HISAT2Transcriptome/HISAT2Transcriptome-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "SmartSeq2SingleCell.CollectDuplicationMetrics",
+        "start": "2018-05-14T16:35:02.331Z",
+        "end": "2018-05-14T16:40:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      },
+      {
+        "root_workflow_id": "87e607fb-d3ac-4403-a32c-56f00dd89b2d",
+        "name": "SmartSeq2SingleCell.CollectMultipleMetrics",
+        "start": "2018-05-14T16:35:02.331Z",
+        "end": "2018-05-14T16:42:18.519Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-CollectMultipleMetrics/CollectMultipleMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/87e607fb-d3ac-4403-a32c-56f00dd89b2d/call-analysis/SmartSeq2SingleCell/ec8c1b64-d73a-4f3f-830e-18e3d2afd6ac/call-CollectMultipleMetrics/CollectMultipleMetrics-stderr.log",
+        "bundle_id": "5aca1624-9060-46b9-86fa-35baba2ddcac"
+      }
+    ]
+  },
+  {
+    "name": "AdapterSmartSeq2SingleCell",
+    "submission": "2018-05-14T16:24:20.275Z",
+    "start": "2018-05-14T16:24:40.158Z",
+    "end": "2018-05-14T17:53:10.126Z",
+    "id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+    "status": "Failed",
+    "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe",
+    "calls": [
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "submit.create_submission",
+        "start": "2018-05-14T16:46:50.541Z",
+        "end": "2018-05-14T16:49:00.501Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-submit/submit/af69e298-862a-44da-831a-0ea9c0d8efa4/call-create_submission/create_submission-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-submit/submit/af69e298-862a-44da-831a-0ea9c0d8efa4/call-create_submission/create_submission-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "submit.get_metadata",
+        "start": "2018-05-14T16:44:38.952Z",
+        "end": "2018-05-14T16:46:48.521Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-submit/submit/af69e298-862a-44da-831a-0ea9c0d8efa4/call-get_metadata/get_metadata-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-submit/submit/af69e298-862a-44da-831a-0ea9c0d8efa4/call-get_metadata/get_metadata-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "submit.stage_and_confirm",
+        "start": "2018-05-14T16:49:02.121Z",
+        "end": "2018-05-14T17:53:03.483Z",
+        "status": "Failed",
+        "failures": [
+          {
+            "causedBy": [],
+            "message": "Job submit.stage_and_confirm:NA:1 exited with return code 1 which has not been declared as a valid return code. See 'continueOnReturnCode' runtime attribute for more details."
+          }
+        ],
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-submit/submit/af69e298-862a-44da-831a-0ea9c0d8efa4/call-stage_and_confirm/stage_and_confirm-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-submit/submit/af69e298-862a-44da-831a-0ea9c0d8efa4/call-stage_and_confirm/stage_and_confirm-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "AdapterSmartSeq2SingleCell.prep",
+        "start": "2018-05-14T16:24:47.461Z",
+        "end": "2018-05-14T16:26:39.491Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-prep/prep-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-prep/prep-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "SmartSeq2SingleCell.RSEMExpression",
+        "start": "2018-05-14T16:32:17.491Z",
+        "end": "2018-05-14T16:40:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-RSEMExpression/RSEMExpression-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-RSEMExpression/RSEMExpression-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "SmartSeq2SingleCell.CollectRnaMetrics",
+        "start": "2018-05-14T16:36:43.711Z",
+        "end": "2018-05-14T16:40:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-CollectRnaMetrics/CollectRnaMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-CollectRnaMetrics/CollectRnaMetrics-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "SmartSeq2SingleCell.HISAT2PairedEnd",
+        "start": "2018-05-14T16:26:43.931Z",
+        "end": "2018-05-14T16:36:42.492Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-HISAT2PairedEnd/HISAT2PairedEnd-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-HISAT2PairedEnd/HISAT2PairedEnd-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "SmartSeq2SingleCell.HISAT2Transcriptome",
+        "start": "2018-05-14T16:26:43.931Z",
+        "end": "2018-05-14T16:32:15.496Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-HISAT2Transcriptome/HISAT2Transcriptome-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-HISAT2Transcriptome/HISAT2Transcriptome-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "SmartSeq2SingleCell.CollectDuplicationMetrics",
+        "start": "2018-05-14T16:36:43.712Z",
+        "end": "2018-05-14T16:43:24.496Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      },
+      {
+        "root_workflow_id": "dce5943a-61eb-430f-bdb1-3510ab361aee",
+        "name": "SmartSeq2SingleCell.CollectMultipleMetrics",
+        "start": "2018-05-14T16:36:43.712Z",
+        "end": "2018-05-14T16:44:33.513Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-CollectMultipleMetrics/CollectMultipleMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/dce5943a-61eb-430f-bdb1-3510ab361aee/call-analysis/SmartSeq2SingleCell/f43a4b16-e97d-4a6a-9939-73566404f08b/call-CollectMultipleMetrics/CollectMultipleMetrics-stderr.log",
+        "bundle_id": "7c8dd0d8-b871-42ee-a41b-29e02c8faebe"
+      }
+    ]
+  },
+  {
+    "name": "AdapterSmartSeq2SingleCell",
+    "submission": "2018-05-14T16:24:22.021Z",
+    "start": "2018-05-14T16:24:40.158Z",
+    "end": "2018-05-14T16:55:15.134Z",
+    "id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+    "status": "Failed",
+    "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043",
+    "calls": [
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "submit.create_submission",
+        "start": "2018-05-14T16:48:29.481Z",
+        "end": "2018-05-14T16:51:48.510Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-submit/submit/708be02b-dd35-4837-8ea3-96e8fff4b081/call-create_submission/create_submission-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-submit/submit/708be02b-dd35-4837-8ea3-96e8fff4b081/call-create_submission/create_submission-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "submit.get_metadata",
+        "start": "2018-05-14T16:46:20.961Z",
+        "end": "2018-05-14T16:48:27.500Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-submit/submit/708be02b-dd35-4837-8ea3-96e8fff4b081/call-get_metadata/get_metadata-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-submit/submit/708be02b-dd35-4837-8ea3-96e8fff4b081/call-get_metadata/get_metadata-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "submit.stage_and_confirm",
+        "start": "2018-05-14T16:51:50.422Z",
+        "end": "2018-05-14T16:55:09.480Z",
+        "status": "Failed",
+        "failures": [
+          {
+            "causedBy": [],
+            "message": "Job submit.stage_and_confirm:NA:1 exited with return code 1 which has not been declared as a valid return code. See 'continueOnReturnCode' runtime attribute for more details."
+          }
+        ],
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-submit/submit/708be02b-dd35-4837-8ea3-96e8fff4b081/call-stage_and_confirm/stage_and_confirm-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-submit/submit/708be02b-dd35-4837-8ea3-96e8fff4b081/call-stage_and_confirm/stage_and_confirm-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "AdapterSmartSeq2SingleCell.prep",
+        "start": "2018-05-14T16:24:47.521Z",
+        "end": "2018-05-14T16:26:39.491Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-prep/prep-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-prep/prep-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "SmartSeq2SingleCell.RSEMExpression",
+        "start": "2018-05-14T16:32:17.481Z",
+        "end": "2018-05-14T16:39:30.504Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-RSEMExpression/RSEMExpression-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-RSEMExpression/RSEMExpression-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "SmartSeq2SingleCell.CollectRnaMetrics",
+        "start": "2018-05-14T16:37:17.361Z",
+        "end": "2018-05-14T16:42:51.527Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-CollectRnaMetrics/CollectRnaMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-CollectRnaMetrics/CollectRnaMetrics-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "SmartSeq2SingleCell.HISAT2PairedEnd",
+        "start": "2018-05-14T16:26:43.921Z",
+        "end": "2018-05-14T16:37:15.493Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-HISAT2PairedEnd/HISAT2PairedEnd-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-HISAT2PairedEnd/HISAT2PairedEnd-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "SmartSeq2SingleCell.HISAT2Transcriptome",
+        "start": "2018-05-14T16:26:43.921Z",
+        "end": "2018-05-14T16:32:15.496Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-HISAT2Transcriptome/HISAT2Transcriptome-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-HISAT2Transcriptome/HISAT2Transcriptome-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "SmartSeq2SingleCell.CollectDuplicationMetrics",
+        "start": "2018-05-14T16:37:17.361Z",
+        "end": "2018-05-14T16:44:33.513Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      },
+      {
+        "root_workflow_id": "3d03c720-fbe1-4193-b76a-603b2a3b43df",
+        "name": "SmartSeq2SingleCell.CollectMultipleMetrics",
+        "start": "2018-05-14T16:37:17.361Z",
+        "end": "2018-05-14T16:46:15.523Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-CollectMultipleMetrics/CollectMultipleMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/3d03c720-fbe1-4193-b76a-603b2a3b43df/call-analysis/SmartSeq2SingleCell/080d14f9-49fd-485d-ae47-6486f6aee9ef/call-CollectMultipleMetrics/CollectMultipleMetrics-stderr.log",
+        "bundle_id": "506d54bf-32e6-4037-8549-3402cddfc043"
+      }
+    ]
+  },
+  {
+    "name": "AdapterSmartSeq2SingleCell",
+    "submission": "2018-05-14T16:24:30.765Z",
+    "start": "2018-05-14T16:24:40.159Z",
+    "end": "2018-05-14T17:53:05.146Z",
+    "id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+    "status": "Failed",
+    "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5",
+    "calls": [
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "submit.create_submission",
+        "start": "2018-05-14T16:46:49.801Z",
+        "end": "2018-05-14T16:49:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-submit/submit/5a084c19-0f15-4329-a3b6-9ebd3e4610ad/call-create_submission/create_submission-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-submit/submit/5a084c19-0f15-4329-a3b6-9ebd3e4610ad/call-create_submission/create_submission-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "submit.get_metadata",
+        "start": "2018-05-14T16:44:06.602Z",
+        "end": "2018-05-14T16:46:48.521Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-submit/submit/5a084c19-0f15-4329-a3b6-9ebd3e4610ad/call-get_metadata/get_metadata-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-submit/submit/5a084c19-0f15-4329-a3b6-9ebd3e4610ad/call-get_metadata/get_metadata-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "submit.stage_and_confirm",
+        "start": "2018-05-14T16:49:05.461Z",
+        "end": "2018-05-14T17:53:03.483Z",
+        "status": "Failed",
+        "failures": [
+          {
+            "causedBy": [],
+            "message": "Job submit.stage_and_confirm:NA:1 exited with return code 1 which has not been declared as a valid return code. See 'continueOnReturnCode' runtime attribute for more details."
+          }
+        ],
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-submit/submit/5a084c19-0f15-4329-a3b6-9ebd3e4610ad/call-stage_and_confirm/stage_and_confirm-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-submit/submit/5a084c19-0f15-4329-a3b6-9ebd3e4610ad/call-stage_and_confirm/stage_and_confirm-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "AdapterSmartSeq2SingleCell.prep",
+        "start": "2018-05-14T16:24:47.743Z",
+        "end": "2018-05-14T16:27:45.502Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-prep/prep-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-prep/prep-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "SmartSeq2SingleCell.RSEMExpression",
+        "start": "2018-05-14T16:32:50.321Z",
+        "end": "2018-05-14T16:40:39.509Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-RSEMExpression/RSEMExpression-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-RSEMExpression/RSEMExpression-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "SmartSeq2SingleCell.CollectRnaMetrics",
+        "start": "2018-05-14T16:36:43.902Z",
+        "end": "2018-05-14T16:40:03.505Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-CollectRnaMetrics/CollectRnaMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-CollectRnaMetrics/CollectRnaMetrics-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "SmartSeq2SingleCell.HISAT2PairedEnd",
+        "start": "2018-05-14T16:27:50.431Z",
+        "end": "2018-05-14T16:36:42.492Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-HISAT2PairedEnd/HISAT2PairedEnd-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-HISAT2PairedEnd/HISAT2PairedEnd-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "SmartSeq2SingleCell.HISAT2Transcriptome",
+        "start": "2018-05-14T16:27:50.431Z",
+        "end": "2018-05-14T16:32:48.497Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-HISAT2Transcriptome/HISAT2Transcriptome-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-HISAT2Transcriptome/HISAT2Transcriptome-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "SmartSeq2SingleCell.CollectDuplicationMetrics",
+        "start": "2018-05-14T16:36:43.902Z",
+        "end": "2018-05-14T16:42:18.519Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-CollectDuplicationMetrics/CollectDuplicationMetrics-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      },
+      {
+        "root_workflow_id": "026cc94a-2042-40de-8af8-cdfef8d23015",
+        "name": "SmartSeq2SingleCell.CollectMultipleMetrics",
+        "start": "2018-05-14T16:36:43.902Z",
+        "end": "2018-05-14T16:44:00.538Z",
+        "status": "Done",
+        "failures": null,
+        "attempt": 1,
+        "stdout": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-CollectMultipleMetrics/CollectMultipleMetrics-stdout.log",
+        "stderr": "gs://broad-dsde-mint-test-cromwell-execution/caas-cromwell-executions/AdapterSmartSeq2SingleCell/026cc94a-2042-40de-8af8-cdfef8d23015/call-analysis/SmartSeq2SingleCell/777b633d-d0b5-4031-9a23-83192b259b4c/call-CollectMultipleMetrics/CollectMultipleMetrics-stderr.log",
+        "bundle_id": "cdef34bd-30f6-402b-b21c-b4cadc3365b5"
+      }
+    ]
+  }
+]
