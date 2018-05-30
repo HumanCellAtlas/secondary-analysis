@@ -54,27 +54,23 @@ def get_gcs_file(gs_link):
 
 
 class Query(object):
-    def factory(start=None, end=None, name=None, statuses=None, labels=None, page_size=None, page=None):
-        query = collections.namedtuple('Query', ['start', 'end', 'name', 'statuses', 'labels', 'page_size', 'page'], verbose=False)
+    def factory(start=None, end=None, name=None, statuses=None, labels=None):
+        query = collections.namedtuple('Query', ['start', 'end', 'name', 'statuses', 'labels'], verbose=False)
         query.__new__.__defaults__ = (None,) * len(query._fields)
         return query(start=local_time(start, 'US/Eastern') if start else None,
                      end=local_time(end, 'US/Eastern') if end else None,
                      name=name,
                      statuses=statuses,
-                     labels=labels,
-                     page_size=page_size,
-                     page=page)
+                     labels=labels)
     factory = staticmethod(factory)
 
 
-def query_workflows(cromwell_url, auth, headers, start=None, end=None, name=None, statuses=None, labels=None, page_size=None, page=None):
+def query_workflows(cromwell_url, auth, headers, start=None, end=None, name=None, statuses=None, labels=None):
     query = Query.factory(start=local_time(start, 'US/Eastern') if start else None,
                           end=local_time(end, 'US/Eastern') if end else None,
                           name=name,
                           statuses=statuses,
-                          labels=labels,
-                          page_size=page_size,
-                          page=page)
+                          labels=labels)
     result = requests.post(url='{}/query'.format(cromwell_url), json=cromwell_query_params(query), auth=auth, headers=headers)
     result.raise_for_status()
     total_results = result.json()['totalResultsCount']
@@ -99,10 +95,6 @@ def cromwell_query_params(query):
     if query.labels:
         statuses = [{'label': l} for l in set(query.labels)]
         query_params.extend(statuses)
-    if query.page_size:
-        query_params.append({'pageSize': str(query.page_size)})
-    if query.page:
-        query_params.append({'page': str(query.page)})
     return query_params
 
 
@@ -233,9 +225,9 @@ def format_metadata_output(metadata, record_std_err):
     return data
 
 
-def main(cromwell_url, auth, headers, output_file, record_std_err=True, start=None, end=None, name=None, statuses=None, labels=None, page_size=None, page=None, expand_subworkflows=True):
+def main(cromwell_url, auth, headers, output_file, record_std_err=True, start=None, end=None, name=None, statuses=None, labels=None, expand_subworkflows=True):
     # Get target workflows
-    result_list_metadata = query_workflows(cromwell_url, auth, headers, start, end, name, statuses, labels, page_size, page)
+    result_list_metadata = query_workflows(cromwell_url, auth, headers, start, end, name, statuses, labels)
 
     # Get workflow metadata
     result_ids = [workflow['id'] for workflow in result_list_metadata]
@@ -299,12 +291,10 @@ if __name__ == '__main__':
     parser.add_argument('--name', required=False, help='Workflow name to query by')
     parser.add_argument('--statuses', nargs='+', required=False, help='Workflow statuses to query by')
     parser.add_argument('--labels', nargs='+', required=False, help='Workflow labels to query by, in the format key:value')
-    parser.add_argument('--page_size', required=False)
-    parser.add_argument('--page', required=False)
     parser.add_argument('--expand_subworkflows', default=True, help='Whether to include subworkflow metadata in the Cromwell metadata')
     parser.add_argument('--record_std_err', default=True, help="Whether to save the stderr messages from the failed workflows to a file")
     args = parser.parse_args()
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.bucket_reader_key
     auth, headers = cromwell_tools._get_auth_credentials(cromwell_user=args.cromwell_user, cromwell_password=args.cromwell_password, caas_key=args.caas_key)
-    main(args.cromwell_url, auth, headers, args.output_file, args.record_std_err, args.start, args.end, args.name, args.statuses, args.labels,
-         args.page_size, args.page, args.expand_subworkflows)
+    main(args.cromwell_url, auth, headers, args.output_file, args.record_std_err, args.start, args.end, args.name,
+         args.statuses, args.labels, args.expand_subworkflows)
