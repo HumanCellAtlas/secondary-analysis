@@ -41,6 +41,7 @@ fi
 #vault_token_path=${12}
 #submit_wdl_dir=${13}
 #use_caas=${14}
+#use_hmac=${15}
 
 bash $script_dir/integration_test.sh \
         "test" \
@@ -56,4 +57,5 @@ bash $script_dir/integration_test.sh \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
         "$vault_token_path" \
         "$submit_wdl_dir" \
+        "true" \
         "true"
