@@ -87,6 +87,12 @@
 # Should be an empty string except when testing skylab, in which case we use
 # "submit_stub/" so that we don't test submission, since it is not really
 # necessary for skylab PRs.
+#
+# use_caas
+# Uses Cromwell-as-a-Service if true
+#
+# use_hmac
+# Uses hmac for authenticating notifications if true, otherwise uses query param token
 
 printf "\nStarting integration test\n"
 date +"%Y-%m-%d %H:%M:%S"
@@ -106,8 +112,9 @@ tenx_sub_id=${10}
 ss2_sub_id=${11}
 vault_token_path=${12}
 submit_wdl_dir=${13}
-use_caas=${14:-"false"}
-caas_collection_name=${15:-"lira-${env}-workflows"}
+use_caas=${14}
+use_hmac=${15}
+caas_collection_name=${16:-"lira-${env}-workflows"}
 
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -126,6 +133,7 @@ printf "\nss2_sub_id: $ss2_sub_id"
 printf "\nvault_token_path: $vault_token_path"
 printf "\nsubmit_wdl_directory: $submit_wdl_dir"
 printf "\nuse_caas: $use_caas"
+printf "\nuse_hmac: $use_hmac"
 printf "\ncaas_collection_name: $caas_collection_name"
 
 printf "\n\nWorking directory: $work_dir"
@@ -290,6 +298,7 @@ docker run -i --rm \
     -e ENV=${env} \
     -e LIRA_VERSION=${lira_version} \
     -e USE_CAAS=${use_caas} \
+    -e USE_HMAC=${use_hmac} \
     -e COLLECTION_NAME=${caas_collection_name} \
     -e PIPELINE_TOOLS_PREFIX=${pipeline_tools_prefix} \
     -e SS2_VERSION=${ss2_version} \
@@ -376,28 +385,38 @@ function stop_lira_on_error {
 trap "stop_lira_on_error" ERR
 
 # 8. Send in notifications
-printf "\n\nGetting notification token\n"
 
-notification_token=$(docker run -i --rm \
-      -e VAULT_TOKEN=$(cat $vault_token_path) \
-      broadinstitute/dsde-toolbox \
-      vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
+if [ "$use_hmac" == "true" ]; then
+  printf "\n\nGetting hmac key\n"
+  HMAC_KEY=$(docker run -i --rm \
+        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        broadinstitute/dsde-toolbox \
+        vault read -field=current_key secret/dsde/mint/$env/listener/hmac_keys)
+  AUTH_PARAMS="--hmac_key $HMAC_KEY --hmac_key_id current_key"
+else
+  printf "\n\nGetting notification token\n"
+  notification_token=$(docker run -i --rm \
+        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        broadinstitute/dsde-toolbox \
+        vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
+  AUTH_PARAMS="--query_param_token $notification_token"
+fi
 
 printf "\n\nSending in notifications\n"
-# Uses the docker image https://hub.docker.com/r/broadinstitute/python-requests/
+# Uses the docker image built from Dockerfile next to this script
 ss2_workflow_id=$(docker run --rm -v $script_dir:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
-                    -e NOTIFICATION_TOKEN=$notification_token \
                     -e NOTIFICATION=/app/ss2_notification_dss_${env}.json \
                     --link lira:lira \
-                    broadinstitute/python-requests:3 /app/send_notification.py)
+                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                    $(echo "$AUTH_PARAMS" | xargs))
 
 printf "\nss2_workflow_id: $ss2_workflow_id"
 
 # 9. Poll for completion
 printf "\n\nAwaiting workflow completion\n"
 
-# Uses the docker image https://hub.docker.com/r/broadinstitute/python-requests/
+# Uses the docker image built from Dockerfile next to this script
 if [ $use_caas == "true" ]; then
     docker run --rm -v $script_dir:/app \
         -v $lira_dir/kubernetes/caas_key.json:/etc/lira/caas_key.json \
@@ -408,7 +427,7 @@ if [ $use_caas == "true" ]; then
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
         --link lira:lira \
-        broadinstitute/python-requests:3 /app/await_workflow_completion.py
+        quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
 
 else
     export CROMWELL_USER=$(docker run -i --rm \
@@ -430,7 +449,7 @@ else
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
         --link lira:lira \
-        broadinstitute/python-requests:3 /app/await_workflow_completion.py
+        quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
 fi
 
 
