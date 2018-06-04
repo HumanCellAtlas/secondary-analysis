@@ -58,4 +58,4 @@ bash $script_dir/integration_test.sh \
         "$vault_token_path" \
         "$submit_wdl_dir" \
         "true" \
-        "true"
+        "false"
