@@ -18,23 +18,30 @@
     },
     {
       "field": "labels.workflow-version",
-      "display": "Workflow Version"
+      "display": "Workflow Version",
+      "fieldType": "text"
     },
     {
       "field": "labels.bundle-version",
-      "display": "Bundle Version"
+      "display": "Bundle Version",
+      "fieldType": "text"
     },
     {
       "field": "labels.bundle-uuid",
-      "display": "Bundle UUID"
+      "display": "Bundle UUID",
+      "fieldType": "text"
     },
     {
       "field": "labels.caas-collection-name",
-      "display": "CaaS Collection"
+      "display": "CaaS Collection",
+      "fieldType": "text"
     },
     {
       "field": "labels.comment",
-      "display": "Comment"
+      "display": "Comment",
+      "fieldType": "text",
+      "editable": true,
+      "bulkEditable": true
     }
   ],
   "commonLabels": [
