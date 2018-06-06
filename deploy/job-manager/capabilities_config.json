@@ -9,24 +9,33 @@
       "display": "Submitted"
     },
     {
+      "field": "end",
+      "display": "End Time"
+    },
+    {
       "field": "labels.cromwell-workflow-id",
       "display": "Workflow ID"
     },
     {
       "field": "labels.workflow-version",
-      "display": "Workflow Version"
+      "display": "Workflow Version",
+      "fieldType": "text"
     },
     {
       "field": "labels.bundle-version",
-      "display": "Bundle Version"
+      "display": "Bundle Version",
+      "fieldType": "text"
     },
     {
       "field": "labels.bundle-uuid",
-      "display": "Bundle UUID"
+      "display": "Bundle UUID",
+      "fieldType": "text"
     },
     {
       "field": "labels.comment",
-      "display": "Comment"
+      "display": "Comment",
+      "editable": true,
+      "bulkEditable": true
     }
   ],
   "commonLabels": [
