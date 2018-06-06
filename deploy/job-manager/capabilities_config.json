@@ -34,6 +34,7 @@
     {
       "field": "labels.comment",
       "display": "Comment",
+      "fieldType": "text",
       "editable": true,
       "bulkEditable": true
     }
