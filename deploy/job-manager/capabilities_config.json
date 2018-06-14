@@ -32,6 +32,21 @@
       "fieldType": "text"
     },
     {
+      "field": "labels.project_shortname",
+      "display": "Project Shortname",
+      "fieldType": "text"
+    },
+    {
+      "field": "labels.sample_id",
+      "display": "Sample ID",
+      "fieldType": "text"
+    },
+    {
+      "field": "labels.submitter_id",
+      "display": "Submitter ID",
+      "fieldType": "text"
+    },
+    {
       "field": "labels.comment",
       "display": "Comment",
       "fieldType": "text",
@@ -45,7 +60,10 @@
     "bundle-version",
     "workflow-version",
     "workflow-name",
-    "comment"
+    "comment",
+    "submitter_id",
+    "sample_id",
+    "project_shortname"
   ],
   "queryExtensions": []
 }
