@@ -28,7 +28,7 @@ spec:
           mountPath: /etc/job-manager/api
           readOnly: true
         {{ end }}
-        - name: jm-api-capabilities-config
+        - name: jm-configmap-obj
           mountPath: /etc/job-manager/capabilities/capabilities-config.json
           subPath: capabilities-config
           readOnly: true
@@ -45,14 +45,23 @@ spec:
           value: /etc/job-manager/capabilities/capabilities-config.json
         - name: USE_CAAS
           value: "{{ env "USE_CAAS" }}"
+        - name: GUNICORN_CMD_ARGS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ env "JMUI_CONFIGMAP_OBJ"}}
+              key: jm-gunicorn-args
       - name: job-manager-ui
         image: {{ env "UI_DOCKER_IMAGE" }}
         imagePullPolicy: Always
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: jm-ui-config
+        - name: jm-configmap-obj
           mountPath: /etc/nginx/nginx.conf
+          subPath: jm-nginx-config
+          readOnly: true
+        - name: jm-configmap-obj
+          mountPath: /ui/dist/assets/environments/environment.json
           subPath: jm-ui-config
           readOnly: true
       {{ if env "USE_PROXY" | parseBool }}
@@ -85,9 +94,6 @@ spec:
           - key: htpasswd
             path: .htpasswd
       {{ end }}
-      - name: jm-ui-config
+      - name: jm-configmap-obj
         configMap:
-          name: {{ env "UI_CONFIG"}}
-      - name: jm-api-capabilities-config
-        configMap:
-          name: {{ env "API_CAPABILITIES_CONFIG"}}
+          name: {{ env "JMUI_CONFIGMAP_OBJ"}}
