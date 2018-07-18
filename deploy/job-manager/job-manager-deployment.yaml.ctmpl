@@ -19,7 +19,7 @@ spec:
       - name: job-manager-api
         image: {{ env "API_DOCKER_IMAGE" }}
         imagePullPolicy: Always
-        args: ["-b", ":8190", "-t", "60"]
+        args: ["-b", ":8190", "-t", "60", "-w", "{{ env "GUNICORN_WORKERS" }}", "-k", "{{ env "GUNICORN_WORKER_TYPE" }}"]
         ports:
         - containerPort: 8190
         volumeMounts:
@@ -45,11 +45,6 @@ spec:
           value: /etc/job-manager/capabilities/capabilities-config.json
         - name: USE_CAAS
           value: "{{ env "USE_CAAS" }}"
-        - name: GUNICORN_CMD_ARGS
-          valueFrom:
-            configMapKeyRef:
-              name: {{ env "JMUI_CONFIGMAP_OBJ"}}
-              key: jm-gunicorn-args
       - name: job-manager-ui
         image: {{ env "UI_DOCKER_IMAGE" }}
         imagePullPolicy: Always

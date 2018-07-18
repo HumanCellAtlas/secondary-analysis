@@ -79,7 +79,6 @@ function create_jm_configmap_obj() {
     local CAPABILITIES_CONFIG_FILE=capabilities_config.json
     local UI_CONFIG_FILE=ui-config.json
     local UI_NGINX_FILE=nginx.conf
-    local GUNICORN_CMD_ARGS=gunicorn_args.txt
 
     if [ ${USE_CAAS} == "true" ]; then
         local CAPABILITIES_CONFIG_FILE=capabilities_config_caas.json
@@ -91,8 +90,7 @@ function create_jm_configmap_obj() {
     kubectl create configmap ${CONFIG_NAME} \
         --from-file=capabilities-config=${CAPABILITIES_CONFIG_FILE} \
         --from-file=jm-nginx-config=${UI_NGINX_FILE} \
-        --from-file=jm-ui-config=${UI_CONFIG_FILE} \
-        --from-file=jm-gunicorn-args=${GUNICORN_CMD_ARGS}
+        --from-file=jm-ui-config=${UI_CONFIG_FILE}
 }
 
 function create_UI_proxy() {
@@ -117,6 +115,8 @@ function apply_kube_deployment() {
     local PROXY_CREDENTIALS_CONFIG=$6
     local USE_CAAS=$7
     local USE_PROXY=$8
+    local GUNICORN_WORKERS="$((2 * $(getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 2) + 1))"
+    local GUNICORN_WORKER_TYPE="gevent"
     local API_PATH_PREFIX="/api/v1"
     local REPLICAS=1
 
@@ -132,6 +132,8 @@ function apply_kube_deployment() {
         -e JMUI_CONFIGMAP_OBJ=${JM_CONFIGMAP_OBJ} \
         -e USE_CAAS=${USE_CAAS} \
         -e USE_PROXY=${USE_PROXY} \
+        -e GUNICORN_WORKERS=${GUNICORN_WORKERS} \
+        -e GUNICORN_WORKER_TYPE=${GUNICORN_WORKER_TYPE} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/job-manager-deployment.yaml.ctmpl
 
