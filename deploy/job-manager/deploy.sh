@@ -32,62 +32,6 @@ function configure_kubernetes() {
     kubectl config use-context ${GKE_CONTEXT}
 }
 
-function update_submodule() {
-    local JMUI_TAG=$1
-    local TOP_LEVEL=$(git rev-parse --show-toplevel)
-
-    stdout "Updating submodule"
-    git submodule update --recursive --remote
-
-    cd "${TOP_LEVEL}/deploy/job-manager/job-manager" && git checkout ${JMUI_TAG} && cd -
-}
-
-function render_environment_ts() {
-    local CLIENT_ID=${1:-""}
-
-    stdout "Rendering environment.prod.ts for Job Manager UI"
-    docker run -i --rm \
-        -e CLIENT_ID=${CLIENT_ID} \
-        -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
-        /usr/local/bin/render-ctmpl.sh -k /working/environment.template.ts.ctmpl
-}
-
-function inject_angular_and_build_UI() {
-    local GCLOUD_PROJECT=$1
-    local DOCKER_TAG=$2
-    local TOP_LEVEL=$(git rev-parse --show-toplevel)
-
-    stdout "Configuring docker for gcloud"
-    yes | gcloud auth configure-docker
-
-    stdout "Injecting environment.prod.ts into submodule for Job Manager UI"
-    cp "${TOP_LEVEL}/deploy/job-manager/environment.template.ts" "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/src/environments/environment.prod.ts"
-
-    stdout "Building UI docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
-    docker build -t gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager/ui" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/ui/Dockerfile"
-
-    stdout "Pushing UI docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
-    docker push gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}
-
-    stdout "Resetting the state of submodule after injection"
-    pushd ${TOP_LEVEL}/deploy/job-manager/job-manager
-    git reset --hard HEAD
-    popd
-}
-
-function build_API() {
-    local GCLOUD_PROJECT=$1
-    local DOCKER_TAG=$2
-    local TOP_LEVEL=$(git rev-parse --show-toplevel)
-
-    # Let gcloud to build and push the API container
-    stdout "Building API docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
-    docker build -t gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG} "${TOP_LEVEL}/deploy/job-manager/job-manager" -f "${TOP_LEVEL}/deploy/job-manager/job-manager/servers/cromwell/Dockerfile"
-
-    stdout "Pushing API docker image: gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
-    docker push gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}
-}
-
 function create_API_config() {
     local VAULT_ENV=$1
     local CONFIG_NAME=$2
@@ -107,23 +51,19 @@ function create_API_config() {
     kubectl create secret generic ${CONFIG_NAME} --from-file=config=./api-config.json
 }
 
-function create_API_capabilities_conf() {
-    local CONFIG_NAME=$1
-    local USE_CAAS=$2
-    local CONFIG_FILE=capabilities_config.json
+function render_UI_config() {
+    local CLIENT_ID=${1:-""}
 
-    if [ ${USE_CAAS} == "true" ]; then
-        local CONFIG_FILE=capabilities_config_caas.json
-    fi
-
-    stdout "Creating API Capabilities config configMap object: ${CONFIG_NAME}"
-    kubectl create configmap ${CONFIG_NAME} --from-file=capabilities-config=${CONFIG_FILE}
+    stdout "Rendering UI config file for Job Manager UI"
+    docker run -i --rm \
+        -e CLIENT_ID=${CLIENT_ID} \
+        -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
+        /usr/local/bin/render-ctmpl.sh -k /working/ui-config.json.ctmpl
 }
 
-function create_UI_conf() {
-    local CONFIG_NAME=$1
-    local JMUI_VERSION=$2
-    local USE_PROXY=$3
+function render_NGINX_conf() {
+    local JMUI_VERSION=$1
+    local USE_PROXY=$2
 
     stdout "Rendering UI's nginx.conf file"
     docker run -i --rm \
@@ -131,9 +71,26 @@ function create_UI_conf() {
         -e USE_PROXY=${USE_PROXY} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/nginx.conf.ctmpl
+}
 
-    stdout "Creating UI config configMap object: ${CONFIG_NAME}"
-    kubectl create configmap ${CONFIG_NAME} --from-file=jm-ui-config=nginx.conf
+function create_jm_configmap_obj() {
+    local CONFIG_NAME=$1
+    local USE_CAAS=$2
+    local CAPABILITIES_CONFIG_FILE=capabilities_config.json
+    local UI_CONFIG_FILE=ui-config.json
+    local UI_NGINX_FILE=nginx.conf
+
+    if [ ${USE_CAAS} == "true" ]; then
+        local CAPABILITIES_CONFIG_FILE=capabilities_config_caas.json
+    fi
+
+    stdout "Creating Job Manager configMap object: ${CONFIG_NAME}"
+    stdout "This object contains UI config, Nginx config and capabilities config files."
+
+    kubectl create configmap ${CONFIG_NAME} \
+        --from-file=capabilities-config=${CAPABILITIES_CONFIG_FILE} \
+        --from-file=jm-nginx-config=${UI_NGINX_FILE} \
+        --from-file=jm-ui-config=${UI_CONFIG_FILE}
 }
 
 function create_UI_proxy() {
@@ -153,12 +110,13 @@ function apply_kube_deployment() {
     local CROMWELL_URL=$1
     local API_DOCKER_IMAGE=$2
     local API_CONFIG=$3
-    local API_CAPABILITIES_CONFIG=$4
+    local JM_CONFIGMAP_OBJ=$4
     local UI_DOCKER_IMAGE=$5
     local PROXY_CREDENTIALS_CONFIG=$6
-    local UI_CONFIG=$7
-    local USE_CAAS=$8
-    local USE_PROXY=$9
+    local USE_CAAS=$7
+    local USE_PROXY=$8
+    local GUNICORN_WORKERS="$((2 * $(getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 2) + 1))"
+    local GUNICORN_WORKER_TYPE="gevent"
     local API_PATH_PREFIX="/api/v1"
     local REPLICAS=1
 
@@ -171,10 +129,11 @@ function apply_kube_deployment() {
         -e UI_DOCKER_IMAGE=${UI_DOCKER_IMAGE} \
         -e API_CONFIG=${API_CONFIG} \
         -e PROXY_CREDENTIALS_CONFIG=${PROXY_CREDENTIALS_CONFIG} \
-        -e UI_CONFIG=${UI_CONFIG} \
-        -e API_CAPABILITIES_CONFIG=${API_CAPABILITIES_CONFIG} \
+        -e JMUI_CONFIGMAP_OBJ=${JM_CONFIGMAP_OBJ} \
         -e USE_CAAS=${USE_CAAS} \
         -e USE_PROXY=${USE_PROXY} \
+        -e GUNICORN_WORKERS=${GUNICORN_WORKERS} \
+        -e GUNICORN_WORKER_TYPE=${GUNICORN_WORKER_TYPE} \
         -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s \
         /usr/local/bin/render-ctmpl.sh -k /working/job-manager-deployment.yaml.ctmpl
 
@@ -224,7 +183,7 @@ function tear_down_rendered_files() {
     stdout "Removing all generated files"
     rm -rf ".htpasswd"
     rm -rf "api-config.json"
-    rm -rf "environment.template.ts"
+    rm -rf "ui-config.json"
     rm -rf "job-manager-deployment.yaml"
     rm -rf "job-manager-ingress.yaml"
     rm -rf "nginx.conf"
@@ -245,33 +204,18 @@ function main() {
     local VAULT_TOKEN_FILE=${11:-"$HOME/.vault-token"}
 
     local DOCKER_TAG=${JMUI_TAG}
-    local API_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-api:${DOCKER_TAG}"
-    local UI_DOCKER_IMAGE="gcr.io/${GCLOUD_PROJECT}/jm-cromwell-ui:${DOCKER_TAG}"
+    local API_DOCKER_IMAGE="databiosphere/job-manager-api-cromwell:${DOCKER_TAG}"
+    local UI_DOCKER_IMAGE="databiosphere/job-manager-ui:${DOCKER_TAG}"
 
     set -e
 
     line
     configure_kubernetes ${GCLOUD_PROJECT} ${GKE_CONTEXT}
 
-    line
-    update_submodule ${JMUI_TAG}
-
-    line
-    render_environment_ts ${CLIENT_ID}
-
-    line
-    inject_angular_and_build_UI ${GCLOUD_PROJECT} ${DOCKER_TAG}
-
-    line
-    build_API ${GCLOUD_PROJECT} ${DOCKER_TAG}
-
     local API_CONFIG="cromwell-credentials-$(date '+%Y-%m-%d-%H-%M')"
-    local CAPABILITIES_CONFIG="capabilities-config-$(date '+%Y-%m-%d-%H-%M')"
+    local JM_CONFIGMAP_OBJ="jm-configmap-$(date '+%Y-%m-%d-%H-%M')"
 
     local UI_PROXY="jm-htpasswd-$(date '+%Y-%m-%d-%H-%M')"
-    local UI_CONFIG="jm-ui-config-$(date '+%Y-%m-%d-%H-%M')"
-
-    line
 
     if [ ${USE_PROXY} == "true" ]; then
         local USERNAME=${JMUI_USR}
@@ -295,19 +239,17 @@ function main() {
         fi
     fi
 
-    if create_API_capabilities_conf ${CAPABILITIES_CONFIG} ${USE_CAAS}
-    then
-        stdout "Successfully created API capabilities config."
-    else
-        tear_down_kube_configMap ${CAPABILITIES_CONFIG}
-        stderr
-    fi
+    line
+    render_UI_config ${CLIENT_ID}
 
-    if create_UI_conf ${UI_CONFIG} ${JMUI_TAG} ${USE_PROXY}
+    line
+    render_NGINX_conf ${JMUI_TAG} ${USE_PROXY}
+
+    if create_jm_configmap_obj ${JM_CONFIGMAP_OBJ} ${USE_CAAS}
     then
-        stdout "Successfully created UI config"
+        stdout "Successfully created UI configMap object."
     else
-        tear_down_kube_configMap ${UI_CONFIG}
+        tear_down_kube_configMap ${JM_CONFIGMAP_OBJ}
         stderr
     fi
 
@@ -315,7 +257,7 @@ function main() {
     apply_kube_service
 
     line
-    apply_kube_deployment ${CROMWELL_URL} ${API_DOCKER_IMAGE} ${API_CONFIG} ${CAPABILITIES_CONFIG} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${UI_CONFIG} ${USE_CAAS} ${USE_PROXY}
+    apply_kube_deployment ${CROMWELL_URL} ${API_DOCKER_IMAGE} ${API_CONFIG} ${JM_CONFIGMAP_OBJ} ${UI_DOCKER_IMAGE} ${UI_PROXY} ${USE_CAAS} ${USE_PROXY}
 
 #    line
 #    Each re-deployment to the ingress will cause a ~10 minuted downtime to the Job Manager. So this script assumes that you have created your ingress before using this it. This functions is here just for completeness.

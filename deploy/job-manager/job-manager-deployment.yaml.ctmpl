@@ -19,7 +19,7 @@ spec:
       - name: job-manager-api
         image: {{ env "API_DOCKER_IMAGE" }}
         imagePullPolicy: Always
-        args: ["-b", ":8190", "-t", "60"]
+        args: ["-b", ":8190", "-t", "60", "-w", "{{ env "GUNICORN_WORKERS" }}", "-k", "{{ env "GUNICORN_WORKER_TYPE" }}"]
         ports:
         - containerPort: 8190
         volumeMounts:
@@ -28,7 +28,7 @@ spec:
           mountPath: /etc/job-manager/api
           readOnly: true
         {{ end }}
-        - name: jm-api-capabilities-config
+        - name: jm-configmap-obj
           mountPath: /etc/job-manager/capabilities/capabilities-config.json
           subPath: capabilities-config
           readOnly: true
@@ -51,8 +51,12 @@ spec:
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: jm-ui-config
+        - name: jm-configmap-obj
           mountPath: /etc/nginx/nginx.conf
+          subPath: jm-nginx-config
+          readOnly: true
+        - name: jm-configmap-obj
+          mountPath: /ui/dist/assets/environments/environment.json
           subPath: jm-ui-config
           readOnly: true
       {{ if env "USE_PROXY" | parseBool }}
@@ -85,9 +89,6 @@ spec:
           - key: htpasswd
             path: .htpasswd
       {{ end }}
-      - name: jm-ui-config
+      - name: jm-configmap-obj
         configMap:
-          name: {{ env "UI_CONFIG"}}
-      - name: jm-api-capabilities-config
-        configMap:
-          name: {{ env "API_CAPABILITIES_CONFIG"}}
+          name: {{ env "JMUI_CONFIGMAP_OBJ"}}
