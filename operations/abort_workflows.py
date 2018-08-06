@@ -1,3 +1,4 @@
+import os
 import argparse
 import logging
 import requests
@@ -26,9 +27,9 @@ def abort_workflows(cromwell_url, workflows, caas_key, dry_run=False):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cromwell_url')
-    parser.add_argument('--caas_key')
-    parser.add_argument('--dry_run', default='false')
+    parser.add_argument('--cromwell_url', default=os.environ.get('CROMWELL_URL'))
+    parser.add_argument('--caas_key', default=os.environ.get('CAAS_KEY'))
+    parser.add_argument('--dry_run', default=os.environ.get('DRY_RUN', 'false'))
     args = parser.parse_args()
     query_dict = {
         'status': ['On Hold', 'Running']

@@ -18,15 +18,20 @@ elif [ -z $CROMWELL_URL ]; then
 elif [ -z $VAULT_ENV ]; then
     echo -e "\nYou must specify a vault environment for getting the CaaS service account key"
     error=1
-elif [ -z $DRY_RUN ]; then
-    DRY_RUN = "false"
 fi
+
 if [ $error -eq 1 ]; then
     echo -e "\nUsage: bash stop_greenbox.sh KUBE_CONTEXT CROMWELL_URL VAULT_ENV\n"
     exit 1
 fi
 
-kubectl config use-context ${KUBE_CONTEXT}
+if [ -z $DRY_RUN ]; then
+    DRY_RUN = "false"
+else
+    echo "Running in dry-run mode"
+fi
+
+kubectl config use-context $KUBE_CONTEXT
 
 # Delete ingress rule for Lira to stop receiving notifications
 echo "Delete Lira ingress"
@@ -48,4 +53,8 @@ docker run -i --rm -e VAULT_TOKEN=$(cat $VAULT_TOKEN_FILE) broadinstitute/dsde-t
         secret/dsde/mint/$VAULT_ENV/listener/caas-${VAULT_ENV}-key.json > $CAAS_KEY_FILE
 
 # Abort all on-hold and running workflows
-python -m abort_workflows --cromwell_url ${CROMWELL_URL} --caas_key ${CAAS_KEY_FILE} --dry_run ${DRY_RUN}
+docker run --rm -v $PWD:/app \
+    -e CROMWELL_URL=$CROMWELL_URL \
+    -e CAAS_KEY=/app/$CAAS_KEY_FILE \
+    -e DRY_RUN=$DRY_RUN \
+    quay.io/humancellatlas/secondary-analysis-mintegration /app/abort_workflows.py
