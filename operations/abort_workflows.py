@@ -7,8 +7,11 @@ from cromwell_tools import cromwell_tools
 
 def get_workflows(cromwell_url, query_dict, caas_key):
     response = cromwell_tools.query_workflows(cromwell_url, query_dict, caas_key=caas_key)
-    workflows = response.json()['results']
-    return workflows
+    if response.status_code != 200:
+        logging.info('Could not retrieve workflows from Cromwell')
+    else:
+        workflows = response.json()['results']
+        return workflows
 
 
 def abort_workflows(cromwell_url, workflows, caas_key, dry_run=False):
@@ -17,11 +20,11 @@ def abort_workflows(cromwell_url, workflows, caas_key, dry_run=False):
     for workflow in workflows:
         workflow_id = workflow['id']
         abort_url = '{}/api/workflows/v1/{}/abort'.format(cromwell_url, workflow_id)
+        logging.info('Aborting workflow {}...'.format(workflow_id))
         if not dry_run:
             response = requests.post(abort_url, auth=auth, headers=headers)
             if response.status_code != 200:
                 logging.info('Could not abort workflow {}'.format(workflow_id))
-        logging.info('Aborted workflow {}'.format(workflow_id))
 
 
 if __name__ == '__main__':
@@ -36,4 +39,5 @@ if __name__ == '__main__':
     }
     dry_run = True if args.dry_run.lower() == 'true' else False
     target_workflows = get_workflows(args.cromwell_url, query_dict, args.caas_key)
-    abort_workflows(args.cromwell_url, target_workflows, args.caas_key, dry_run=dry_run)
+    if target_workflows:
+        abort_workflows(args.cromwell_url, target_workflows, args.caas_key, dry_run=dry_run)
