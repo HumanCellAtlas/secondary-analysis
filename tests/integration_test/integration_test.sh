@@ -99,7 +99,7 @@ date +"%Y-%m-%d %H:%M:%S"
 
 set -e
 
-env=$1
+ENV=$1
 lira_mode=$2
 lira_version=$3
 pipeline_tools_mode=$4
@@ -110,7 +110,7 @@ ss2_mode=$8
 ss2_version=$9
 tenx_sub_id=${10}
 ss2_sub_id=${11}
-vault_token_path=${12}
+VAULT_TOKEN_PATH=${12}
 submit_wdl_dir=${13}
 use_caas=${14}
 use_hmac=${15}
@@ -119,7 +119,7 @@ caas_collection_name=${16:-"lira-${env}-workflows"}
 work_dir=$(pwd)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-printf "\n\nenv: $env"
+printf "\n\nenv: ${ENV}"
 printf "\nlira_mode: $lira_mode"
 printf "\nlira_version: $lira_version"
 printf "\npipeline_tools_mode: $pipeline_tools_mode"
@@ -130,7 +130,7 @@ printf "\nss2_mode: $ss2_mode"
 printf "\nss2_version: $ss2_version"
 printf "\ntenx_sub_id: $tenx_sub_id"
 printf "\nss2_sub_id: $ss2_sub_id"
-printf "\nvault_token_path: $vault_token_path"
+printf "\nvault_token_path: ${VAULT_TOKEN_PATH}"
 printf "\nsubmit_wdl_directory: $submit_wdl_dir"
 printf "\nuse_caas: $use_caas"
 printf "\nuse_hmac: $use_hmac"
@@ -168,8 +168,8 @@ if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
   printf "\n\nCloning lira\n"
   git clone git@github.com:HumanCellAtlas/lira.git
   cd lira
-  lira_dir=$PWD
-  printf "\nlira_dir: $lira_dir\n"
+  LIRA_DIR=$PWD
+  printf "\nLIRA_DIR: ${LIRA_DIR}\n"
   if [ $lira_version == "latest_released" ]; then
     printf "\nDetermining latest release tag\n"
     lira_version=$(python $script_dir/get_latest_release.py --repo HumanCellAtlas/lira)
@@ -177,7 +177,7 @@ if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
     printf "\nDetermining latest deployed version\n"
     lira_version=$(python $script_dir/current_deployed_version.py \
                     --component_name lira
-                    --env $env \
+                    --env ${ENV} \
                     --mint_deployment_dir $mint_deployment_dir)
   else
     lira_version=$(get_version lira $lira_version)
@@ -187,7 +187,7 @@ if [ $lira_mode == "github" ] || [ $lira_mode == "image" ]; then
   cd $work_dir
 elif [ $lira_mode == "local" ]; then
   printf "\n\nUsing Lira in dir: $lira_version\n"
-  lira_dir=$lira_version
+  LIRA_DIR=$lira_version
 fi
 
 # 3. Get pipeline-tools version
@@ -199,7 +199,7 @@ if [ $pipeline_tools_mode == "github" ]; then
     printf "\n\nDetermining latest deployed version of pipeline-tools\n"
     pipeline_tools_version=$(python $script_dir/current_deployed_version.py \
                       --mint_deployment_dir $mint_deployment_dir \
-                      --env $env \
+                      --env ${ENV} \
                       --component_name pipeline_tools)
   else
     pipeline_tools_version=$(get_version pipeline-tools $pipeline_tools_version)
@@ -229,13 +229,13 @@ if [ $lira_mode == "image" ]; then
   fi
   docker pull quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version
 elif [ $lira_mode == "local" ] || [ $lira_mode == "github" ]; then
-  cd $lira_dir
+  cd ${LIRA_DIR}
   if [ $lira_mode == "local" ]; then
     lira_image_version=local
   elif [ $lira_mode == "github" ]; then
     lira_image_version=$lira_version
   fi
-  printf "\n\nBuilding Lira version \"$lira_image_version\" from dir: $lira_dir\n"
+  printf "\n\nBuilding Lira version \"$lira_image_version\" from dir: ${LIRA_DIR}\n"
   docker build -t quay.io/humancellatlas/secondary-analysis-lira:$lira_image_version .
   cd $work_dir
 fi
@@ -249,7 +249,7 @@ if [ $tenx_mode == "github" ]; then
     printf "\n\nDetermining latest deployed version of 10x pipeline\n"
     tenx_version=$(python $script_dir/current_deployed_version.py \
                       --mint_deployment_dir $mint_deployment_dir \
-                      --env $env \
+                      --env ${ENV} \
                       --component_name 10x)
   else
     tenx_version=$(get_version skylab $tenx_version)
@@ -273,7 +273,7 @@ if [ $ss2_mode == "github" ]; then
     printf "\n\nDetermining latest deployed version of ss2 pipeline\n"
     ss2_version=$(python $script_dir/current_deployed_version.py \
                       --mint_deployment_dir $mint_deployment_dir \
-                      --env $env \
+                      --env ${ENV} \
                       --component_name ss2)
   else
     ss2_version=$(get_version skylab $ss2_version)
@@ -307,10 +307,10 @@ docker run -i --rm \
     -e TENX_VERSION=${tenx_version} \
     -e TENX_PREFIX=${tenx_prefix} \
     -e TENX_SUBSCRIPTION_ID=${tenx_sub_id} \
-    -e VAULT_TOKEN=$(cat $vault_token_path) \
+    -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
     -e SUBMIT_WDL_DIR=${submit_wdl_dir} \
-    -v $lira_dir/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
-    /usr/local/bin/render-ctmpl.sh -k /working/listener-config.json.ctmpl
+    -v ${LIRA_DIR}/kubernetes:/working broadinstitute/dsde-toolbox:k8s \
+    /usr/local/bin/render-ctmpl.sh -k /working/lira-config.json.ctmpl
 
 # 7. Start Lira
 
@@ -335,19 +335,20 @@ fi
 
 
 if [ $use_caas ]; then
+    echo "Getting private key for caas"
     docker run -i --rm \
-        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
         broadinstitute/dsde-toolbox vault read \
         -format=json \
-        -field=value \
-        secret/dsde/mint/$env/listener/caas-${env}-key.json > $lira_dir/kubernetes/caas_key.json
+        -field=data \
+        secret/dsde/mint/${ENV}/lira/caas-prod-key.json > ${LIRA_DIR}/kubernetes/caas_key.json
 
     docker run -d \
         -p 8080:8080 \
-        -e listener_config=/etc/lira/listener-config.json \
+        -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/caas_key.json \
-        -v $lira_dir/kubernetes/listener-config.json:/etc/lira/listener-config.json \
-        -v $lira_dir/kubernetes/caas_key.json:/etc/lira/caas_key.json \
+        -v ${LIRA_DIR}/kubernetes/lira-config.json:/etc/lira/lira-config.json \
+        -v ${LIRA_DIR}/kubernetes/caas_key.json:/etc/lira/caas_key.json \
         --name=lira \
         $(echo "$mount_pipeline_tools" | xargs) \
         $(echo "$mount_tenx" | xargs) \
@@ -356,8 +357,8 @@ if [ $use_caas ]; then
 else
     docker run -d \
         -p 8080:8080 \
-        -e listener_config=/etc/lira/listener-config.json \
-        -v $lira_dir/kubernetes/listener-config.json:/etc/lira/listener-config.json \
+        -e lira_config=/etc/lira/lira-config.json \
+        -v ${LIRA_DIR}/kubernetes/lira-config.json:/etc/lira/lira-config.json \
         --name=lira \
         $(echo "$mount_pipeline_tools" | xargs) \
         $(echo "$mount_tenx" | xargs) \
@@ -389,16 +390,16 @@ trap "stop_lira_on_error" ERR
 if [ "$use_hmac" == "true" ]; then
   printf "\n\nGetting hmac key\n"
   HMAC_KEY=$(docker run -i --rm \
-        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
         broadinstitute/dsde-toolbox \
-        vault read -field=current_key secret/dsde/mint/$env/listener/hmac_keys)
+        vault read -field=current_key secret/dsde/mint/${ENV}/lira/hmac_keys)
   AUTH_PARAMS="--hmac_key $HMAC_KEY --hmac_key_id current_key"
 else
   printf "\n\nGetting notification token\n"
   notification_token=$(docker run -i --rm \
-        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
         broadinstitute/dsde-toolbox \
-        vault read -field=notification_token secret/dsde/mint/$env/listener/listener_secret)
+        vault read -field=notification_token secret/dsde/mint/${ENV}/lira/lira_secret)
   AUTH_PARAMS="--query_param_token $notification_token"
 fi
 
@@ -419,7 +420,7 @@ printf "\n\nAwaiting workflow completion\n"
 # Uses the docker image built from Dockerfile next to this script
 if [ $use_caas == "true" ]; then
     docker run --rm -v $script_dir:/app \
-        -v $lira_dir/kubernetes/caas_key.json:/etc/lira/caas_key.json \
+        -v ${LIRA_DIR}/kubernetes/caas_key.json:/etc/lira/caas_key.json \
         -e WORKFLOW_IDS=$ss2_workflow_id \
         -e WORKFLOW_NAMES=ss2 \
         -e CROMWELL_URL=https://cromwell.caas-dev.broadinstitute.org \
@@ -431,19 +432,19 @@ if [ $use_caas == "true" ]; then
 
 else
     export CROMWELL_USER=$(docker run -i --rm \
-        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
             broadinstitute/dsde-toolbox \
-            vault read -field=cromwell_user secret/dsde/mint/$env/common/htpasswd)
+            vault read -field=cromwell_user secret/dsde/mint/${ENV}/common/htpasswd)
 
     export CROMWELL_PASSWORD=$(docker run -i --rm \
-        -e VAULT_TOKEN=$(cat $vault_token_path) \
+        -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
         broadinstitute/dsde-toolbox \
-        vault read -field=cromwell_password secret/dsde/mint/$env/common/htpasswd)
+        vault read -field=cromwell_password secret/dsde/mint/${ENV}/common/htpasswd)
 
     docker run --rm -v $script_dir:/app \
         -e WORKFLOW_IDS=$ss2_workflow_id \
         -e WORKFLOW_NAMES=ss2 \
-        -e CROMWELL_URL=https://cromwell.mint-$env.broadinstitute.org \
+        -e CROMWELL_URL=https://cromwell.mint-${ENV}.broadinstitute.org \
         -e CROMWELL_USER=$CROMWELL_USER \
         -e CROMWELL_PASSWORD=$CROMWELL_PASSWORD \
         -e TIMEOUT_MINUTES=120 \

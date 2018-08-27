@@ -36,7 +36,7 @@ kubectl config use-context $KUBE_CONTEXT
 # Delete ingress rule for Lira to stop receiving notifications
 echo "Delete Lira ingress"
 if [ $DRY_RUN == "false" ]; then
-    kubectl delete ingress listener
+    kubectl delete ingress lira
 fi
 
 # Bring down Falcon to stop releasing workflows
@@ -50,7 +50,7 @@ CAAS_KEY_FILE="caas_key.json"
 docker run -i --rm -e VAULT_TOKEN=$(cat $VAULT_TOKEN_FILE) broadinstitute/dsde-toolbox vault read \
         -format=json \
         -field=value \
-        secret/dsde/mint/$VAULT_ENV/listener/caas-${VAULT_ENV}-key.json > $CAAS_KEY_FILE
+        secret/dsde/mint/$VAULT_ENV/lira/caas-${VAULT_ENV}-key.json > $CAAS_KEY_FILE
 
 # Abort all on-hold and running workflows
 docker run --rm -v $PWD:/app \

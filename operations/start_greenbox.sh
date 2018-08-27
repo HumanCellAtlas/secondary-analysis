@@ -22,9 +22,9 @@ kubectl config use-context ${KUBE_CONTEXT}
 TLS_SECRET_NAME=$(kubectl get secrets -o json | jq -c '[.items[] | select(.metadata.name | contains("tls-secret"))][-1]' | jq -r .metadata.name)
 
 echo "Re-create Lira ingress"
-docker run -i --rm -e TLS_SECRET_NAME=${TLS_SECRET_NAME} -v ${VAULT_TOKEN_FILE}:/root/.vault-token -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s /usr/local/bin/render-ctmpl.sh -k /working/listener-ingress.yaml.ctmpl
+docker run -i --rm -e TLS_SECRET_NAME=${TLS_SECRET_NAME} -v ${VAULT_TOKEN_FILE}:/root/.vault-token -v ${PWD}:/working broadinstitute/dsde-toolbox:k8s /usr/local/bin/render-ctmpl.sh -k /working/lira-ingress.yaml.ctmpl
 
-kubectl create -f listener-ingress.yaml --record --save-config
+kubectl create -f lira-ingress.yaml --record --save-config
 
 # TODO: Uncomment when Falcon is deployed
 #echo "Re-create Falcon deployment"

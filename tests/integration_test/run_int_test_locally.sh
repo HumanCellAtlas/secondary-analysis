@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 repo_root=$1
-vault_token_path=$2
+VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 
 #env=$1
 #lira_mode=$2
@@ -24,7 +24,7 @@ script_dir=$repo_root/tests/integration_test
 bash $script_dir/integration_test.sh \
         "test" \
         "github" \
-        "master" \
+        "ra_update_to_caas_prod" \
         "github" \
         "master" \
         "github" \
@@ -33,7 +33,7 @@ bash $script_dir/integration_test.sh \
         "master" \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
         $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
-        "$vault_token_path" \
+        "${VAULT_TOKEN_PATH}" \
         "" \
         "true" \
         "true"
