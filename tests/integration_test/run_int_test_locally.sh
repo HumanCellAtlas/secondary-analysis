@@ -19,9 +19,9 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 #use_caas=${14}
 #use_hmac=${15}
 
-script_dir=$repo_root/tests/integration_test
+SCRIPT_DIR="${repo_root}/tests/integration_test"
 
-bash $script_dir/integration_test.sh \
+bash ${SCRIPT_DIR}/integration_test.sh \
         "test" \
         "github" \
         "ra_update_to_caas_prod" \
@@ -31,8 +31,8 @@ bash $script_dir/integration_test.sh \
         "master" \
         "github" \
         "master" \
-        $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
-        $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
+        "$(tail -n+2 ${SCRIPT_DIR}/dss_staging_sub_ids.tsv | head -n1 | cut -f1)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/dss_staging_sub_ids.tsv | head -n1 | cut -f2)" \
         "${VAULT_TOKEN_PATH}" \
         "" \
         "true" \

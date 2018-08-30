@@ -27,6 +27,7 @@ def run(args):
         msg = 'Unexpected response code {0} when sending notification {1} to url {2}: \n{3}'
         raise ValueError(msg.format(response.status_code, args.notification, args.lira_url, response.text))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--lira_url', default=os.environ.get('LIRA_URL', None))
