@@ -26,7 +26,7 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "github" \
         "ra_update_to_caas_prod" \
         "github" \
-        "master" \
+        "rex-rhian-testing" \
         "github" \
         "master" \
         "github" \

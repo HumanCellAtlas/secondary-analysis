@@ -94,8 +94,27 @@
 # USE_HMAC
 # Uses hmac for authenticating notifications if true, otherwise uses query param token
 
-printf "\nStarting integration test\n"
-date +"%Y-%m-%d %H:%M:%S"
+function print_style {
+    if [ "$1" == "info" ];
+    then
+        printf '\e[1;90m%-6s\e[m\n' "$2" # print gray
+    elif [ "$1" == "error" ];
+    then
+        printf '\e[1;91m%-6s\e[m\n' "$2"  # print red
+    elif [ "$1" == "success" ];
+    then
+        printf '\e[1;92m%-6s\e[m\n' "$2" # print green
+    elif [ "$1" == "warn" ];
+    then
+        printf '\e[1;93m%-6s\e[m\n' "$2" # print yellow
+    else
+        printf "$1"
+    fi
+
+}
+
+print_style "info" "Starting integration test"
+print_style "info" $(date +"%Y-%m-%d %H:%M:%S")
 
 set -e
 
@@ -162,7 +181,7 @@ then
     INGEST_URL="http://api.ingest.data.humancellatlas.org/"
 else
     DSS_URL="https://dss.${ENV}.data.humancellatlas.org/v1"
-    SCHEMA_URL="https://schema.${ENV}.humancellatlas.org/"
+    SCHEMA_URL="http://schema.${ENV}.data.humancellatlas.org/"
     INGEST_URL="http://api.ingest.${ENV}.data.humancellatlas.org/"
 fi
 
@@ -170,29 +189,27 @@ GCS_ROOT="gs://${GCLOUD_PROJECT}-cromwell-execution/caas-cromwell-executions"
 
 SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
 
-
-
-printf "\nLIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
-printf "\nLIRA_MODE: ${LIRA_MODE}"
-printf "\nLIRA_VERSION: ${LIRA_VERSION}"
-printf "\nPIPELINE_TOOLS_MODE: ${PIPELINE_TOOLS_MODE}"
-printf "\nPIPELINE_TOOLS_VERSION: ${PIPELINE_TOOLS_VERSION}"
-printf "\nPIPELINE_TOOLS_PREFIX: ${PIPELINE_TOOLS_PREFIX}"
-printf "\nTENX_MODE: ${TENX_MODE}"
-printf "\nTENX_VERSION: ${TENX_VERSION}"
-printf "\nTENX_SUBSCRIPTION_ID: ${TENX_SUBSCRIPTION_ID}"
-printf "\nSS2_MODE: ${SS2_MODE}"
-printf "\nSS2_VERSION: ${SS2_VERSION}"
-printf "\nSS2_SUBSCRIPTION_ID: ${SS2_SUBSCRIPTION_ID}"
-printf "\nVAULT_TOKEN_PATH: ${VAULT_TOKEN_PATH}"
-printf "\nSUBMIT_WDL_DIR: ${SUBMIT_WDL_DIR}"
-printf "\nUSE_CAAS: ${USE_CAAS}"
-printf "\nUSE_HMAC: ${USE_HMAC}"
-printf "\nCOLLECTION_NAME: ${COLLECTION_NAME}"
-printf "\nWorking directory: ${WORK_DIR}"
-printf "\nScript directory: ${SCRIPT_DIR}"
-printf "\nCROMWELL URL: ${CROMWELL_URL}"
-printf "\nVAULT_TOKEN_PATH: ${VAULT_TOKEN_PATH}"
+print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
+print_style "info" "LIRA_MODE: ${LIRA_MODE}"
+print_style "info" "LIRA_VERSION: ${LIRA_VERSION}"
+print_style "info" "PIPELINE_TOOLS_MODE: ${PIPELINE_TOOLS_MODE}"
+print_style "info" "PIPELINE_TOOLS_VERSION: ${PIPELINE_TOOLS_VERSION}"
+print_style "info" "PIPELINE_TOOLS_PREFIX: ${PIPELINE_TOOLS_PREFIX}"
+print_style "info" "TENX_MODE: ${TENX_MODE}"
+print_style "info" "TENX_VERSION: ${TENX_VERSION}"
+print_style "info" "TENX_SUBSCRIPTION_ID: ${TENX_SUBSCRIPTION_ID}"
+print_style "info" "SS2_MODE: ${SS2_MODE}"
+print_style "info" "SS2_VERSION: ${SS2_VERSION}"
+print_style "info" "SS2_SUBSCRIPTION_ID: ${SS2_SUBSCRIPTION_ID}"
+print_style "info" "VAULT_TOKEN_PATH: ${VAULT_TOKEN_PATH}"
+print_style "info" "SUBMIT_WDL_DIR: ${SUBMIT_WDL_DIR}"
+print_style "info" "USE_CAAS: ${USE_CAAS}"
+print_style "info" "USE_HMAC: ${USE_HMAC}"
+print_style "info" "COLLECTION_NAME: ${COLLECTION_NAME}"
+print_style "info" "Working directory: ${WORK_DIR}"
+print_style "info" "Script directory: ${SCRIPT_DIR}"
+print_style "info" "CROMWELL URL: ${CROMWELL_URL}"
+print_style "info" "VAULT_TOKEN_PATH: ${VAULT_TOKEN_PATH}"
 
 function get_version {
   REPO=$1
@@ -209,32 +226,26 @@ function get_version {
 
   if [ "${STATUS_CODE}" != "200" ]; then
     # 1>&2 prints message to stderr so it doesn't interfere with return value
-    printf "\nCouldn't find ${REPO} branch or commit ${VERSION}. Using master instead.\n" 1>&2
+    print_style "warn" "Couldn't find ${REPO} branch or commit ${VERSION}. Using master instead." 1>&2
     echo "master"
   else
     echo "${VERSION}"
   fi
 }
 
-# 1. Clone mint-deployment
-printf "\nCloning mint-deployment\n"
-git clone git@github.com:HumanCellAtlas/mint-deployment.git
-MINT_DEPLOYMENT_DIR=mint-deployment
-
-# 2. Clone Lira if needed
+# 1. Clone Lira if needed
 if [ "${LIRA_MODE}" == "github" ] || [ ${LIRA_MODE} == "image" ]; then
-  printf "\nCloning lira\n"
+  print_style "info" "Cloning lira"
   git clone git@github.com:HumanCellAtlas/lira.git
 
   LIRA_DIR="${PWD}/lira"
   cd "${LIRA_DIR}"
-  printf "\nLIRA_DIR: ${LIRA_DIR}\n"
 
   if [ "${LIRA_VERSION}" == "latest_released" ]; then
-    printf "\nDetermining latest release tag\n"
+    print_style "info" "Determining latest release tag"
     LIRA_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/lira)"
   elif [ "${LIRA_VERSION}" == "latest_deployed" ]; then
-    printf "\nDetermining latest deployed version\n"
+    print_style "info" "Determining latest deployed version"
     LIRA_VERSION=$(python "${SCRIPT_DIR}/current_deployed_version.py" \
                     --component_name lira \
                     --env "${LIRA_ENVIRONMENT}" \
@@ -243,22 +254,22 @@ if [ "${LIRA_MODE}" == "github" ] || [ ${LIRA_MODE} == "image" ]; then
     LIRA_VERSION="$(get_version lira ${LIRA_VERSION})"
   fi
 
-  printf "Checking out %s" "${LIRA_VERSION}"
+  print_style "info" "Checking out ${LIRA_VERSION}"
 
   git checkout ${LIRA_VERSION}
   cd "${WORK_DIR}"
 elif [ "${LIRA_MODE}" == "local" ]; then
-  printf "\nUsing Lira in dir: ${LIRA_VERSION}\n"
+  print_style "info" "Using Lira in dir: ${LIRA_VERSION}"
   LIRA_DIR="${LIRA_VERSION}"
 fi
 
-# 3. Get pipeline-tools version
+# 2. Get pipeline-tools version
 if [ ${PIPELINE_TOOLS_MODE} == "github" ]; then
   if [ ${PIPELINE_TOOLS_VERSION} == "latest_released" ]; then
-    printf "\nDetermining latest released version of pipeline-tools\n"
+    print_style "info" "Determining latest released version of pipeline-tools"
     PIPELINE_TOOLS_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/pipeline-tools)
   elif [ ${PIPELINE_TOOLS_VERSION} == "latest_deployed" ]; then
-    printf "\nDetermining latest deployed version of pipeline-tools\n"
+    print_style "info" "Determining latest deployed version of pipeline-tools"
     PIPELINE_TOOLS_VERSION=$(python "${SCRIPT_DIR}/current_deployed_version.py" \
                       --mint_deployment_dir "${MINT_DEPLOYMENT_DIR}" \
                       --env "${LIRA_ENVIRONMENT}" \
@@ -266,7 +277,7 @@ if [ ${PIPELINE_TOOLS_MODE} == "github" ]; then
   else
     PIPELINE_TOOLS_VERSION=$(get_version pipeline-tools ${PIPELINE_TOOLS_VERSION})
   fi
-  printf "\nConfiguring Lira to use adapter wdls from pipeline-tools GitHub repo, version: ${PIPELINE_TOOLS_VERSION}\n"
+  print_style "info" "Configuring Lira to use adapter wdls from pipeline-tools GitHub repo: ${PIPELINE_TOOLS_VERSION}"
   PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
 elif [ "${PIPELINE_TOOLS_MODE}" == "local" ]; then
   PIPELINE_TOOLS_PREFIX="/pipeline-tools"
@@ -275,17 +286,17 @@ elif [ "${PIPELINE_TOOLS_MODE}" == "local" ]; then
   cd "${PIPELINE_TOOLS_DIR}"
   PIPELINE_TOOLS_DIR="$(pwd)"
   cd "${WORK_DIR}"
-  printf "\nConfiguring Lira to use adapter wdls in dir: ${PIPELINE_TOOLS_DIR}\n"
+  print_style "info" "Configuring Lira to use adapter wdls in dir: ${PIPELINE_TOOLS_DIR}"
 fi
 
-# 4. Build or pull Lira image
+# 3. Build or pull Lira image
 if [ ${LIRA_MODE} == "image" ]; then
   if [ ${LIRA_VERSION} == "latest_released" ]; then
-    printf "\nDetermining latest released version of Lira\n"
+    print_style "info" "Determining latest released version of Lira"
     LIRA_IMAGE_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/lira)
 
   elif [ ${LIRA_VERSION} == "latest_deployed" ]; then
-    printf "\nDetermining latest deployed version of Lira\n"
+    print_style "info" "Determining latest deployed version of Lira"
     LIRA_IMAGE_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py lira)
 
   else
@@ -304,18 +315,18 @@ elif [ "${LIRA_MODE}" == "local" ] || [ ${LIRA_MODE} == "github" ]; then
 
   fi
 
-  printf "\nBuilding Lira version \"${LIRA_IMAGE_VERSION}\" from dir: ${LIRA_DIR}\n"
+  print_style "info" "Building Lira version \"${LIRA_IMAGE_VERSION}\" from dir: ${LIRA_DIR}"
   docker build -t quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION} .
   cd "${WORK_DIR}"
 fi
 
-# 5. Get analysis pipeline versions to use
+# 4. Get analysis pipeline versions to use
 if [ ${TENX_MODE} == "github" ]; then
   if [ ${TENX_VERSION} == "latest_released" ]; then
-    printf "\nDetermining latest released version of 10x pipeline\n"
+    print_style "info" "Determining latest released version of 10x pipeline"
     TENX_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_v)"
   elif [ "${TENX_VERSION}" == "latest_deployed" ]; then
-    printf "\nDetermining latest deployed version of 10x pipeline\n"
+    print_style "info" "Determining latest deployed version of 10x pipeline"
     TENX_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py \
                       --mint_deployment_dir ${MINT_DEPLOYMENT_DIR} \
                       --env ${LIRA_ENVIRONMENT} \
@@ -324,22 +335,22 @@ if [ ${TENX_MODE} == "github" ]; then
     TENX_VERSION=$(get_version skylab ${TENX_VERSION})
   fi
   TENX_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${TENX_VERSION}"
-  printf "\nConfiguring Lira to use 10x wdl from skylab Github repo, version: ${TENX_VERSION}\n"
+  print_style "info" "Configuring Lira to use 10x wdl from skylab Github repo, version: ${TENX_VERSION}"
 elif [ ${TENX_MODE} == "local" ]; then
   TENX_DIR=${TENX_VERSION}
   cd ${TENX_DIR}
   TENX_DIR=$(pwd)
   cd ${WORK_DIR}
   TENX_PREFIX="/10x"
-  printf "\nUsing 10x wdl in dir: ${TENX_DIR}\n"
+  print_style "info" "Using 10x wdl in dir: ${TENX_DIR}"
 fi
 
 if [ ${SS2_MODE} == "github" ]; then
   if [ ${SS2_VERSION} == "latest_released" ]; then
-    printf "\nDetermining latest released version of ss2 pipeline\n"
+    print_style "info" "Determining latest released version of ss2 pipeline"
     SS2_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix smartseq2_v)
   elif [ ${SS2_VERSION} == "latest_deployed" ]; then
-    printf "\nDetermining latest deployed version of ss2 pipeline\n"
+    print_style "info" "Determining latest deployed version of ss2 pipeline"
     SS2_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py \
                       --mint_deployment_dir ${MINT_DEPLOYMENT_DIR} \
                       --env ${LIRA_ENVIRONMENT} \
@@ -347,7 +358,7 @@ if [ ${SS2_MODE} == "github" ]; then
   else
     SS2_VERSION=$(get_version skylab ${SS2_VERSION})
   fi
-  printf "\nConfiguring Lira to use ss2 wdl from skylab GitHub repo, version: ${SS2_VERSION}\n"
+  print_style "info" "Configuring Lira to use ss2 wdl from skylab GitHub repo, version: ${SS2_VERSION}"
   SS2_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${SS2_VERSION}"
 elif [ ${SS2_MODE} == "local" ]; then
   SS2_DIR=${SS2_VERSION}
@@ -355,7 +366,7 @@ elif [ ${SS2_MODE} == "local" ]; then
   SS2_DIR=$(pwd)
   cd ${WORK_DIR}
   SS2_PREFIX="/ss2"
-  printf "\nUsing ss2 wdl in dir: ${SS2_DIR}\n"
+  print_style "info" "Using ss2 wdl in dir: ${SS2_DIR}"
 fi
 
 
@@ -379,39 +390,39 @@ TENX_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/10x/adap
 TENX_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/10x/adapter.wdl"
 TENX_WORKFLOW_NAME="Adapter10xCount"
 
-# 6. Create config.json
-printf "\nCreating Lira config\n"
+# 5. Create config.json
+print_style "info" "Creating Lira config"
 
-echo "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
-echo "CROMWELL_URL=${CROMWELL_URL}"
-echo "USE_CAAS=${USE_CAAS}"
-echo "COLLECTION_NAME=${COLLECTION_NAME}"
-echo "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
-echo "GCS_ROOT=${GCS_ROOT}"
-echo "LIRA_VERSION=${LIRA_VERSION}"
-echo "DSS_URL=${DSS_URL}"
-echo "SCHEMA_URL=${SCHEMA_URL}"
-echo "INGEST_URL=${INGEST_URL}"
-echo "USE_HMAC=${USE_HMAC}"
-echo "SUBMIT_WDL=${SUBMIT_WDL}"
-echo "MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES}"
-echo "TENX_ANALYSIS_WDLS=${TENX_ANALYSIS_WDLS}"
-echo "TENX_OPTIONS_LINK=${TENX_OPTIONS_LINK}"
-echo "TENX_SUBSCRIPTION_ID=${TENX_SUBSCRIPTION_ID}"
-echo "TENX_WDL_STATIC_INPUTS_LINK=${TENX_WDL_STATIC_INPUTS_LINK}"
-echo "TENX_WDL_LINK=${TENX_WDL_LINK}"
-echo "TENX_WORKFLOW_NAME=${TENX_WORKFLOW_NAME}"
-echo "TENX_VERSION=${TENX_VERSION}"
-echo "SS2_ANALYSIS_WDLS=${SS2_ANALYSIS_WDLS}"
-echo "SS2_OPTIONS_LINK=${SS2_OPTIONS_LINK}"
-echo "SS2_SUBSCRIPTION_ID=${SS2_SUBSCRIPTION_ID}"
-echo "SS2_WDL_STATIC_INPUTS_LINK=${SS2_WDL_STATIC_INPUTS_LINK}"
-echo "SS2_WDL_LINK=${SS2_WDL_LINK}"
-echo "SS2_WORKFLOW_NAME=${SS2_WORKFLOW_NAME}"
-echo "SS2_VERSION=${SS2_VERSION}"
-echo "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
-echo "PWD=${PWD}"
-echo "LIRA_IMAGE_VERSION=${LIRA_IMAGE_VERSION}"
+print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
+print_style "info" "CROMWELL_URL=${CROMWELL_URL}"
+print_style "info" "USE_CAAS=${USE_CAAS}"
+print_style "info" "COLLECTION_NAME=${COLLECTION_NAME}"
+print_style "info" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
+print_style "info" "GCS_ROOT=${GCS_ROOT}"
+print_style "info" "LIRA_VERSION=${LIRA_VERSION}"
+print_style "info" "DSS_URL=${DSS_URL}"
+print_style "info" "SCHEMA_URL=${SCHEMA_URL}"
+print_style "info" "INGEST_URL=${INGEST_URL}"
+print_style "info" "USE_HMAC=${USE_HMAC}"
+print_style "info" "SUBMIT_WDL=${SUBMIT_WDL}"
+print_style "info" "MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES}"
+print_style "info" "TENX_ANALYSIS_WDLS=${TENX_ANALYSIS_WDLS}"
+print_style "info" "TENX_OPTIONS_LINK=${TENX_OPTIONS_LINK}"
+print_style "info" "TENX_SUBSCRIPTION_ID=${TENX_SUBSCRIPTION_ID}"
+print_style "info" "TENX_WDL_STATIC_INPUTS_LINK=${TENX_WDL_STATIC_INPUTS_LINK}"
+print_style "info" "TENX_WDL_LINK=${TENX_WDL_LINK}"
+print_style "info" "TENX_WORKFLOW_NAME=${TENX_WORKFLOW_NAME}"
+print_style "info" "TENX_VERSION=${TENX_VERSION}"
+print_style "info" "SS2_ANALYSIS_WDLS=${SS2_ANALYSIS_WDLS}"
+print_style "info" "SS2_OPTIONS_LINK=${SS2_OPTIONS_LINK}"
+print_style "info" "SS2_SUBSCRIPTION_ID=${SS2_SUBSCRIPTION_ID}"
+print_style "info" "SS2_WDL_STATIC_INPUTS_LINK=${SS2_WDL_STATIC_INPUTS_LINK}"
+print_style "info" "SS2_WDL_LINK=${SS2_WDL_LINK}"
+print_style "info" "SS2_WORKFLOW_NAME=${SS2_WORKFLOW_NAME}"
+print_style "info" "SS2_VERSION=${SS2_VERSION}"
+print_style "info" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
+print_style "info" "PWD=${PWD}"
+print_style "info" "LIRA_IMAGE_VERSION=${LIRA_IMAGE_VERSION}"
 
 docker run -i --rm \
               -e LIRA_ENVIRONMENT="${LIRA_ENVIRONMENT}" \
@@ -447,9 +458,9 @@ docker run -i --rm \
               /usr/local/bin/render-ctmpls.sh \
               -k "/working/${LIRA_CONFIG_FILE}.ctmpl" || true
 
-# 7. Retrieve the caas-<<env>>-key.json file from vault
+# 6. Retrieve the caas-<<env>>-key.json file from vault
 if [ ${USE_CAAS} ]; then
-    printf "Retrieving caas service account key\n"
+    print_style "info" "Retrieving caas service account key"
     docker run -i --rm \
                    -v "${VAULT_TOKEN_PATH}":/root/.vault-token \
                    -v "${PWD}":/working broadinstitute/dsde-toolbox:ra_rendering \
@@ -458,30 +469,30 @@ if [ ${USE_CAAS} ]; then
     mv "${CAAS_KEY_FILE}" "${LIRA_DIR}/kubernetes/"
 fi
                
-# 8. Start Lira
+# 7. Start Lira
 # Check if an old container exists
-printf "Checking for old container"
-docker stop lira || echo "container already stopped"
-docker rm -v lira || echo "container already removed"
+print_style "info" "Checking for old container"
+docker stop lira || print_style "warn" "container already stopped"
+docker rm -v lira || print_style "warn" "container already removed"
 
-printf "Starting Lira docker image\n"
+print_style "info" "Starting Lira docker image\n"
 if [ ${PIPELINE_TOOLS_MODE} == "local" ]; then
   MOUNT_PIPELINE_TOOLS="-v ${PIPELINE_TOOLS_DIR}:/pipeline-tools"
-  printf "Mounting PIPELINE_TOOLS_DIR: ${PIPELINE_TOOLS_DIR}\n"
+  print_style "info" "Mounting PIPELINE_TOOLS_DIR: ${PIPELINE_TOOLS_DIR}\n"
 fi
 if [ ${TENX_MODE} == "local" ]; then
   MOUNT_TENX="-v ${TENX_DIR}:/10x"
-  printf "Mounting TENX_DIR: ${TENX_DIR}\n"
+  print_style "info" "Mounting TENX_DIR: ${TENX_DIR}\n"
 fi
 if [ ${SS2_MODE} == "local" ]; then
   MOUNT_SS2="-v ${SS2_DIR}:/ss2"
-  printf "Mounting SS2_DIR: ${SS2_DIR}\n"
+  print_style "info" "Mounting SS2_DIR: ${SS2_DIR}\n"
 fi
 
 
 if [ ${USE_CAAS} ]; then
 
-    echo "docker run -d \
+    print_style "info" "docker run -d \
         -p 8080:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/kubernetes/${CAAS_ENVIRONMENT}-key.json \
@@ -504,6 +515,7 @@ if [ ${USE_CAAS} ]; then
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
         quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}
+
 else
     docker run -d \
         -p 8080:8080 \
@@ -516,36 +528,36 @@ else
         quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}
 fi
 
-printf "Waiting for Lira to finish start up\n"
+print_style "info" "Waiting for Lira to finish start up"
 sleep 3
 
 n=$(docker ps -f "name=lira" | wc -l)
 if [ ${n} -lt 2 ]; then
-    printf "Lira container exited unexpectedly\n"
+    print_style "error" "Lira container exited unexpectedly"
     exit 1
 fi
 
 set +e
 function stop_lira_on_error {
-  printf '\e[1;34m%-6s\e[m\n' "Stopping Lira"
+  print_style "error" "Stopping Lira"
   docker stop lira
   docker rm -v lira
-  printf '\e[1;91m%-6s\e[m\n' "Test failed!"
+  print_style "error" "Test failed!"
   exit 1
 }
 trap "stop_lira_on_error" ERR
 
-# 9. Send in notifications
+# 8. Send in notifications
 
 if [ "${USE_HMAC}" == "true" ]; then
-  printf "\nGetting hmac key\n"
+  print_style "info" "Getting hmac key"
   HMAC_KEY=$(docker run -i --rm \
         -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
         broadinstitute/dsde-toolbox \
         vault read -field=current_key secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/hmac_keys)
   AUTH_PARAMS="--hmac_key $HMAC_KEY --hmac_key_id current_key"
 else
-  printf "\nGetting notification token\n"
+  print_style "info" "Getting notification token"
   notification_token=$(docker run -i --rm \
         -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
         broadinstitute/dsde-toolbox \
@@ -553,7 +565,7 @@ else
   AUTH_PARAMS="--query_param_token $notification_token"
 fi
 
-printf "\nSending in notifications\n"
+print_style "info" "Sending in notifications"
 # Uses the docker image built from Dockerfile next to this script
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
@@ -562,10 +574,10 @@ SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
                     $(echo "${AUTH_PARAMS}" | xargs))
 
-printf "\nSS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
+print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
-# 10. Poll for completion
-printf "\nAwaiting workflow completion\n"
+# 9. Poll for completion
+print_style "info" "Awaiting workflow completion"
 
 # Uses the docker image built from Dockerfile next to this script
 if [ ${USE_CAAS} == "true" ]; then
@@ -606,8 +618,8 @@ else
 fi
 
 
-# 11. Stop Lira
-printf "\nStopping Lira\n"
+# 10. Stop Lira
+print_style "success" "Stopping Lira"
 docker stop lira
 docker rm -v lira
-printf "\nTest succeeded!\n"
+print_style "success" "Test succeeded!"
