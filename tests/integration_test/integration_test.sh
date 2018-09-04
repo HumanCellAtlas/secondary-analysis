@@ -133,7 +133,7 @@ VAULT_TOKEN_PATH=${12}
 SUBMIT_WDL_DIR=${13}
 USE_CAAS=${14}
 USE_HMAC=${15}
-COLLECTION_NAME=${16:-"lira-${LIRA_ENVIRONMENT}-workflows"}
+COLLECTION_NAME=${16:-"lira-${LIRA_ENVIRONMENT}"}
 
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
