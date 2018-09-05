@@ -263,8 +263,14 @@ elif [ "${LIRA_MODE}" == "local" ]; then
   LIRA_DIR="${LIRA_VERSION}"
 fi
 
-# 2. Get pipeline-tools version
+# 2. Clone pipeline-tools if needed and get version
 if [ ${PIPELINE_TOOLS_MODE} == "github" ]; then
+  print_style "info" "Cloning pipeline-tools"
+  git clone git@github.com:HumanCellAtlas/pipeline-tools.git
+
+  PIPELINE_TOOLS_DIR="${PWD}/pipeline-tools"
+  cd "${PIPELINE_TOOLS_DIR}"
+
   if [ ${PIPELINE_TOOLS_VERSION} == "latest_released" ]; then
     print_style "info" "Determining latest released version of pipeline-tools"
     PIPELINE_TOOLS_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/pipeline-tools)
@@ -277,17 +283,29 @@ if [ ${PIPELINE_TOOLS_MODE} == "github" ]; then
   else
     PIPELINE_TOOLS_VERSION=$(get_version pipeline-tools ${PIPELINE_TOOLS_VERSION})
   fi
+
   print_style "info" "Configuring Lira to use adapter wdls from pipeline-tools GitHub repo: ${PIPELINE_TOOLS_VERSION}"
   PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
+
+  print_style "info" "Checking out ${PIPELINE_TOOLS_VERSION}"
+  git checkout ${PIPELINE_TOOLS_VERSION}
+
 elif [ "${PIPELINE_TOOLS_MODE}" == "local" ]; then
   PIPELINE_TOOLS_PREFIX="/pipeline-tools"
   PIPELINE_TOOLS_DIR="${PIPELINE_TOOLS_VERSION}"
   # Get absolute path to PIPELINE_TOOLS_DIR, required to mount it into docker container later
   cd "${PIPELINE_TOOLS_DIR}"
   PIPELINE_TOOLS_DIR="$(pwd)"
-  cd "${WORK_DIR}"
   print_style "info" "Configuring Lira to use adapter wdls in dir: ${PIPELINE_TOOLS_DIR}"
 fi
+
+# 3. Build pipeline-tools image and push to quay
+print_style "info" "Building pipeline-tools version \"${PIPELINE_TOOLS_VERSION}\" from dir: ${PIPELINE_TOOLS_DIR}"
+PIPELINE_TOOLS_IMAGE=quay.io/humancellatlas/secondary-analysis-pipeline-tools:${PIPELINE_TOOLS_VERSION}
+docker build -t ${PIPELINE_TOOLS_IMAGE} .
+print_style "info" "Pushing pipeline-tools image to quay.io/humancellatlas/secondary-analysis-pipeline-tools"
+docker push ${PIPELINE_TOOLS_IMAGE}
+cd "${WORK_DIR}"
 
 # 3. Build or pull Lira image
 if [ ${LIRA_MODE} == "image" ]; then
