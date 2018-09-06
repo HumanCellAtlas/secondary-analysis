@@ -7,36 +7,37 @@ KUBE_CONTEXT=$1
 CROMWELL_URL=$2
 VAULT_ENV=$3
 DRY_RUN=$4
-VAULT_TOKEN_FILE=${VAULT_TOKEN_FILE:-"$HOME/.vault-token"}
+KUBERNETES_NAMESPACE=$6
+VAULT_TOKEN_FILE=${VAULT_TOKEN_FILE:-"${HOME}/.vault-token"}
 
-if [ -z $KUBE_CONTEXT ]; then
+if [ -z "${KUBE_CONTEXT}" ]; then
     echo -e "\nYou must specify a Kubernetes context to use"
-    error=1
-elif [ -z $CROMWELL_URL ]; then
+    ERROR=1
+elif [ -z "${CROMWELL_URL}" ]; then
     echo -e "\nYou must specify a Cromwell url"
-    error=1
-elif [ -z $VAULT_ENV ]; then
+    ERROR=1
+elif [ -z "${VAULT_ENV}" ]; then
     echo -e "\nYou must specify a vault environment for getting the CaaS service account key"
-    error=1
+    ERROR=1
 fi
 
-if [ $error -eq 1 ]; then
+if [ "${ERROR}" -eq 1 ]; then
     echo -e "\nUsage: bash stop_greenbox.sh KUBE_CONTEXT CROMWELL_URL VAULT_ENV\n"
     exit 1
 fi
 
-if [ -z $DRY_RUN ]; then
-    DRY_RUN = "false"
+if [ -z "${DRY_RUN}" ]; then
+    DRY_RUN="false"
 else
     echo "Running in dry-run mode"
 fi
 
-kubectl config use-context $KUBE_CONTEXT
+kubectl config use-context "${KUBE_CONTEXT}"
 
 # Delete ingress rule for Lira to stop receiving notifications
 echo "Delete Lira ingress"
-if [ $DRY_RUN == "false" ]; then
-    kubectl delete ingress lira
+if [ "${DRY_RUN}" == "false" ]; then
+    kubectl delete ingress lira --namespace "${KUBERNETES_NAMESPACE}"
 fi
 
 # Bring down Falcon to stop releasing workflows
@@ -47,14 +48,14 @@ fi
 # fi
 
 CAAS_KEY_FILE="caas_key.json"
-docker run -i --rm -e VAULT_TOKEN=$(cat $VAULT_TOKEN_FILE) broadinstitute/dsde-toolbox vault read \
+docker run -i --rm -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_FILE})" broadinstitute/dsde-toolbox vault read \
         -format=json \
         -field=value \
-        secret/dsde/mint/$VAULT_ENV/lira/caas-${VAULT_ENV}-key.json > $CAAS_KEY_FILE
+        secret/dsde/mint/"${VAULT_ENV}"/lira/caas-"${VAULT_ENV}"-key.json > "${CAAS_KEY_FILE}"
 
 # Abort all on-hold and running workflows
 docker run --rm -v $PWD:/app \
-    -e CROMWELL_URL=$CROMWELL_URL \
-    -e CAAS_KEY=/app/$CAAS_KEY_FILE \
-    -e DRY_RUN=$DRY_RUN \
+    -e CROMWELL_URL="${CROMWELL_URL}" \
+    -e CAAS_KEY=/app/"${CAAS_KEY_FILE}" \
+    -e DRY_RUN="${DRY_RUN}" \
     quay.io/humancellatlas/secondary-analysis-mintegration /app/abort_workflows.py

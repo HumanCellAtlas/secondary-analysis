@@ -44,7 +44,7 @@
 # out a specific branch specified by lira_version. If the branch does not exist,
 # master will be used instead.
 #
-# pipeline_tools_mode and PIPELINE_TOOLS_VERSION
+# PIPELINE_TOOLS_MODE and PIPELINE_TOOLS_VERSION
 # These parameters determine where Lira will look for adapter WDLs.
 # (pipeline-tools is also used as a Python library for Lira, but that version
 # is controlled in Lira's Dockerfile).
@@ -114,7 +114,7 @@ function print_style {
 }
 
 print_style "info" "Starting integration test"
-print_style "info" $(date +"%Y-%m-%d %H:%M:%S")
+print_style "info" "$(date +"%Y-%m-%d %H:%M:%S")"
 
 set -e
 
@@ -142,8 +142,6 @@ GCLOUD_PROJECT=${GCLOUD_PROJECT:-"broad-dsde-mint-${LIRA_ENVIRONMENT}"} # other 
 
 CAAS_ENVIRONMENT="caas-prod"
 LIRA_CONFIG_FILE="lira-config.json"
-# LIRA_DOCKER_TAG=${LIRA_DOCKER_TAG:-"ra_update_to_caas_prod"}
-# LIRA_DOCKER_IMAGE="quay.io/humancellatlas/secondary-analysis-lira:${LIRA_DOCKER_TAG}"
 
 PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
 SERVICE=${SERVICE:-"lira"}
@@ -151,8 +149,6 @@ MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES:-"1"}
 
 # Cromwell URL - usually will be caas, but can be set to local environment
 CROMWELL_URL=${CROMWELL_URL:-"https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org/api/workflows/v1"}
-
-COLLECTION_NAME=${COLLECTION_NAME:-"lira-${LIRA_ENVIRONMENT}-workflows"}
 
 # Derived Variables
 CAAS_KEY_FILE="${CAAS_ENVIRONMENT}-key.json"
@@ -174,7 +170,7 @@ fi
 
 CAAS_KEY_PATH="secret/dsde/mint/${LIRA_ENVIRONMENT}/${SERVICE}/${CAAS_ENVIRONMENT}-key.json"
 
-if [ ${LIRA_ENVIRONMENT} == "prod" ]
+if [ ${LIRA_ENVIRONMENT} == "prod" ];
 then
     DSS_URL="https://dss.data.humancellatlas.org/v1"
     SCHEMA_URL="https://schema.humancellatlas.org/"
@@ -234,22 +230,18 @@ function get_version {
 }
 
 # 1. Clone Lira if needed
-if [ "${LIRA_MODE}" == "github" ] || [ ${LIRA_MODE} == "image" ]; then
+if [ "${LIRA_MODE}" == "github" ] || [ ${LIRA_MODE} == "image" ];
+then
   print_style "info" "Cloning lira"
   git clone git@github.com:HumanCellAtlas/lira.git
 
   LIRA_DIR="${PWD}/lira"
   cd "${LIRA_DIR}"
 
-  if [ "${LIRA_VERSION}" == "latest_released" ]; then
+  if [ "${LIRA_VERSION}" == "latest_released" ];
+  then
     print_style "info" "Determining latest release tag"
     LIRA_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/lira)"
-  elif [ "${LIRA_VERSION}" == "latest_deployed" ]; then
-    print_style "info" "Determining latest deployed version"
-    LIRA_VERSION=$(python "${SCRIPT_DIR}/current_deployed_version.py" \
-                    --component_name lira \
-                    --env "${LIRA_ENVIRONMENT}" \
-                    --mint_deployment_dir "${MINT_DEPLOYMENT_DIR}")
   else
     LIRA_VERSION="$(get_version lira ${LIRA_VERSION})"
   fi
@@ -258,28 +250,26 @@ if [ "${LIRA_MODE}" == "github" ] || [ ${LIRA_MODE} == "image" ]; then
 
   git checkout ${LIRA_VERSION}
   cd "${WORK_DIR}"
-elif [ "${LIRA_MODE}" == "local" ]; then
+elif [ "${LIRA_MODE}" == "local" ];
+then
   print_style "info" "Using Lira in dir: ${LIRA_VERSION}"
   LIRA_DIR="${LIRA_VERSION}"
 fi
 
 # 2. Get pipeline-tools version
-if [ ${PIPELINE_TOOLS_MODE} == "github" ]; then
-  if [ ${PIPELINE_TOOLS_VERSION} == "latest_released" ]; then
+if [ ${PIPELINE_TOOLS_MODE} == "github" ];
+then
+  if [ ${PIPELINE_TOOLS_VERSION} == "latest_released" ];
+  then
     print_style "info" "Determining latest released version of pipeline-tools"
     PIPELINE_TOOLS_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/pipeline-tools)
-  elif [ ${PIPELINE_TOOLS_VERSION} == "latest_deployed" ]; then
-    print_style "info" "Determining latest deployed version of pipeline-tools"
-    PIPELINE_TOOLS_VERSION=$(python "${SCRIPT_DIR}/current_deployed_version.py" \
-                      --mint_deployment_dir "${MINT_DEPLOYMENT_DIR}" \
-                      --env "${LIRA_ENVIRONMENT}" \
-                      --component_name pipeline_tools)
   else
     PIPELINE_TOOLS_VERSION=$(get_version pipeline-tools ${PIPELINE_TOOLS_VERSION})
   fi
   print_style "info" "Configuring Lira to use adapter wdls from pipeline-tools GitHub repo: ${PIPELINE_TOOLS_VERSION}"
   PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
-elif [ "${PIPELINE_TOOLS_MODE}" == "local" ]; then
+elif [ "${PIPELINE_TOOLS_MODE}" == "local" ];
+then
   PIPELINE_TOOLS_PREFIX="/pipeline-tools"
   PIPELINE_TOOLS_DIR="${PIPELINE_TOOLS_VERSION}"
   # Get absolute path to PIPELINE_TOOLS_DIR, required to mount it into docker container later
@@ -290,12 +280,15 @@ elif [ "${PIPELINE_TOOLS_MODE}" == "local" ]; then
 fi
 
 # 3. Build or pull Lira image
-if [ ${LIRA_MODE} == "image" ]; then
-  if [ ${LIRA_VERSION} == "latest_released" ]; then
+if [ ${LIRA_MODE} == "image" ];
+then
+  if [ ${LIRA_VERSION} == "latest_released" ];
+  then
     print_style "info" "Determining latest released version of Lira"
     LIRA_IMAGE_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/lira)
 
-  elif [ ${LIRA_VERSION} == "latest_deployed" ]; then
+  elif [ ${LIRA_VERSION} == "latest_deployed" ];
+  then
     print_style "info" "Determining latest deployed version of Lira"
     LIRA_IMAGE_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py lira)
 
@@ -305,12 +298,15 @@ if [ ${LIRA_MODE} == "image" ]; then
 
   docker pull quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}
 
-elif [ "${LIRA_MODE}" == "local" ] || [ ${LIRA_MODE} == "github" ]; then
+elif [ "${LIRA_MODE}" == "local" ] || [ ${LIRA_MODE} == "github" ];
+then
   cd "${LIRA_DIR}"
-  if [ "${LIRA_MODE}" == "local" ]; then
+  if [ "${LIRA_MODE}" == "local" ];
+  then
     LIRA_IMAGE_VERSION=local
 
-  elif [ "${LIRA_MODE}" == "github" ]; then
+  elif [ "${LIRA_MODE}" == "github" ];
+  then
     LIRA_IMAGE_VERSION=${LIRA_VERSION}
 
   fi
@@ -321,11 +317,14 @@ elif [ "${LIRA_MODE}" == "local" ] || [ ${LIRA_MODE} == "github" ]; then
 fi
 
 # 4. Get analysis pipeline versions to use
-if [ ${TENX_MODE} == "github" ]; then
-  if [ ${TENX_VERSION} == "latest_released" ]; then
+if [ ${TENX_MODE} == "github" ];
+then
+  if [ ${TENX_VERSION} == "latest_released" ];
+  then
     print_style "info" "Determining latest released version of 10x pipeline"
     TENX_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_v)"
-  elif [ "${TENX_VERSION}" == "latest_deployed" ]; then
+  elif [ "${TENX_VERSION}" == "latest_deployed" ];
+  then
     print_style "info" "Determining latest deployed version of 10x pipeline"
     TENX_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py \
                       --mint_deployment_dir ${MINT_DEPLOYMENT_DIR} \
@@ -336,7 +335,8 @@ if [ ${TENX_MODE} == "github" ]; then
   fi
   TENX_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${TENX_VERSION}"
   print_style "info" "Configuring Lira to use 10x wdl from skylab Github repo, version: ${TENX_VERSION}"
-elif [ ${TENX_MODE} == "local" ]; then
+elif [ ${TENX_MODE} == "local" ];
+then
   TENX_DIR=${TENX_VERSION}
   cd ${TENX_DIR}
   TENX_DIR=$(pwd)
@@ -345,11 +345,14 @@ elif [ ${TENX_MODE} == "local" ]; then
   print_style "info" "Using 10x wdl in dir: ${TENX_DIR}"
 fi
 
-if [ ${SS2_MODE} == "github" ]; then
-  if [ ${SS2_VERSION} == "latest_released" ]; then
+if [ ${SS2_MODE} == "github" ];
+then
+  if [ ${SS2_VERSION} == "latest_released" ];
+  then
     print_style "info" "Determining latest released version of ss2 pipeline"
     SS2_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix smartseq2_v)
-  elif [ ${SS2_VERSION} == "latest_deployed" ]; then
+  elif [ ${SS2_VERSION} == "latest_deployed" ];
+  then
     print_style "info" "Determining latest deployed version of ss2 pipeline"
     SS2_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py \
                       --mint_deployment_dir ${MINT_DEPLOYMENT_DIR} \
@@ -360,7 +363,8 @@ if [ ${SS2_MODE} == "github" ]; then
   fi
   print_style "info" "Configuring Lira to use ss2 wdl from skylab GitHub repo, version: ${SS2_VERSION}"
   SS2_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${SS2_VERSION}"
-elif [ ${SS2_MODE} == "local" ]; then
+elif [ ${SS2_MODE} == "local" ];
+then
   SS2_DIR=${SS2_VERSION}
   cd ${SS2_DIR}
   SS2_DIR=$(pwd)
@@ -459,7 +463,8 @@ docker run -i --rm \
               -k "/working/${LIRA_CONFIG_FILE}.ctmpl" || true
 
 # 6. Retrieve the caas-<<env>>-key.json file from vault
-if [ ${USE_CAAS} ]; then
+if [ ${USE_CAAS} ];
+then
     print_style "info" "Retrieving caas service account key"
     docker run -i --rm \
                    -v "${VAULT_TOKEN_PATH}":/root/.vault-token \
@@ -476,22 +481,25 @@ docker stop lira || print_style "warn" "container already stopped"
 docker rm -v lira || print_style "warn" "container already removed"
 
 print_style "info" "Starting Lira docker image\n"
-if [ ${PIPELINE_TOOLS_MODE} == "local" ]; then
+if [ ${PIPELINE_TOOLS_MODE} == "local" ];
+then
   MOUNT_PIPELINE_TOOLS="-v ${PIPELINE_TOOLS_DIR}:/pipeline-tools"
   print_style "info" "Mounting PIPELINE_TOOLS_DIR: ${PIPELINE_TOOLS_DIR}\n"
 fi
-if [ ${TENX_MODE} == "local" ]; then
+if [ ${TENX_MODE} == "local" ];
+then
   MOUNT_TENX="-v ${TENX_DIR}:/10x"
   print_style "info" "Mounting TENX_DIR: ${TENX_DIR}\n"
 fi
-if [ ${SS2_MODE} == "local" ]; then
+if [ ${SS2_MODE} == "local" ];
+then
   MOUNT_SS2="-v ${SS2_DIR}:/ss2"
   print_style "info" "Mounting SS2_DIR: ${SS2_DIR}\n"
 fi
 
 
-if [ ${USE_CAAS} ]; then
-
+if [ ${USE_CAAS} ];
+then
     print_style "info" "docker run -d \
         -p 8080:8080 \
         -e lira_config=/etc/lira/lira-config.json \
@@ -549,7 +557,8 @@ trap "stop_lira_on_error" ERR
 
 # 8. Send in notifications
 
-if [ "${USE_HMAC}" == "true" ]; then
+if [ "${USE_HMAC}" == "true" ];
+then
   print_style "info" "Getting hmac key"
   HMAC_KEY=$(docker run -i --rm \
         -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
@@ -580,7 +589,8 @@ print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 print_style "info" "Awaiting workflow completion"
 
 # Uses the docker image built from Dockerfile next to this script
-if [ ${USE_CAAS} == "true" ]; then
+if [ ${USE_CAAS} == "true" ];
+then
     docker run --rm -v ${SCRIPT_DIR}:/app \
         -v ${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         -e WORKFLOW_IDS=${SS2_WORKFLOW_ID} \
