@@ -5,7 +5,10 @@
 
 KUBE_CONTEXT=$1
 KUBERNETES_NAMESPACE=$2
-VAULT_TOKEN_FILE=${VAULT_TOKEN_FILE:-"${HOME}/.vault-token"}
+GLOBAL_IP_NAME="lira"
+INGRESS_NAME="lira-ingress"
+SERVICE_NAME="lira-service"
+VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 
 if [ -z "${KUBE_CONTEXT}" ]; then
     echo -e "\nYou must specify a Kubernetes context to use"
@@ -24,10 +27,13 @@ TLS_SECRET_NAME=$(kubectl get secrets -o json | jq -c '[.items[] | select(.metad
 
 echo "Re-create Lira ingress"
 docker run -i --rm -e TLS_SECRET_NAME="${TLS_SECRET_NAME}" \
-                   -v "${VAULT_TOKEN_FILE}":/root/.vault-token \
+                   -e GLOBAL_IP_NAME="${GLOBAL_IP_NAME}" \
+                   -e INGRESS_NAME="${INGRESS_NAME}" \
+                   -e SERVICE_NAME="${SERVICE_NAME}" \
+                   -v "${VAULT_TOKEN_PATH}":/root/.vault-token \
                    -v "${PWD}":/working \
                    broadinstitute/dsde-toolbox:ra_rendering \
-                   /usr/local/bin/render-ctmpl.sh \
+                   /usr/local/bin/render-ctmpls.sh \
                    -k /working/lira-ingress.yaml.ctmpl
 
 kubectl create -f lira-ingress.yaml --record --save-config --namespace="${KUBERNETES_NAMESPACE}"

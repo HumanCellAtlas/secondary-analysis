@@ -183,7 +183,12 @@ fi
 
 GCS_ROOT="gs://${GCLOUD_PROJECT}-cromwell-execution/caas-cromwell-executions"
 
-SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
+if [ -z "${SUBMIT_WDL_DIR+x}" ];
+then
+    SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/${SUBMIT_WDL_DIR}/submit.wdl"
+else
+    SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
+fi
 
 print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
 print_style "info" "LIRA_MODE: ${LIRA_MODE}"
@@ -323,13 +328,6 @@ then
   then
     print_style "info" "Determining latest released version of 10x pipeline"
     TENX_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_v)"
-  elif [ "${TENX_VERSION}" == "latest_deployed" ];
-  then
-    print_style "info" "Determining latest deployed version of 10x pipeline"
-    TENX_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py \
-                      --mint_deployment_dir ${MINT_DEPLOYMENT_DIR} \
-                      --env ${LIRA_ENVIRONMENT} \
-                      --component_name 10x)
   else
     TENX_VERSION=$(get_version skylab ${TENX_VERSION})
   fi
@@ -351,13 +349,6 @@ then
   then
     print_style "info" "Determining latest released version of ss2 pipeline"
     SS2_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix smartseq2_v)
-  elif [ ${SS2_VERSION} == "latest_deployed" ];
-  then
-    print_style "info" "Determining latest deployed version of ss2 pipeline"
-    SS2_VERSION=$(python ${SCRIPT_DIR}/current_deployed_version.py \
-                      --mint_deployment_dir ${MINT_DEPLOYMENT_DIR} \
-                      --env ${LIRA_ENVIRONMENT} \
-                      --component_name ss2)
   else
     SS2_VERSION=$(get_version skylab ${SS2_VERSION})
   fi
