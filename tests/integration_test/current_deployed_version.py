@@ -16,11 +16,13 @@ If component_name is ss2, returns "2.0.0".
 import argparse
 import csv
 
+
 def run(component_name, mint_deployment_dir, env):
     with open('{0}/{1}.tsv'.format(mint_deployment_dir, env)) as f:
         reader = csv.DictReader(f, delimiter='\t')
         row = reader.next()
         print(row[component_name])
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

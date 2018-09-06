@@ -24,7 +24,7 @@ SCRIPT_DIR="${repo_root}/tests/integration_test"
 bash ${SCRIPT_DIR}/integration_test.sh \
         "test" \
         "github" \
-        "ra_update_to_caas_prod" \
+        "master" \
         "github" \
         "rex-rhian-testing" \
         "github" \
