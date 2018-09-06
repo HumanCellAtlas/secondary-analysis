@@ -4,6 +4,7 @@
 # This script will re-create the Lira ingress and Falcon deployment to resume running analysis workflows
 
 KUBE_CONTEXT=$1
+KUBERNETES_NAMESPACE=$2
 VAULT_TOKEN_FILE=${VAULT_TOKEN_FILE:-"${HOME}/.vault-token"}
 
 if [ -z "${KUBE_CONTEXT}" ]; then
@@ -29,7 +30,7 @@ docker run -i --rm -e TLS_SECRET_NAME="${TLS_SECRET_NAME}" \
                    /usr/local/bin/render-ctmpl.sh \
                    -k /working/lira-ingress.yaml.ctmpl
 
-kubectl create -f lira-ingress.yaml --record --save-config
+kubectl create -f lira-ingress.yaml --record --save-config --namespace="${KUBERNETES_NAMESPACE}"
 
 # TODO: Uncomment when Falcon is deployed
 #echo "Re-create Falcon deployment"

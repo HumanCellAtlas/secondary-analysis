@@ -22,16 +22,16 @@
 # The instance of Cromwell to use. When running from a PR, this will always be staging.
 # When running locally, the developer can choose.
 #
-# lira_mode and lira_version
+# LIRA_MODE and LIRA_VERSION
 # The lira_mode param can be "local", "image" or "github".
 # If "local" is specified, a local copy of the Lira code is used. In this case,
-# lira_version should be the local path to the repo.
+# LIRA_VERSION should be the local path to the repo.
 # 
 # If "image" is specified, this script will pull and run
 # a particular version of the Lira docker image specified by lira_version.
-# If lira_version == "latest_released", then the script will scan the GitHub repo
+# If LIRA_VERSION == "latest_released", then the script will scan the GitHub repo
 # for the highest tagged version and try to pull an image with the same version.
-# If lira_version == "latest_deployed", then the script will use the latest
+# If LIRA_VERSION == "latest_deployed", then the script will use the latest
 # deployed version in LIRA_ENVIRONMENT, specified in the deployment tsv. If lira_version is
 # any other value, then it is assumed to be a docker image tag version and
 # this script will attempt to pull that version.
@@ -48,10 +48,10 @@
 # These parameters determine where Lira will look for adapter WDLs.
 # (pipeline-tools is also used as a Python library for Lira, but that version
 # is controlled in Lira's Dockerfile).
-# If pipeline_tools_mode == "local", then a local copy of the repo is used,
+# If PIPELINE_TOOLS_MODE == "local", then a local copy of the repo is used,
 # with the path to the repo specified in PIPELINE_TOOLS_VERSION.
 #
-# If pipeline_tools_mode == "github", then the script configures Lira to read the
+# If PIPELINE_TOOLS_MODE == "github", then the script configures Lira to read the
 # wrapper WDLS from GitHub and to use branch PIPELINE_TOOLS_VERSION. If the branch
 # does not exist, master will be used instead.
 # If PIPELINE_TOOLS_VERSION is "latest_released", then the latest tagged release
@@ -70,7 +70,7 @@
 # from GitHub. If TENX_VERSION == "latest_released" then this script will use
 # the latest tagged release in GitHub.
 #
-# SS2_MODE and ss2_version
+# SS2_MODE and SS2_VERSION
 # The SS2_MODE and SS2_VERSION params work in the same way as TENX_MODE and
 # TENX_VERSION.
 #
@@ -80,7 +80,7 @@
 # TENX_SUBSCRIPTION_ID
 # 10x subscription id
 #
-# vault_token_path
+# VAULT_TOKEN_PATH
 # Path to token file for vault auth
 #
 # SUBMIT_WDL_DIR
@@ -88,7 +88,7 @@
 # "submit_stub/" so that we don't test submission, since it is not really
 # necessary for skylab PRs.
 #
-# use_caas
+# USE_CAAS
 # Uses Cromwell-as-a-Service if true
 #
 # USE_HMAC
