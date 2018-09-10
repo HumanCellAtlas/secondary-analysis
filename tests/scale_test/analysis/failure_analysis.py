@@ -17,6 +17,7 @@ import argparse
 import collections
 import arrow
 import requests
+import json
 from pipeline_tools import gcs_utils
 from cromwell_tools import cromwell_tools
 
@@ -200,7 +201,7 @@ def group_workflows_by_failed_task(workflows):
 
 
 def get_failure_message(task_metadata, record_std_err=True):
-    exception = task_metadata.get('failures')
+    exception = json.dumps(task_metadata.get('failures'))
     stderr_link = task_metadata.get('stderr')
     if stderr_link:
         file_contents = str(get_gcs_file(stderr_link))
