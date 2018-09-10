@@ -201,17 +201,21 @@ def group_workflows_by_failed_task(workflows):
 
 
 def get_failure_message(task_metadata, record_std_err=True):
-    exception = json.dumps(task_metadata.get('failures'))
+    failure_message = json.dumps(task_metadata.get('failures'))
     stderr_link = task_metadata.get('stderr')
     if stderr_link:
         file_contents = str(get_gcs_file(stderr_link))
         for error in ERRORS:
             if ERRORS[error] in file_contents:
-                exception = ERRORS[error]
-    if record_std_err:
-        with open('std_err.txt', 'a') as f:
-            f.write(exception + '\n')
-    return exception
+                failure_message = ERRORS[error]
+                break
+        else:
+            if record_std_err:
+                # Record the full std error for any exception that is not found in the `ERRORS` dict
+                print('Unknown exception, recording std error...')
+                with open('std_err.txt', 'a') as f:
+                    f.write(file_contents + '\n\n')
+    return failure_message
 
 
 def format_metadata_output(metadata, record_std_err):
