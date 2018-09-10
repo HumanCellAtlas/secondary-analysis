@@ -4,6 +4,7 @@ import argparse
 import requests
 import re
 
+
 class Tag:
     def __init__(self, major, minor, patch):
         self.v = [major, minor, patch]
@@ -22,6 +23,7 @@ class Tag:
             if s > o:
                 return True
         return False
+
 
 def run(repo, tag_prefix):
     url = 'https://api.github.com/repos/{0}/git/refs/tags/'.format(repo) 
@@ -42,6 +44,7 @@ def run(repo, tag_prefix):
             if tag > max_tag:
                 max_tag = tag
     print('{0}{1}'.format(tag_prefix, max_tag))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

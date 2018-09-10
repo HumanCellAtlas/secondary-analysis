@@ -131,3 +131,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Lira Repository
+tests/integration_test/lira/*
+tests/integration_test/mint-deployment/*

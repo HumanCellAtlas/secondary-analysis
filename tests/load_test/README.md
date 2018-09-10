@@ -21,7 +21,7 @@ This test suite has the following file structure:
 ```
 ├── README.md
 ├── data/  # This folder serves all data for performing a load test
-│   ├── lira_config/  # This folder serves the template file of listener config
+│   ├── lira_config/  # This folder serves the template file of lira config
 │   │   └── load_test_lira_config.json.ctmpl
 │   ├── plots/  # This folder is used to store metrics plots
 │   ├── notification/  # This folder serves the notification file for the test
