@@ -204,7 +204,7 @@ def get_failure_message(task_metadata, record_std_err=True):
     failure_message = json.dumps(task_metadata.get('failures'))
     stderr_link = task_metadata.get('stderr')
     if stderr_link:
-        file_contents = str(get_gcs_file(stderr_link))
+        file_contents = get_gcs_file(stderr_link).decode('utf-8')
         for error in ERRORS:
             if ERRORS[error] in file_contents:
                 failure_message = ERRORS[error]
