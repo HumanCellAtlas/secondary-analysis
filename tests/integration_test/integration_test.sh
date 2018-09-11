@@ -144,7 +144,6 @@ CAAS_ENVIRONMENT="caas-prod"
 LIRA_CONFIG_FILE="lira-config.json"
 
 PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
-SERVICE=${SERVICE:-"lira"}
 MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES:-"1"}
 
 # Cromwell URL - usually will be caas, but can be set to local environment
@@ -168,7 +167,7 @@ else
     ENV="${LIRA_ENVIRONMENT}"
 fi
 
-CAAS_KEY_PATH="secret/dsde/mint/${LIRA_ENVIRONMENT}/${SERVICE}/${CAAS_ENVIRONMENT}-key.json"
+CAAS_KEY_PATH="secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/${CAAS_ENVIRONMENT}-key.json"
 
 if [ ${LIRA_ENVIRONMENT} == "prod" ];
 then
