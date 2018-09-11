@@ -3,7 +3,7 @@
 # This script is designed to be run by Jenkins to deploy a new Job Manager kubernetes deployment
 # =======================================
 # Example Usage:
-# bash deploy.sh broad-dsde-mint-dev gke_broad-dsde-mint-dev_us-central1-b_listener v0.0.4 \
+# bash deploy.sh broad-dsde-mint-dev gke_broad-dsde-mint-dev_us-central1-b_lira v0.0.4 \
 # "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev
 # =======================================
 
@@ -28,7 +28,7 @@ function configure_kubernetes() {
     stdout "Setting to use Google project: project ${GCLOUD_PROJECT}"
     gcloud config set project ${GCLOUD_PROJECT}
 
-    stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_listener"
+    stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_lira"
     kubectl config use-context ${GKE_CONTEXT}
 }
 

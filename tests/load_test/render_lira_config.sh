@@ -17,7 +17,7 @@ function render_lira_config(){
     local DRY_RUN=${2:-"false"}
     local VAULT_TOKEN_FILE=${3:-"$HOME/.vault-token"}
 
-    NOTIFICATION_TOKEN=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=notification_token secret/dsde/mint/${ENV}/listener/listener_secret)
+    NOTIFICATION_TOKEN=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=notification_token secret/dsde/mint/${ENV}/lira/lira_secret)
     CROMWELL_USERNAME=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_user secret/dsde/mint/${ENV}/common/htpasswd)
     CROMWELL_PASSWORD=$(docker run -it --rm -v ${VAULT_TOKEN_FILE}:/root/.vault-token broadinstitute/dsde-toolbox vault read -field=cromwell_password secret/dsde/mint/${ENV}/common/htpasswd)
 
