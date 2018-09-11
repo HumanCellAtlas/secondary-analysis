@@ -144,7 +144,7 @@ CAAS_ENVIRONMENT="caas-prod"
 LIRA_CONFIG_FILE="lira-config.json"
 
 PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
-SERVICE=${SERVICE:-"lira"}
+SERVICE="lira"
 MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES:-"1"}
 
 # Cromwell URL - usually will be caas, but can be set to local environment
