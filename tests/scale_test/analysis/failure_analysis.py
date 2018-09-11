@@ -114,9 +114,9 @@ def parse_workflow(workflow_metadata, cromwell_url):
     bundle_id = workflow_metadata['labels']['bundle-uuid']
 
     parsed_meta = {
-        'name': workflow_metadata['workflowName'],
-        'submission': workflow_metadata['submission'],
-        'start': workflow_metadata['start'],
+        'name': workflow_metadata.get('workflowName'),
+        'submission': workflow_metadata.get('submission'),
+        'start': workflow_metadata.get('start'),
         'end': workflow_metadata.get('end'),
         'id': workflow_id,
         'status': workflow_metadata['status'],
