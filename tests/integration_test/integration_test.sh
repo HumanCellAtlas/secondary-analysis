@@ -182,35 +182,6 @@ fi
 
 GCS_ROOT="gs://${GCLOUD_PROJECT}-cromwell-execution/caas-cromwell-executions"
 
-if [ -n "${SUBMIT_WDL_DIR}" ];
-then
-    SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/${SUBMIT_WDL_DIR}/submit.wdl"
-else
-    SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
-fi
-
-print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
-print_style "info" "LIRA_MODE: ${LIRA_MODE}"
-print_style "info" "LIRA_VERSION: ${LIRA_VERSION}"
-print_style "info" "PIPELINE_TOOLS_MODE: ${PIPELINE_TOOLS_MODE}"
-print_style "info" "PIPELINE_TOOLS_VERSION: ${PIPELINE_TOOLS_VERSION}"
-print_style "info" "PIPELINE_TOOLS_PREFIX: ${PIPELINE_TOOLS_PREFIX}"
-print_style "info" "TENX_MODE: ${TENX_MODE}"
-print_style "info" "TENX_VERSION: ${TENX_VERSION}"
-print_style "info" "TENX_SUBSCRIPTION_ID: ${TENX_SUBSCRIPTION_ID}"
-print_style "info" "SS2_MODE: ${SS2_MODE}"
-print_style "info" "SS2_VERSION: ${SS2_VERSION}"
-print_style "info" "SS2_SUBSCRIPTION_ID: ${SS2_SUBSCRIPTION_ID}"
-print_style "info" "VAULT_TOKEN_PATH: ${VAULT_TOKEN_PATH}"
-print_style "info" "SUBMIT_WDL_DIR: ${SUBMIT_WDL_DIR}"
-print_style "info" "USE_CAAS: ${USE_CAAS}"
-print_style "info" "USE_HMAC: ${USE_HMAC}"
-print_style "info" "COLLECTION_NAME: ${COLLECTION_NAME}"
-print_style "info" "Working directory: ${WORK_DIR}"
-print_style "info" "Script directory: ${SCRIPT_DIR}"
-print_style "info" "CROMWELL URL: ${CROMWELL_URL}"
-print_style "info" "VAULT_TOKEN_PATH: ${VAULT_TOKEN_PATH}"
-
 function get_version {
   REPO=$1
   VERSION=$2
@@ -281,6 +252,13 @@ then
   PIPELINE_TOOLS_DIR="$(pwd)"
   cd "${WORK_DIR}"
   print_style "info" "Configuring Lira to use adapter wdls in dir: ${PIPELINE_TOOLS_DIR}"
+fi
+
+if [ -n "${SUBMIT_WDL_DIR}" ];
+then
+    SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/${SUBMIT_WDL_DIR}/submit.wdl"
+else
+    SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
 fi
 
 # 3. Build or pull Lira image

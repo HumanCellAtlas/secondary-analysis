@@ -22,8 +22,11 @@ SERVICE=$2
 BRANCH=$3
 VAULT_TOKEN_PATH=$4
 
-if [ "${SERVICE}" = "skylab" ]; then
+if [ "${SERVICE}" = "skylab" ];
+then
     SUBMIT_WDL_DIR="submit_stub/"
+else
+    SUBMIT_WDL_DIR=""
 fi
 
 #Arguments to integration_test.sh:
