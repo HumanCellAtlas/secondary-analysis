@@ -2,8 +2,8 @@
   "transaction_id": "eed1414b-4e70-45a3-b6d1-7ec19ce5b666",
   "subscription_id": "dd17bb03-7634-47a4-9fd3-a55580ac3b1c",
   "match": {
-    "bundle_uuid": "f4b1199a-5c72-4c20-ae42-54862b361a72",
-    "bundle_version": "2018-06-12T171819.193393Z"
+    "bundle_uuid": "b0157d28-b2d4-4430-acdb-5e0cb45a50b9",
+    "bundle_version": "2018-08-24T114140.659344Z"
   },
   "labels": {
     "mintegration-test": "true"

@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
 
-repo_root=$1
-vault_token_path=$2
+LIRA_REPO_ROOT=$1
+VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 
-#env=$1
-#lira_mode=$2
-#lira_version=$3
-#infra_mode=$4
-#infra_version=$5
-#tenx_mode=$6
-#tenx_version=$7
-#ss2_mode=$8
-#ss2_version=$9
-#tenx_sub_id=${10}
-#ss2_sub_id=${11}
-#vault_token_path=${12}
-#submit_wdl_dir=${13}
-#use_caas=${14}
-#use_hmac=${15}
+#ENV=$1
+#LIRA_MODE=$2
+#LIRA_VERSION=$3
+#PIPELINE_TOOLS_MODE=$4
+#PIPELINE_TOOLS_VERSION=$5
+#TENX_MODE=$6
+#TENX_VERSION=$7
+#SS2_MODE=$8
+#SS2_VERSION=$9
+#TENX_SUB_ID=${10}
+#SS2_SUB_ID=${11}
+#VAULT_TOKEN_PATH=${12}
+#SUBMIT_WDL_DIR=${13}
+#USE_CAAS=${14}
+#USE_HMAC=${15}
 
-script_dir=$repo_root/tests/integration_test
+SCRIPT_DIR="${LIRA_REPO_ROOT}/tests/integration_test"
 
-bash $script_dir/integration_test.sh \
+bash ${SCRIPT_DIR}/integration_test.sh \
         "test" \
         "github" \
         "master" \
@@ -31,9 +31,9 @@ bash $script_dir/integration_test.sh \
         "master" \
         "github" \
         "master" \
-        $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f1) \
-        $(tail -n+2 $script_dir/dss_staging_sub_ids.tsv | head -n1 | cut -f2) \
-        "$vault_token_path" \
+        "$(tail -n+2 ${SCRIPT_DIR}/dss_staging_sub_ids.tsv | head -n1 | cut -f1)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/dss_staging_sub_ids.tsv | head -n1 | cut -f2)" \
+        "${VAULT_TOKEN_PATH}" \
         "" \
         "true" \
         "true"
