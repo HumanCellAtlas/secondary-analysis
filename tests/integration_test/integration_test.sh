@@ -559,7 +559,7 @@ then
         -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
         broadinstitute/dsde-toolbox \
         vault read -field=current_key secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/hmac_keys)
-  AUTH_PARAMS="--hmac_key $HMAC_KEY --hmac_key_id current_key"
+  AUTH_PARAMS="--hmac_key ${HMAC_KEY} --hmac_key_id current_key"
 else
   print_style "info" "Getting notification token"
   notification_token=$(docker run -i --rm \
@@ -572,7 +572,7 @@ fi
 print_style "info" "Sending in notifications"
 # Uses the docker image built from Dockerfile next to this script
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                    -e LIRA_URL="http://localhost:${LIRA_HOST_PORT}/notifications" \
+                    -e LIRA_URL="http://lira:8080/notifications" \
                     -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
                     --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
