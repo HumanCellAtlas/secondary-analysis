@@ -479,6 +479,16 @@ then
   print_style "info" "Mounting SS2_DIR: ${SS2_DIR}\n"
 fi
 
+set +e
+function stop_lira_on_error {
+  print_style "error" "Stopping Lira"
+  docker stop ${LIRA_DOCKER_CONTAINER_NAME}
+  print_style "error" "Removing Lira"
+  docker rm -v ${LIRA_DOCKER_CONTAINER_NAME}
+  print_style "error" "Test failed!"
+  exit 1
+}
+trap "stop_lira_on_error" ERR
 
 if [ ${USE_CAAS} ];
 then
@@ -537,18 +547,12 @@ if [ ${n} -lt 2 ]; then
     exit 1
 fi
 
-set +e
-function stop_lira_on_error {
-  print_style "error" "Stopping Lira"
-  docker stop lira
-  print_style "error" "Removing Lira"
-  docker rm -v lira
-  print_style "error" "Test failed!"
-  exit 1
-}
-trap "stop_lira_on_error" ERR
+print_style "error" "GOT HERE!!!!!!!!!!!!"
+
 
 # 8. Send in notifications
+
+print_style "error" "GOT HERE TOO!!!!!!!!!!!!"
 
 if [ "${USE_HMAC}" == "true" ];
 then
