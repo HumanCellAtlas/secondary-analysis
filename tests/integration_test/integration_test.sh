@@ -543,17 +543,17 @@ print_style "info" "Waiting for Lira to finish start up"
 sleep 3
 
 n=$(docker ps -f "name=${LIRA_DOCKER_CONTAINER_NAME}" | wc -l)
-if [ ${n} -lt 2 ]; then
-    print_style "error" "Lira container exited unexpectedly"
+if [ ${n} -lt 1 ]; then
+    print_style "error" "No container found with the name ${LIRA_DOCKER_CONTAINER_NAME}"
+    exit 1
+if [ ${n} -gt 1 ]; then
+    print_style "error" "More than one container found with the name ${LIRA_DOCKER_CONTAINER_NAME}"
     exit 1
 fi
 
-print_style "error" "GOT HERE!!!!!!!!!!!!"
-
-
 # 8. Send in notifications
 
-print_style "error" "GOT HERE TOO!!!!!!!!!!!!"
+print_style "error" "GOT HERE !!!!!!!!!!!!"
 
 if [ "${USE_HMAC}" == "true" ];
 then
