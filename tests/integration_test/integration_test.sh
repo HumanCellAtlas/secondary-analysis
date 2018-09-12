@@ -572,7 +572,7 @@ fi
 print_style "info" "Sending in notifications"
 # Uses the docker image built from Dockerfile next to this script
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                    -e LIRA_URL="http://${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_HOST_PORT}/notifications" \
+                    -e LIRA_URL="http://localhost:${LIRA_HOST_PORT}/notifications" \
                     -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
                     --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
