@@ -479,7 +479,8 @@ then
   print_style "info" "Mounting SS2_DIR: ${SS2_DIR}\n"
 fi
 
-set +e
+set +ex
+
 function stop_lira_on_error {
   print_style "error" "Stopping Lira"
   docker stop ${LIRA_DOCKER_CONTAINER_NAME}
