@@ -167,6 +167,8 @@ else
     ENV="${LIRA_ENVIRONMENT}"
 fi
 
+LIRA_DOCKER_CONTAINER_NAME="lira-$(date '+%Y-%m-%d-%H-%M-%S')"
+
 CAAS_KEY_PATH="secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/${CAAS_ENVIRONMENT}-key.json"
 
 if [ ${LIRA_ENVIRONMENT} == "prod" ];
@@ -443,11 +445,6 @@ then
 fi
                
 # 7. Start Lira
-# Check if an old container exists
-print_style "info" "Checking for old container"
-docker stop lira || print_style "warn" "container already stopped"
-docker rm -v lira || print_style "warn" "container already removed"
-
 print_style "info" "Starting Lira docker image\n"
 if [ ${PIPELINE_TOOLS_MODE} == "local" ];
 then
@@ -474,7 +471,7 @@ then
         -e caas_key=/etc/lira/kubernetes/${CAAS_ENVIRONMENT}-key.json \
         -v ${LIRA_DIR}/kubernetes/lira-config.json:/etc/lira/lira-config.json \
         -v ${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
-        --name=lira \
+        --name=${LIRA_DOCKER_CONTAINER_NAME} \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
@@ -486,7 +483,7 @@ then
         -e caas_key=/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
         -v "${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json":/etc/lira/${CAAS_ENVIRONMENT}-key.json \
-        --name=lira \
+        --name="${LIRA_DOCKER_CONTAINER_NAME}" \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
@@ -497,7 +494,7 @@ else
         -p 8080:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
-        --name=lira \
+        --name="${LIRA_DOCKER_CONTAINER_NAME}" \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
@@ -517,6 +514,7 @@ set +e
 function stop_lira_on_error {
   print_style "error" "Stopping Lira"
   docker stop lira
+  print_style "error" "Removing Lira"
   docker rm -v lira
   print_style "error" "Test failed!"
   exit 1
@@ -547,7 +545,7 @@ print_style "info" "Sending in notifications"
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
-                    --link lira:lira \
+                    --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME}\
                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
                     $(echo "${AUTH_PARAMS}" | xargs))
 
@@ -567,7 +565,7 @@ then
         -e CAAS_KEY=/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
-        --link lira:lira \
+        --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
         quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
 
 else
@@ -591,13 +589,14 @@ else
         -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
-        --link lira:lira \
+        --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
         quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
 fi
 
 
 # 10. Stop Lira
 print_style "success" "Stopping Lira"
-docker stop lira
-docker rm -v lira
+docker stop "${LIRA_DOCKER_CONTAINER_NAME}"
+print_style "success" "Removing Lira"
+docker rm -v "${LIRA_DOCKER_CONTAINER_NAME}"
 print_style "success" "Test succeeded!"
