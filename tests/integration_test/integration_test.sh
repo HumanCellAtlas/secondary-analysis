@@ -167,7 +167,23 @@ else
     ENV="${LIRA_ENVIRONMENT}"
 fi
 
+function get_unused_port {
+    PORT=$(shuf -i 2000-65000 -n 1)
+    QUIT=0
+
+    while [ "${QUIT}" -ne 1 ]; do
+      netstat -a | grep ${PORT} >> /dev/null
+      if [ $? -gt 0 ]; then
+        QUIT=1
+        echo "${PORT}"
+      else
+        PORT=$(shuf -i 2000-65000 -n 1)
+      fi
+    done
+}
+
 LIRA_DOCKER_CONTAINER_NAME="lira-$(date '+%Y-%m-%d-%H-%M-%S')"
+LIRA_HOST_PORT=get_unused_port
 
 CAAS_KEY_PATH="secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/${CAAS_ENVIRONMENT}-key.json"
 
@@ -366,7 +382,6 @@ TENX_WORKFLOW_NAME="Adapter10xCount"
 
 # 5. Create config.json
 print_style "info" "Creating Lira config"
-
 print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
 print_style "info" "CROMWELL_URL=${CROMWELL_URL}"
 print_style "info" "USE_CAAS=${USE_CAAS}"
@@ -398,6 +413,7 @@ print_style "info" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
 print_style "info" "PWD=${PWD}"
 print_style "info" "LIRA_IMAGE_VERSION=${LIRA_IMAGE_VERSION}"
 print_style "info" "LIRA_DOCKER_CONTAINER_NAME=${LIRA_DOCKER_CONTAINER_NAME}"
+print_style "info" "LIRA_HOST_PORT=${LIRA_HOST_PORT}"
 
 docker run -i --rm \
               -e LIRA_ENVIRONMENT="${LIRA_ENVIRONMENT}" \
@@ -467,7 +483,7 @@ fi
 if [ ${USE_CAAS} ];
 then
     print_style "info" "docker run -d \
-        -p 8080:8080 \
+        -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/kubernetes/${CAAS_ENVIRONMENT}-key.json \
         -v ${LIRA_DIR}/kubernetes/lira-config.json:/etc/lira/lira-config.json \
@@ -479,7 +495,7 @@ then
         quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}"
 
     docker run -d \
-        -p 8080:8080 \
+        -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
@@ -492,7 +508,7 @@ then
 
 else
     print_style "info" "docker run -d \
-        -p 8080:8080 \
+        -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
         --name=${LIRA_DOCKER_CONTAINER_NAME} \
@@ -502,7 +518,7 @@ else
         quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}"
 
     docker run -d \
-        -p 8080:8080 \
+        -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
         --name="${LIRA_DOCKER_CONTAINER_NAME}" \
@@ -554,7 +570,7 @@ fi
 print_style "info" "Sending in notifications"
 # Uses the docker image built from Dockerfile next to this script
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                    -e LIRA_URL="http://lira:8080/notifications" \
+                    -e LIRA_URL="http://lira:${LIRA_HOST_PORT}/notifications" \
                     -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
                     --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME}\
                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
