@@ -183,7 +183,7 @@ function get_unused_port {
 }
 
 LIRA_DOCKER_CONTAINER_NAME="lira-$(date '+%Y-%m-%d-%H-%M-%S')"
-LIRA_HOST_PORT=get_unused_port
+LIRA_HOST_PORT=$(get_unused_port)
 
 CAAS_KEY_PATH="secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/${CAAS_ENVIRONMENT}-key.json"
 
