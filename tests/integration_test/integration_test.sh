@@ -546,7 +546,7 @@ n=$(docker ps -f "name=${LIRA_DOCKER_CONTAINER_NAME}" | wc -l)
 if [ ${n} -lt 1 ]; then
     print_style "error" "No container found with the name ${LIRA_DOCKER_CONTAINER_NAME}"
     exit 1
-elif [ ${n} -gt 1 ]; then
+elif [ ${n} -gt 2 ]; then
     print_style "error" "More than one container found with the name ${LIRA_DOCKER_CONTAINER_NAME}"
     exit 1
 fi
