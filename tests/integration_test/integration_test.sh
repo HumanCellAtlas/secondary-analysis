@@ -397,6 +397,7 @@ print_style "info" "SS2_VERSION=${SS2_VERSION}"
 print_style "info" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
 print_style "info" "PWD=${PWD}"
 print_style "info" "LIRA_IMAGE_VERSION=${LIRA_IMAGE_VERSION}"
+print_style "info" "LIRA_DOCKER_CONTAINER_NAME=${LIRA_DOCKER_CONTAINER_NAME}"
 
 docker run -i --rm \
               -e LIRA_ENVIRONMENT="${LIRA_ENVIRONMENT}" \
