@@ -552,9 +552,6 @@ elif [ ${n} -gt 1 ]; then
 fi
 
 # 8. Send in notifications
-
-print_style "error" "GOT HERE !!!!!!!!!!!!"
-
 if [ "${USE_HMAC}" == "true" ];
 then
   print_style "info" "Getting hmac key"
@@ -577,7 +574,7 @@ print_style "info" "Sending in notifications"
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     -e LIRA_URL="http://lira:${LIRA_HOST_PORT}/notifications" \
                     -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
-                    --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME}\
+                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
                     $(echo "${AUTH_PARAMS}" | xargs))
 

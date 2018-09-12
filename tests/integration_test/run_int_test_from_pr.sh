@@ -18,9 +18,10 @@
 # one repo and we want to test them using the master branch of the other repos.
 
 SCRIPT_DIR=$1
-SERVICE=$2
-BRANCH=$3
-VAULT_TOKEN_PATH=$4
+ENVIRONMENT=$2
+SERVICE=$3
+BRANCH=$4
+VAULT_TOKEN_PATH=$5
 
 if [ "${SERVICE}" = "skylab" ];
 then
@@ -47,7 +48,7 @@ fi
 #USE_HMAC=${15}
 
 bash "${SCRIPT_DIR}/integration_test.sh" \
-        "test" \
+        "${ENVIRONMENT}" \
         "github" \
         "${BRANCH}" \
         "github" \
