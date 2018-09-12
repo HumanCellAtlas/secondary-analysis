@@ -446,7 +446,7 @@ then
 fi
                
 # 7. Start Lira
-print_style "info" "Starting Lira docker image\n"
+print_style "info" "Starting Lira docker image"
 if [ ${PIPELINE_TOOLS_MODE} == "local" ];
 then
   MOUNT_PIPELINE_TOOLS="-v ${PIPELINE_TOOLS_DIR}:/pipeline-tools"
@@ -491,6 +491,16 @@ then
         quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}
 
 else
+    print_style "info" "docker run -d \
+        -p 8080:8080 \
+        -e lira_config=/etc/lira/lira-config.json \
+        -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
+        --name=${LIRA_DOCKER_CONTAINER_NAME} \
+        $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
+        $(echo ${MOUNT_TENX} | xargs) \
+        $(echo ${MOUNT_SS2} | xargs) \
+        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}"
+
     docker run -d \
         -p 8080:8080 \
         -e lira_config=/etc/lira/lira-config.json \
@@ -505,7 +515,7 @@ fi
 print_style "info" "Waiting for Lira to finish start up"
 sleep 3
 
-n=$(docker ps -f "name=lira" | wc -l)
+n=$(docker ps -f "name=${LIRA_DOCKER_CONTAINER_NAME}" | wc -l)
 if [ ${n} -lt 2 ]; then
     print_style "error" "Lira container exited unexpectedly"
     exit 1
