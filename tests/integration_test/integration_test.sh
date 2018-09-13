@@ -249,9 +249,14 @@ then
   LIRA_DIR="${LIRA_VERSION}"
 fi
 
-# 2. Get pipeline-tools version
+# 2. Clone pipeline-tools if needed and get version
 if [ ${PIPELINE_TOOLS_MODE} == "github" ];
 then
+  print_style "info" "Cloning pipeline-tools"
+  git clone git@github.com:HumanCellAtlas/pipeline-tools.git
+  PIPELINE_TOOLS_DIR="${PWD}/pipeline-tools"
+  cd "${PIPELINE_TOOLS_DIR}"
+
   if [ ${PIPELINE_TOOLS_VERSION} == "latest_released" ];
   then
     print_style "info" "Determining latest released version of pipeline-tools"
@@ -259,8 +264,13 @@ then
   else
     PIPELINE_TOOLS_VERSION=$(get_version pipeline-tools ${PIPELINE_TOOLS_VERSION})
   fi
+
   print_style "info" "Configuring Lira to use adapter wdls from pipeline-tools GitHub repo: ${PIPELINE_TOOLS_VERSION}"
   PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
+
+  print_style "info" "Checking out ${PIPELINE_TOOLS_VERSION}"
+  git checkout ${PIPELINE_TOOLS_VERSION}
+
 elif [ "${PIPELINE_TOOLS_MODE}" == "local" ];
 then
   PIPELINE_TOOLS_PREFIX="/pipeline-tools"
@@ -279,7 +289,15 @@ else
     SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
 fi
 
-# 3. Build or pull Lira image
+# 3. Build pipeline-tools image and push to quay
+print_style "info" "Building pipeline-tools version \"${PIPELINE_TOOLS_VERSION}\" from dir: ${PIPELINE_TOOLS_DIR}"
+PIPELINE_TOOLS_IMAGE=quay.io/humancellatlas/secondary-analysis-pipeline-tools:${PIPELINE_TOOLS_VERSION}
+docker build -t ${PIPELINE_TOOLS_IMAGE} .
+print_style "info" "Pushing pipeline-tools image: ${PIPELINE_TOOLS_IMAGE}"
+docker push ${PIPELINE_TOOLS_IMAGE}
+cd "${WORK_DIR}"
+
+# 4. Build or pull Lira image
 if [ ${LIRA_MODE} == "image" ];
 then
   if [ ${LIRA_VERSION} == "latest_released" ];
@@ -316,7 +334,7 @@ then
   cd "${WORK_DIR}"
 fi
 
-# 4. Get analysis pipeline versions to use
+# 5. Get analysis pipeline versions to use
 if [ ${TENX_MODE} == "github" ];
 then
   if [ ${TENX_VERSION} == "latest_released" ];
@@ -380,7 +398,7 @@ TENX_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/10x/adap
 TENX_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/10x/adapter.wdl"
 TENX_WORKFLOW_NAME="Adapter10xCount"
 
-# 5. Create config.json
+# 6. Create config.json
 print_style "info" "Creating Lira config"
 print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
 print_style "info" "CROMWELL_URL=${CROMWELL_URL}"
@@ -449,7 +467,7 @@ docker run -i --rm \
               /usr/local/bin/render-ctmpls.sh \
               -k "/working/${LIRA_CONFIG_FILE}.ctmpl" || true
 
-# 6. Retrieve the caas-<<env>>-key.json file from vault
+# 7. Retrieve the caas-<<env>>-key.json file from vault
 if [ ${USE_CAAS} ];
 then
     print_style "info" "Retrieving caas service account key"
@@ -461,7 +479,7 @@ then
     mv "${CAAS_KEY_FILE}" "${LIRA_DIR}/kubernetes/"
 fi
                
-# 7. Start Lira
+# 8. Start Lira
 print_style "info" "Starting Lira docker image"
 if [ ${PIPELINE_TOOLS_MODE} == "local" ];
 then
@@ -551,7 +569,7 @@ elif [ ${n} -gt 2 ]; then
     exit 1
 fi
 
-# 8. Send in notifications
+# 9. Send in notifications
 if [ "${USE_HMAC}" == "true" ];
 then
   print_style "info" "Getting hmac key"
@@ -580,7 +598,7 @@ SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
 
 print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
-# 9. Poll for completion
+# 10. Poll for completion
 print_style "info" "Awaiting workflow completion"
 
 # Uses the docker image built from Dockerfile next to this script
@@ -623,7 +641,7 @@ else
 fi
 
 
-# 10. Stop Lira
+# 11. Stop Lira
 print_style "success" "Stopping Lira"
 docker stop "${LIRA_DOCKER_CONTAINER_NAME}"
 print_style "success" "Removing Lira"
