@@ -18,6 +18,7 @@ import collections
 import arrow
 import requests
 import json
+from google.api_core import exceptions as gcs_exceptions
 from pipeline_tools import gcs_utils
 from cromwell_tools import cromwell_tools
 
@@ -50,8 +51,12 @@ def get_gcs_file(gs_link):
     bucket_name, gs_file = gcs_utils.parse_bucket_blob_from_gs_link(gs_link)
     gcs_client = gcs_utils.GoogleCloudStorageClient(key_location=os.environ["GOOGLE_APPLICATION_CREDENTIALS"],
                                                     scopes=['https://www.googleapis.com/auth/devstorage.read_only'])
-    result = download_gcs_blob(gcs_client, bucket_name, gs_file)
-    return result
+    try:
+        result = download_gcs_blob(gcs_client, bucket_name, gs_file)
+    except gcs_exceptions.NotFound:
+        print('No such file {}'.format(gs_file))
+        return
+    return result.decode('utf-8')
 
 
 class Query(object):
@@ -204,17 +209,18 @@ def get_failure_message(task_metadata, record_std_err=True):
     failure_message = json.dumps(task_metadata.get('failures'))
     stderr_link = task_metadata.get('stderr')
     if stderr_link:
-        file_contents = get_gcs_file(stderr_link).decode('utf-8')
-        for error in ERRORS:
-            if ERRORS[error] in file_contents:
-                failure_message = ERRORS[error]
-                break
-        else:
-            if record_std_err:
-                # Record the full std error for any exception that is not found in the `ERRORS` dict
-                print('Unknown exception, recording std error...')
-                with open('std_err.txt', 'a') as f:
-                    f.write(file_contents + '\n\n')
+        file_contents = get_gcs_file(stderr_link)
+        if file_contents:
+            for error in ERRORS:
+                if ERRORS[error] in file_contents:
+                    failure_message = ERRORS[error]
+                    break
+            else:
+                if record_std_err:
+                    # Record the full std error for any exception that is not found in the `ERRORS` dict
+                    print('Unknown exception, recording std error...')
+                    with open('std_err.txt', 'a') as f:
+                        f.write(file_contents + '\n\n')
     return failure_message
 
 
@@ -285,7 +291,7 @@ def main(cromwell_url, auth, headers, output_file, record_std_err=True, start=No
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cromwell_url', default='https://cromwell.caas-dev.broadinstitute.org/api/workflows/v1', help='Cromwell API URL')
+    parser.add_argument('--cromwell_url', default='https://cromwell.caas-prod.broadinstitute.org/api/workflows/v1', help='Cromwell API URL')
     parser.add_argument('--cromwell_user', required=False, help='Username for the specified Cromwell url')
     parser.add_argument('--cromwell_password', required=False, help='Password for the specified Cromwell url')
     parser.add_argument('--caas_key', required=False, help='Path to a service account JSON key for Cromwell-as-a-Service')
