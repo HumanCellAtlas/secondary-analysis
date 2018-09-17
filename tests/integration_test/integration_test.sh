@@ -290,9 +290,21 @@ else
 fi
 
 # 3. Build pipeline-tools image and push to quay
+QUAY_USERNAME=$(docker run -i --rm \
+        -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+        broadinstitute/dsde-toolbox \
+        vault read -field=username secret/dsde/mint/common/quay_robot)
+QUAY_TOKEN=$(docker run -i --rm \
+        -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+        broadinstitute/dsde-toolbox \
+        vault read -field=password secret/dsde/mint/common/quay_robot)
+print_style "info" "Logging into quay.io using robot account ${QUAY_USERNAME}"
+docker login -u=${QUAY_USERNAME} -p=${QUAY_TOKEN} quay.io
+
 print_style "info" "Building pipeline-tools version \"${PIPELINE_TOOLS_VERSION}\" from dir: ${PIPELINE_TOOLS_DIR}"
 PIPELINE_TOOLS_IMAGE=quay.io/humancellatlas/secondary-analysis-pipeline-tools:${PIPELINE_TOOLS_VERSION}
 docker build -t ${PIPELINE_TOOLS_IMAGE} .
+
 print_style "info" "Pushing pipeline-tools image: ${PIPELINE_TOOLS_IMAGE}"
 docker push ${PIPELINE_TOOLS_IMAGE}
 cd "${WORK_DIR}"
