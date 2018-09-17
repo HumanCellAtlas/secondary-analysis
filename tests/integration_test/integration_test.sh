@@ -278,7 +278,6 @@ then
   # Get absolute path to PIPELINE_TOOLS_DIR, required to mount it into docker container later
   cd "${PIPELINE_TOOLS_DIR}"
   PIPELINE_TOOLS_DIR="$(pwd)"
-  cd "${WORK_DIR}"
   print_style "info" "Configuring Lira to use adapter wdls in dir: ${PIPELINE_TOOLS_DIR}"
 fi
 
@@ -298,6 +297,12 @@ QUAY_TOKEN=$(docker run -i --rm \
         -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
         broadinstitute/dsde-toolbox \
         vault read -field=password secret/dsde/mint/common/quay_robot)
+
+# Use a temp directory for saving the docker config to avoid permissions issues in Jenkins
+DOCKER_TEMP_DIR=${WORK_DIR}/docker_temp
+mkdir ${DOCKER_TEMP_DIR}
+export DOCKER_CONFIG=${DOCKER_TEMP_DIR}
+
 print_style "info" "Logging into quay.io using robot account ${QUAY_USERNAME}"
 docker login -u=${QUAY_USERNAME} -p=${QUAY_TOKEN} quay.io
 
