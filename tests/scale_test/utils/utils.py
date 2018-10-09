@@ -55,7 +55,7 @@ def load_es_query(es_query_path):
         es_query_path (str): The path to the ES query json file which is used for making subscription in BlueBox.
 
     Returns:
-        dict: A dict of loaded es query content.
+        query_obj (dict): A dict of loaded es query content.
     """
     with open(es_query_path, 'r') as query_file:
         query_obj = json.load(query_file)
@@ -74,7 +74,7 @@ def prepare_notification(bundle_uuid, bundle_version, es_query_path, subscriptio
         transaction_id (str): A valid transaction id.
 
     Returns:
-        dict: A dict of valid notification content.
+        notification (dict): A dict of valid notification content.
 
     """
     notification = {
@@ -101,7 +101,7 @@ def subscription_probe(lira_url, workflow_name='AdapterSmartSeq2SingleCell'):
         workflow_name (str): The workflow to be invoked by the script.
 
     Returns:
-        str: A valid subscription id.
+        subscription_id (str): A valid subscription id.
     """
     response = requests.get(harmonize_url(lira_url) + 'version')
     response.raise_for_status()
@@ -160,7 +160,7 @@ def read_bundles(bundle_list_file):
         bundle_list_file (str): A path to the JSON file.
 
     Returns:
-        dict: A dict of bundles listed in the file.
+        bundles (dict): A dict of bundles listed in the file.
     """
     with open(bundle_list_file) as f:
         bundles = json.load(f)
@@ -232,6 +232,16 @@ def auth_checker(ctx):
 
 
 def _get_vault_client(vault_server_url, path_to_vault_token):
+    """Instantiate a Vault client based on the given information about Vault server.
+
+    Args:
+        vault_server_url (str): URL to your Vault server.
+        path_to_vault_token (str): Full path to your vault token file. (You might need to do vault login to refresh
+        the token file before calling this function)
+
+    Returns:
+        client (hvac.Client): A valid and authenticated Vault client.
+    """
     with open(path_to_vault_token, 'r') as token_file:
         token = token_file.read()
         client = hvac.Client(url=vault_server_url, token=token)
@@ -243,6 +253,15 @@ def _get_vault_client(vault_server_url, path_to_vault_token):
 
 
 def _load_hmac_creds(vault_client, path_to_hmac_cred):
+    """Load HMAC credentials from Vault.
+
+    Args:
+        vault_client (hvac.Client): A valid and authenticated Vault client.
+        path_to_hmac_cred (str): Full path to your HMAC credentials in the Vault server.
+
+    Returns:
+        Tuple[str]: A tuple of (hmac_key_id, hmac_key_value) strings.
+    """
     # this is the "double check" to make sure the client is not not stale
     if not vault_client.is_authenticated():
         raise AuthException('Failed to authenticate with Vault, please check your Vault server URL and Vault token!')
@@ -260,6 +279,16 @@ def _load_hmac_creds(vault_client, path_to_hmac_cred):
 
 
 def prepare_auth(lira_auth_dict):
+    """Prepare the the Auth dictionary for sending notifications.
+
+    Args:
+        lira_auth_dict (dict): Dictionary containing user inputs of the authentication information. It must have the key
+            'method', and optionally, it could have the following keys: 'vault_server_url', 'path_to_vault_token',
+            'path_to_hmac_cred'.
+
+    Returns:
+        valid_auth_dict (dict): Dictionary containing the valid information for authenticating with Lira.
+    """
     auth_method = lira_auth_dict['method']
     valid_auth_dict = lira_auth_dict
 
