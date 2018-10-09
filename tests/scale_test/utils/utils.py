@@ -1,7 +1,10 @@
-import json
-import uuid
-import requests
 import click
+import hvac
+import hvac.exceptions
+import json
+import requests
+import uuid
+from requests_http_signature import HTTPSignatureAuth
 
 
 def compose_label(label_string):
@@ -20,18 +23,28 @@ def compose_label(label_string):
         return None
 
 
-def send_notification(lira_url, auth_token, notification):
+def send_notification(lira_url, auth_dict, notification):
     """Send a notification to a given Lira.
 
     Args:
         lira_url (str): A typical Lira url, e.g. https://pipelines.dev.data.humancellatlas.org/
-        auth_token (str): The Lira auth_token.
+        auth_dict (dict): Dictionary contains credentials for authenticating with Lira.
+            It should have 'method' and 'value' as keys.
         notification (dict): A dict of notification content.
 
     Returns:
         requests.Response: The response object returned by Lira.
     """
-    response = requests.post(url=harmonize_url(lira_url) + 'notifications', json=notification, params={'auth': auth_token})
+    if auth_dict['method'] == 'token':
+        response = requests.post(url=harmonize_url(lira_url) + 'notifications',
+                                 json=notification,
+                                 params={'auth': auth_dict['value']['auth_token']})
+    else:
+        auth = HTTPSignatureAuth(key_id=auth_dict['value']['hmac_key_id'],
+                                 key=auth_dict['value']['hmac_key_value'].encode('utf-8'))
+        response = requests.post(url=harmonize_url(lira_url),
+                                 json=notification,
+                                 auth=auth)
     return response
 
 
@@ -176,20 +189,98 @@ def required_checker(ctx, **kwargs):
 def auth_checker(ctx):
     """A probe to check the auth_token.
 
-    This function performs as a probe, which validates the auth_token by sending a fake request to the Lira.
+    TODO: Add the auth probe back once Lira has a new auth endpoint.
+    - (The auth check probe has been deprecated for now) This function performs as a probe, which validates the
+    auth_token by sending a fake request to the Lira.
+    - This function will ask the use for the authentication information to talk to Lira.
 
     Args:
         ctx (click.Context): The special internal object that holds state relevant for the script execution at
             every single level. This is automatically passed in by Click.
 
     Returns:
-        str: The ensured valid Lira auth_token.
-
+        valid_auth_dict (dict): Dictionary containing the valid information for authenticating with Lira.
     """
-    auth_token = click.prompt('Please enter a valid auth_token for Lira (inputs are hidden)', type=str, hide_input=True)
-    probe_response = requests.post(ctx.obj['lira_url'] + 'notifications', params={'auth': auth_token}, json={'match': {}})
-    if probe_response.status_code == 401:
-        click.echo('Invalid auth token entered!')
-        ctx.exit()
+    auth_method = None
+    lira_auth_dict = {
+        'method': auth_method,
+        'value': {}
+    }
+
+    while auth_method not in ('token', 'hmac'):
+        auth_method = click.prompt('Please enter a valid auth method for Lira (token/hmac)', type=str, hide_input=False)
+
+    if auth_method == 'token':
+        auth_token = click.prompt('Please enter a valid auth_token for Lira (inputs are hidden)', type=str,
+                                  hide_input=True)
+        lira_auth_dict['method'] = auth_method
+        lira_auth_dict['value']['auth_token'] = auth_token
+
+        valid_auth_dict = prepare_auth(lira_auth_dict)
     else:
-        return auth_token
+        lira_auth_dict['method'] = auth_method
+        lira_auth_dict['vault_server_url'] = click.prompt('Please enter your full Vault server URL', type=str,
+                                                          hide_input=False)
+        lira_auth_dict['path_to_vault_token'] = click.prompt('Please enter the path to your Vault token file', type=str,
+                                                             hide_input=False)
+        lira_auth_dict['path_to_hmac_cred'] = click.prompt('Please enter the path to HMAC credentials in your Vault',
+                                                           type=str, hide_input=False)
+
+        valid_auth_dict = prepare_auth(lira_auth_dict)
+
+    return valid_auth_dict
+
+
+def _get_vault_client(vault_server_url, path_to_vault_token):
+    with open(path_to_vault_token, 'r') as token_file:
+        token = token_file.read()
+        client = hvac.Client(url=vault_server_url, token=token)
+
+    if not client.is_authenticated():
+        raise AuthException('Failed to authenticate with Vault, please check your Vault server URL and Vault token!')
+    else:
+        return client
+
+
+def _load_hmac_creds(vault_client, path_to_hmac_cred):
+    # this is the "double check" to make sure the client is not not stale
+    if not vault_client.is_authenticated():
+        raise AuthException('Failed to authenticate with Vault, please check your Vault server URL and Vault token!')
+
+    try:
+        vault_response = vault_client.read(path_to_hmac_cred)
+    except hvac.exceptions.Forbidden:
+        raise AuthException('Permission Denied, please check your permissions and the path to the secret!')
+
+    if not vault_response or not vault_response.get('data'):
+        raise IncorrectSecretException('Invalid secret fetched, please check the path to the secret!')
+
+    hmac_key_id, hmac_key_value = list(vault_response.get('data').items())[0]
+    return hmac_key_id, hmac_key_value
+
+
+def prepare_auth(lira_auth_dict):
+    auth_method = lira_auth_dict['method']
+    valid_auth_dict = lira_auth_dict
+
+    if auth_method == 'token':
+        pass  # TODO: take advantage of Lira's /auth endpoint to check the auth information
+
+    elif auth_method == 'hmac':
+        vault_client = _get_vault_client(vault_server_url=valid_auth_dict.pop('vault_server_url'),
+                                         path_to_vault_token=valid_auth_dict.pop('path_to_vault_token'))
+        hmac_key_id, hmac_key_value = _load_hmac_creds(vault_client=vault_client,
+                                                       path_to_hmac_cred=valid_auth_dict.pop('path_to_hmac_cred'))
+        valid_auth_dict['value']['hmac_key_id'] = hmac_key_id
+        valid_auth_dict['value']['hmac_key_value'] = hmac_key_value
+    else:
+        raise AuthException('Unknown auth method {0}, Lira only supports hmac/token methods'.format(auth_method))
+    return valid_auth_dict
+
+
+class AuthException(Exception):
+    pass
+
+
+class IncorrectSecretException(Exception):
+    pass
