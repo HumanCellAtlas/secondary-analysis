@@ -42,7 +42,7 @@ def send_notification(lira_url, auth_dict, notification):
     else:
         auth = HTTPSignatureAuth(key_id=auth_dict['value']['hmac_key_id'],
                                  key=auth_dict['value']['hmac_key_value'].encode('utf-8'))
-        response = requests.post(url=harmonize_url(lira_url),
+        response = requests.post(url=harmonize_url(lira_url) + 'notifications',
                                  json=notification,
                                  auth=auth)
     return response
