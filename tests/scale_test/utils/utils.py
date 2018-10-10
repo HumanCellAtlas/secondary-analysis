@@ -192,7 +192,7 @@ def auth_checker(ctx):
     TODO: Add the auth probe back once Lira has a new auth endpoint.
     - (The auth check probe has been deprecated for now) This function performs as a probe, which validates the
     auth_token by sending a fake request to the Lira.
-    - This function will ask the use for the authentication information to talk to Lira.
+    - This function will ask the user for the authentication information to talk to Lira.
 
     Args:
         ctx (click.Context): The special internal object that holds state relevant for the script execution at
