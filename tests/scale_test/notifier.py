@@ -39,7 +39,7 @@ Examples:
           --lira_url TEXT       The url to a Lira instance.  [default: https://pipelines.dev.data.humancellatlas.org/]
           --label TEXT          The label to be added to the workflows from notifications. Note: the label should
           comply with
-                                the Cromwell's rules!!  [default: '{"comment": "scaling-test-$(current-date)"}']
+                                the Cromwell's rules!!  [default: {"comment": "notifier-2018-10-10"}]
           --es_query_path TEXT  The path to the ES query json file which is used for making subscription in BlueBox.
                                 [default: ./subscription_queries/smartseq2-query.json]
           --save_path TEXT      The path to the folder to save metrics of this notifier.  [default: ./]
