@@ -31,8 +31,8 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "master" \
         "github" \
         "master" \
-        "$(tail -n+2 ${SCRIPT_DIR}/dss_staging_sub_ids.tsv | head -n1 | cut -f1)" \
-        "$(tail -n+2 ${SCRIPT_DIR}/dss_staging_sub_ids.tsv | head -n1 | cut -f2)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f1)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f2)" \
         "${VAULT_TOKEN_PATH}" \
         "" \
         "true" \
