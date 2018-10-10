@@ -617,18 +617,28 @@ SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
 
 print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
+# Uses the docker image built from Dockerfile next to this script
+TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                    -e LIRA_URL="http://lira:8080/notifications" \
+                    -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
+                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                    $(echo "${AUTH_PARAMS}" | xargs))
+
+print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
+
 # 10. Poll for completion
 print_style "info" "Awaiting workflow completion"
 
 # Uses the docker image built from Dockerfile next to this script
 if [ ${USE_CAAS} == "true" ];
 then
-    docker run --rm -v ${SCRIPT_DIR}:/app \
-        -v ${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
-        -e WORKFLOW_IDS=${SS2_WORKFLOW_ID} \
-        -e WORKFLOW_NAMES=ss2 \
-        -e CROMWELL_URL=https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org \
-        -e CAAS_KEY=/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+    docker run --rm -v "${SCRIPT_DIR}:/app" \
+        -v "${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
+        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
+        -e WORKFLOW_NAMES="SmartSeq2, 10x" \
+        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+        -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
         -e TIMEOUT_MINUTES=120 \
         -e PYTHONUNBUFFERED=0 \
         --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
@@ -648,8 +658,8 @@ else
                                                      secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
     docker run --rm -v "${SCRIPT_DIR}:/app" \
-        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
-        -e WORKFLOW_NAMES=ss2 \
+        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
+        -e WORKFLOW_NAMES="SmartSeq2, 10x" \
         -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
         -e CROMWELL_USER="${CROMWELL_USER}" \
         -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
