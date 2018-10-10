@@ -10,7 +10,8 @@ failed_statuses = ['Failed', 'Aborted', 'Aborting']
 
 
 def run(args):
-    workflow_ids = args.workflow_ids.split(',')
+    workflow_ids = [_id.strip() for _id in args.workflow_ids.split(',')]
+    workflow_names = [name.strip() for name in args.workflow_names.split(',')]
     start = datetime.now()
     timeout = timedelta(minutes=int(args.timeout_minutes))
     while True:
@@ -22,7 +23,7 @@ def run(args):
         all_succeeded = True
         for i, status in enumerate(statuses):
             if status in failed_statuses:
-                raise Exception('Stopping because workflow {0} {1}'.format(workflow_ids[i], status))
+                raise Exception('Stopping because {0} workflow {1} {2}'.format(workflow_names[i], workflow_ids[i], status))
             elif status != 'Succeeded':
                 all_succeeded = False
         if all_succeeded:

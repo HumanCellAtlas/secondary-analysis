@@ -1,0 +1,11 @@
+{
+  "transaction_id": "eed1414b-4e70-45a3-b6d1-7ec19ce5b666",
+  "subscription_id": "513a39a6-eb65-450b-ba5f-ce50f56c42d4",
+  "match": {
+    "bundle_uuid": "3eebea0c-8b80-4007-a860-6802a215276d",
+    "bundle_version": "2018-10-05T145809.216048Z"
+  },
+  "labels": {
+    "mintegration-test": "true"
+  }
+}
