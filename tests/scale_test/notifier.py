@@ -17,7 +17,7 @@ Notes:
     3. Add custom labels to notifications.
     4. Save metrics to a file in batch mode, print to console in single mode.
     5. Switch between single-thread and multi-thread in batch mode.
-    6. Check auth_token provided by user.
+    6. Check auth information provided by the user.
 
     CLI definition
     ==============
@@ -150,6 +150,9 @@ def once(ctx, uuid, version):
     # Prepare arguments
     lira_url, label, es_query_path = ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['es_query_path']
 
+    # Print the information of Lira
+    logging.info('Talking to Lira instance: {}'.format(lira_url))
+
     # Use a probe to get the current subscription_id
     subscription_id = utils.subscription_probe(lira_url)
     logging.info('Using subscription_id: {}'.format(subscription_id))
@@ -203,15 +206,19 @@ def batch(ctx, bundle_list_file, run_mode):
     lira_url, label, save_path, es_query_path = \
         ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['save_path'], ctx.obj['es_query_path']
 
+    # Print the information of Lira
+    logging.info('Talking to Lira instance: {}'.format(lira_url))
+
     if run_mode == 'async':
-        logging.info('Sending notifications asynchronously...\n')
         async_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path)
-    elif run_mode == 'sync':
-        logging.info('Sending notifications synchronously...\n')
+
+    if run_mode == 'sync':
         linear_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path)
 
 
 def linear_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path):
+    logging.info('Sending notifications synchronously...\n')
+
     # Start the timer
     start = timeit.default_timer()
 
@@ -246,6 +253,8 @@ def linear_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path)
 
 
 def async_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path):
+    logging.info('Sending notifications asynchronously...\n')
+
     # Start the timer
     start = timeit.default_timer()
 
