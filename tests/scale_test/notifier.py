@@ -114,6 +114,10 @@ def cli():
               help='The label to be added to the workflows from notifications. '
                    'Note: the label should comply with the Cromwell\'s rules!!',
               show_default=True)
+@click.option('--workflow_name',
+              default='AdapterSmartSeq2SingleCell',
+              help='The name of the workflow to start',
+              show_default=True)
 @click.option('--es_query_path',
               default='./subscription_queries/smartseq2-query.json',
               help='The path to the ES query json file which is used for making subscription in BlueBox.',
@@ -123,11 +127,12 @@ def cli():
               help='The path to the folder to save metrics of this notifier.',
               show_default=True)
 @click.pass_context
-def notify(ctx, lira_url, label, es_query_path, save_path):
+def notify(ctx, lira_url, label, workflow_name, es_query_path, save_path):
     ctx.obj['lira_url'] = utils.harmonize_url(lira_url)
     ctx.obj['label'] = utils.compose_label(label)
-    ctx.obj['save_path'] = save_path
+    ctx.obj['workflow_name'] = workflow_name
     ctx.obj['es_query_path'] = es_query_path
+    ctx.obj['save_path'] = save_path
 
 
 @notify.command(short_help='Send one notification from a given bundle UUID and bundle VERSION.')
@@ -148,13 +153,13 @@ def once(ctx, uuid, version):
     start = timeit.default_timer()
 
     # Prepare arguments
-    lira_url, label, es_query_path = ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['es_query_path']
+    lira_url, label, workflow_name, es_query_path = ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['workflow_name'], ctx.obj['es_query_path']
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
 
     # Use a probe to get the current subscription_id
-    subscription_id = utils.subscription_probe(lira_url)
+    subscription_id = utils.subscription_probe(lira_url, workflow_name)
     logging.info('Using subscription_id: {}'.format(subscription_id))
 
     # Prepare
@@ -203,27 +208,27 @@ def batch(ctx, bundle_list_file, run_mode):
 
     # Prepare arguments
     bundles = utils.read_bundles(bundle_list_file)
-    lira_url, label, save_path, es_query_path = \
-        ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['save_path'], ctx.obj['es_query_path']
+    lira_url, label, workflow_name, save_path, es_query_path = \
+        ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['workflow_name'], ctx.obj['save_path'], ctx.obj['es_query_path']
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
 
     if run_mode == 'async':
-        async_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path)
+        async_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path)
 
     if run_mode == 'sync':
-        linear_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path)
+        linear_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path)
 
 
-def linear_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path):
+def linear_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path):
     logging.info('Sending notifications synchronously...\n')
 
     # Start the timer
     start = timeit.default_timer()
 
     # Use a probe to get the current subscription_id
-    subscription_id = utils.subscription_probe(lira_url)
+    subscription_id = utils.subscription_probe(lira_url, workflow_name)
     logging.info('Using subscription_id: {}'.format(subscription_id))
 
     # Prepare the payload
@@ -252,14 +257,14 @@ def linear_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path)
     logging.info('Saved the metrics file to {}'.format(save_file))
 
 
-def async_notify(bundles, lira_url, label, es_query_path, auth_dict, save_path):
+def async_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path):
     logging.info('Sending notifications asynchronously...\n')
 
     # Start the timer
     start = timeit.default_timer()
 
     # Use a probe to get the current subscription_id
-    subscription_id = utils.subscription_probe(lira_url)
+    subscription_id = utils.subscription_probe(lira_url, workflow_name)
     logging.info('Using subscription_id: {}'.format(subscription_id))
 
     # Prepare the payload
