@@ -4,30 +4,13 @@
       "must": [
         {
           "match": {
-            "files.library_preparation_protocol_json.library_construction_approach.ontology": "EFO:0008931"
+            "files.library_preparation_protocol_json.library_construction_approach.ontology": "EFO:0009310"
 
           }
         },
         {
           "match": {
-            "files.sequencing_protocol_json.paired_end": true
-          }
-        },
-        {
-          "match": {
             "files.donor_organism_json.biomaterial_core.ncbi_taxon_id": 9606
-          }
-        }
-      ],
-      "should": [
-        {
-          "match": {
-            "files.dissociation_protocol_json.dissociation_method.ontology": "EFO:0009108"
-          }
-        },
-        {
-          "match": {
-            "files.dissociation_protocol_json.dissociation_method.text": "mouth pipette"
           }
         }
       ],
