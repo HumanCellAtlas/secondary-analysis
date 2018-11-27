@@ -17,8 +17,10 @@ Google Cloud perspective.
 - **Give permission to the Grafana Data Source**
 
     In order to let Grafana fetch data from the Google Cloud projects, you need to give the grafana service account
-    `Monitoring Viewer` permissions to that Google Project. A typical Grafana service account email will look like: 
-    `grafana-datasource@XXX.iam.gserviceaccount.com`, contact the DCP OPS team to get the specific account name. 
+    `Monitoring Viewer` permissions to that Google Project. (_Note that the grafana service account should already exist 
+    in another dcp google project and it just has to be given the right level of permissions to whichever project 
+    you want to connect._) A typical Grafana service account email will look like: 
+    `grafana-datasource@YYY.iam.gserviceaccount.com`, contact the DCP OPS team to get the specific account name. 
     In order to give it `Monitoring Viewer` permission, go to GCloud console and `ADD` the member through `IAM & admin`
     -> `IAM` section from the side bar.
     
