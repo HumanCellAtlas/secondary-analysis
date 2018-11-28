@@ -1,0 +1,26 @@
+[
+    {
+        "NAME": "Falcon-igniter-effective-release", 
+        "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/{google_project}/logs/falcon\"\n\"INFO:falcon.falcon.igniter:Igniter |\" AND \"Released a workflow\"\n"
+    }, 
+    {
+        "NAME": "Falcon-igniter-heartbeat", 
+        "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/{google_project}/logs/falcon\"\n\"INFO:falcon.falcon.igniter:Igniter | Igniter thread\" AND \"is warmed up and running.\"\n"
+    }, 
+    {
+        "NAME": "Falcon-queue-handler-effective-update", 
+        "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/{google_project}/logs/falcon\"\n\"INFO:falcon.falcon.queue_handler:QueueHandler | Retrieved \" AND NOT \"0 workflows from Cromwell.\"\n"
+    }, 
+    {
+        "NAME": "Falcon-queue-handler-heartbeat", 
+        "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/{google_project}/logs/falcon\"\n\"INFO:falcon.falcon.queue_handler:QueueHandler | QueueHandler thread\" AND \"is warmed up and running.\"\n"
+    }, 
+    {
+        "NAME": "Lira-Cromwell-receipt", 
+        "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/{google_project}/logs/lira\"\n\"INFO:lira.api.notifications:Cromwell response:\" AND \"201\"\n"
+    }, 
+    {
+        "NAME": "Lira-notification-receipt", 
+        "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/{google_project}/logs/lira\"\n\"INFO:lira.api.notifications:Notification received\"\n"
+    }
+]
