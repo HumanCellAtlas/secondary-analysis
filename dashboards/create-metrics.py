@@ -59,6 +59,7 @@ def check_and_create_metrics(gcloud_log_client, metric_json, google_project):
     logging.info("Loading the metric {}".format(metric_json))
 
     # The following line would not fail even if the metric_json is not parameterized :)
+    # e.g. "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/project_name/logs/lira\" won't fail
     metric = gcloud_log_client.metric(name=metric_json["NAME"],
                                       filter_=metric_json["FILTER"].format(google_project=google_project))
 
