@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LIRA_REPO_ROOT=$1
+SECONDARY_ANALYSIS_REPO_ROOT=$1
 VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 
 #ENV=$1
@@ -19,12 +19,12 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 #USE_CAAS=${14}
 #USE_HMAC=${15}
 
-SCRIPT_DIR="${LIRA_REPO_ROOT}/tests/integration_test"
+SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 
 bash ${SCRIPT_DIR}/integration_test.sh \
         "test" \
         "github" \
-        "master" \
+        "ra_first_gitlab_job" \
         "github" \
         "master" \
         "github" \

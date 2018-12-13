@@ -481,7 +481,7 @@ docker run -i --rm \
               -e SS2_WORKFLOW_NAME="${SS2_WORKFLOW_NAME}" \
               -e SS2_VERSION="${SS2_VERSION}" \
               -v "${VAULT_TOKEN_PATH}":/root/.vault-token \
-              -v "${PWD}/lira/kubernetes":/working \
+              -v "${PWD}/lira/deploy/config_files":/working \
               broadinstitute/dsde-toolbox:ra_rendering \
               /usr/local/bin/render-ctmpls.sh \
               -k "/working/${LIRA_CONFIG_FILE}.ctmpl" || true
@@ -495,7 +495,7 @@ then
                    -v "${PWD}":/working broadinstitute/dsde-toolbox:ra_rendering \
                    vault read -format=json "${CAAS_KEY_PATH}" | jq .data > "${CAAS_KEY_FILE}"
      
-    mv "${CAAS_KEY_FILE}" "${LIRA_DIR}/kubernetes/"
+    mv "${CAAS_KEY_FILE}" "${LIRA_DIR}/deploy/config_files"
 fi
                
 # 8. Start Lira
@@ -533,9 +533,9 @@ then
     print_style "info" "docker run -d \
         -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
-        -e caas_key=/etc/lira/kubernetes/${CAAS_ENVIRONMENT}-key.json \
-        -v ${LIRA_DIR}/kubernetes/lira-config.json:/etc/lira/lira-config.json \
-        -v ${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+        -e caas_key=/etc/lira/deploy/config_files/${CAAS_ENVIRONMENT}-key.json \
+        -v ${LIRA_DIR}/deploy/config_files/lira-config.json:/etc/lira/lira-config.json \
+        -v ${LIRA_DIR}/deploy/config_files/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         --name=${LIRA_DOCKER_CONTAINER_NAME} \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
@@ -546,8 +546,8 @@ then
         -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/${CAAS_ENVIRONMENT}-key.json \
-        -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
-        -v "${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json":/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+        -v "${LIRA_DIR}/deploy/config_files/lira-config.json":/etc/lira/lira-config.json \
+        -v "${LIRA_DIR}/deploy/config_files/${CAAS_ENVIRONMENT}-key.json":/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         --name="${LIRA_DOCKER_CONTAINER_NAME}" \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
@@ -558,7 +558,7 @@ else
     print_style "info" "docker run -d \
         -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
-        -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
+        -v "${LIRA_DIR}/deploy/config_files/lira-config.json":/etc/lira/lira-config.json \
         --name=${LIRA_DOCKER_CONTAINER_NAME} \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
@@ -568,7 +568,7 @@ else
     docker run -d \
         -p ${LIRA_HOST_PORT}:8080 \
         -e lira_config=/etc/lira/lira-config.json \
-        -v "${LIRA_DIR}/kubernetes/lira-config.json":/etc/lira/lira-config.json \
+        -v "${LIRA_DIR}/deploy/config_files/lira-config.json":/etc/lira/lira-config.json \
         --name="${LIRA_DOCKER_CONTAINER_NAME}" \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
@@ -634,7 +634,7 @@ print_style "info" "Awaiting workflow completion"
 if [ ${USE_CAAS} == "true" ];
 then
     docker run --rm -v "${SCRIPT_DIR}:/app" \
-        -v "${LIRA_DIR}/kubernetes/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
+        -v "${LIRA_DIR}/deploy/config_files/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
         -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
         -e WORKFLOW_NAMES="SmartSeq2, 10x" \
         -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
