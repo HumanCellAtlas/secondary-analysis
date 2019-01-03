@@ -30,6 +30,7 @@ function configure_kubernetes() {
 
     stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_lira"
     kubectl config use-context ${GKE_CONTEXT}
+    kubectl config set-context $(kubectl config current-context) --namespace=green-100-us-central1-ns
 }
 
 function create_API_config() {
