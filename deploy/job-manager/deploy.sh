@@ -4,7 +4,7 @@
 # =======================================
 # Example Usage:
 # bash deploy.sh broad-dsde-mint-dev gke_broad-dsde-mint-dev_us-central1-b_lira v0.0.4 \
-# "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev
+# "https://cromwell.mint-dev.broadinstitute.org/api/workflows/v1" false true username password dev "gcloud_client_id" "" "kube_cluster_namespace"
 # =======================================
 
 function line() {
@@ -24,12 +24,18 @@ function stderr() {
 function configure_kubernetes() {
     local GCLOUD_PROJECT=$1
     local GKE_CONTEXT=$2
+    local CLUSTER_NAMESPACE=$3
 
     stdout "Setting to use Google project: project ${GCLOUD_PROJECT}"
     gcloud config set project ${GCLOUD_PROJECT}
 
     stdout "Setting to use GKE cluster: project gke_${GCLOUD_PROJECT}_us-central1-b_lira"
     kubectl config use-context ${GKE_CONTEXT}
+
+    if [ -n ${CLUSTER_NAMESPACE} ]; then
+        kubectl config set-context $(kubectl config current-context) --namespace=${CLUSTER_NAMESPACE}
+    fi
+
 }
 
 function create_API_config() {
@@ -200,8 +206,9 @@ function main() {
     local JMUI_USR=$7
     local JMUI_PWD=$8
     local VAULT_ENV=$9
-    local CLIENT_ID=${10:-""}
+    local CLIENT_ID=${10:-"clientID_placeholder"}
     local VAULT_TOKEN_FILE=${11:-"$HOME/.vault-token"}
+    local CLUSTER_NAMESPACE=${12:-""}
 
     local DOCKER_TAG=${JMUI_TAG}
     local API_DOCKER_IMAGE="databiosphere/job-manager-api-cromwell:${DOCKER_TAG}"
@@ -210,7 +217,7 @@ function main() {
     set -e
 
     line
-    configure_kubernetes ${GCLOUD_PROJECT} ${GKE_CONTEXT}
+    configure_kubernetes ${GCLOUD_PROJECT} ${GKE_CONTEXT} ${CLUSTER_NAMESPACE}
 
     local API_CONFIG="cromwell-credentials-$(date '+%Y-%m-%d-%H-%M')"
     local JM_CONFIGMAP_OBJ="jm-configmap-$(date '+%Y-%m-%d-%H-%M')"
@@ -316,17 +323,21 @@ if [ -z $9 ]; then
 fi
 
 if [ -z ${10} ]; then
-    echo -e "\nYou must specify a Client ID if authentication is required in the capabilities config, using default value ''."
+    echo -e "\nYou must specify a Client ID if authentication is required in the capabilities config, using default value 'clientID_placeholder'."
 fi
 
 if [ -z ${11} ]; then
-    echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 9th argument of this script!"
+    echo -e "\nMissing the Vault token file parameter, using default value $HOME/.vault-token. Otherwise, pass in the path to the token file as the 11th argument of this script!"
+fi
+
+if [ -z ${12} ]; then
+    echo -e "\nMissing the Kubernetes cluster namespace parameter, using the default namespace. Otherwise, pass in the string of namespace as the 12th argument of this script!"
 fi
 
 
 if [ $error -eq 1 ]; then
-    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT GKE_CONTEXT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) CLIENT_ID(optional) VAULT_TOKEN_FILE(optional)\n"
+    echo -e "\nUsage: bash deploy.sh GCLOUD_PROJECT GKE_CONTEXT JMUI_TAG CROMWELL_URL USE_CAAS USE_PROXY JMUI_USR JMUI_PWD VAULT_ENV(dev/staging/test) CLIENT_ID(optional) VAULT_TOKEN_FILE(optional) CLUSTER_NAMESPACE(optional)\n"
     exit 1
 fi
 
-main $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+main $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10:-"clientID_placeholder"} ${11:-"$HOME/.vault-token"} ${12}

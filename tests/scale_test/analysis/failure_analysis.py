@@ -161,8 +161,8 @@ def parse_task(task_name, task_metadata, root_workflow_id, bundle_id):
         'status': task_metadata['executionStatus'],
         'failures': task_metadata.get('failures'),
         'attempt': task_metadata['attempt'],
-        'stdout': task_metadata['stdout'],
-        'stderr': task_metadata['stderr'],
+        'stdout': task_metadata.get('stdout'),
+        'stderr': task_metadata.get('stderr'),
         'bundle_id': bundle_id
     }
 
@@ -288,8 +288,8 @@ def main(cromwell_url, auth, headers, output_file, record_std_err=True, start=No
     with open(output_file, 'w') as f:
         f.write('Primary Bundle ID,Workflow ID,Workflow Status,Failed Task,Workflow Error\n')
         for each in workflow_data:
-            f.write('{},{},{},{},{}\n'.format(each['bundle_id'], each['id'], each['status'],
-                                              each['task_name'], each.get('error', '')))
+            f.write('{},{},{},{},{}\n'.format(each.get('bundle_id'), each.get('id'), each.get('status'),
+                                              each.get('task_name'), each.get('error', '')))
 
 
 if __name__ == '__main__':

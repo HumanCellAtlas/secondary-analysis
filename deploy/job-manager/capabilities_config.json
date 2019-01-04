@@ -37,6 +37,11 @@
       "fieldType": "text"
     },
     {
+      "field": "labels.project_uuid",
+      "display": "Project UUID",
+      "fieldType": "text"
+    },
+    {
       "field": "labels.sample_id",
       "display": "Sample ID",
       "fieldType": "text"
@@ -63,7 +68,8 @@
     "comment",
     "submitter_id",
     "sample_id",
-    "project_shortname"
+    "project_shortname",
+    "project_uuid"
   ],
   "queryExtensions": []
 }
