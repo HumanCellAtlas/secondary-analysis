@@ -18,6 +18,7 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 #SUBMIT_WDL_DIR=${13}
 #USE_CAAS=${14}
 #USE_HMAC=${15}
+#SUBMIT_AND_HOLD=${16}
 
 SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 
@@ -35,5 +36,6 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f2)" \
         "${VAULT_TOKEN_PATH}" \
         "" \
+        "true" \
         "true" \
         "true"

@@ -46,6 +46,7 @@ fi
 #SUBMIT_WDL_DIR=${13}
 #USE_CAAS=${14}
 #USE_HMAC=${15}
+#SUBMIT_AND_HOLD=${16}
 
 bash "${SCRIPT_DIR}/integration_test.sh" \
         "${ENVIRONMENT}" \
@@ -62,4 +63,5 @@ bash "${SCRIPT_DIR}/integration_test.sh" \
         "${VAULT_TOKEN_PATH}" \
         "${SUBMIT_WDL_DIR}" \
         "true" \
-        "false"
+        "false" \
+        "true"
