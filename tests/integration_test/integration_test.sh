@@ -170,7 +170,7 @@ else
 fi
 
 function get_unused_port {
-    PORT=$(gshuf -i 2000-65000 -n 1)
+    PORT=$(shuf -i 2000-65000 -n 1)
     QUIT=0
 
     while [ "${QUIT}" -ne 1 ]; do
