@@ -134,16 +134,15 @@ SUBMIT_WDL_DIR=${13}
 USE_CAAS=${14}
 USE_HMAC=${15}
 SUBMIT_AND_HOLD=${16}
-COLLECTION_NAME=${16:-"lira-${LIRA_ENVIRONMENT}"}
+COLLECTION_NAME=${17:-"lira-${LIRA_ENVIRONMENT}"}
 
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 GCLOUD_PROJECT=${GCLOUD_PROJECT:-"broad-dsde-mint-${LIRA_ENVIRONMENT}"} # other envs - broad-dsde-mint-test, broad-dsde-mint-staging, hca-dcp-pipelines-prod
 
-DOCKER_CONFIG_DIR=/working/deploy/config_files
-
 CAAS_ENVIRONMENT="caas-prod"
+LIRA_CONFIG_DIR=lira/deploy/config_files
 LIRA_CONFIG_FILE="lira-config.json"
 
 PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
@@ -171,7 +170,7 @@ else
 fi
 
 function get_unused_port {
-    PORT=$(shuf -i 2000-65000 -n 1)
+    PORT=$(gshuf -i 2000-65000 -n 1)
     QUIT=0
 
     while [ "${QUIT}" -ne 1 ]; do
@@ -490,7 +489,9 @@ docker run -i --rm \
               --privileged \
               broadinstitute/dsde-toolbox:ra_rendering \
               /usr/local/bin/render-ctmpls.sh \
-              -k "${DOCKER_CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl" || true
+              -k "${LIRA_CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl" || true
+
+cat "${LIRA_CONFIG_DIR}/${LIRA_CONFIG_FILE}"
 
 # 7. Retrieve the caas-<<env>>-key.json file from vault
 if [ ${USE_CAAS} ];

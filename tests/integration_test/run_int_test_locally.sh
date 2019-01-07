@@ -25,7 +25,7 @@ SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 bash ${SCRIPT_DIR}/integration_test.sh \
         "test" \
         "github" \
-        "ra_first_gitlab_job" \
+        "master" \
         "github" \
         "master" \
         "github" \
