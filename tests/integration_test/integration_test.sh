@@ -133,7 +133,8 @@ VAULT_TOKEN_PATH=${12}
 SUBMIT_WDL_DIR=${13}
 USE_CAAS=${14}
 USE_HMAC=${15}
-COLLECTION_NAME=${16:-"lira-${LIRA_ENVIRONMENT}"}
+SUBMIT_AND_HOLD=${16}
+COLLECTION_NAME=${17:-"lira-${LIRA_ENVIRONMENT}"}
 
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -141,6 +142,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 GCLOUD_PROJECT=${GCLOUD_PROJECT:-"broad-dsde-mint-${LIRA_ENVIRONMENT}"} # other envs - broad-dsde-mint-test, broad-dsde-mint-staging, hca-dcp-pipelines-prod
 
 CAAS_ENVIRONMENT="caas-prod"
+LIRA_CONFIG_DIR=lira/deploy/config_files
 LIRA_CONFIG_FILE="lira-config.json"
 
 PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
@@ -422,6 +424,7 @@ print_style "info" "Creating Lira config"
 print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
 print_style "info" "CROMWELL_URL=${CROMWELL_URL}"
 print_style "info" "USE_CAAS=${USE_CAAS}"
+print_style "info" "SUBMIT_AND_HOLD=${SUBMIT_AND_HOLD}"
 print_style "info" "COLLECTION_NAME=${COLLECTION_NAME}"
 print_style "info" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
 print_style "info" "GCS_ROOT=${GCS_ROOT}"
@@ -456,6 +459,7 @@ docker run -i --rm \
               -e LIRA_ENVIRONMENT="${LIRA_ENVIRONMENT}" \
               -e CROMWELL_URL="${CROMWELL_URL}" \
               -e USE_CAAS="${USE_CAAS}" \
+              -e SUBMIT_AND_HOLD="${SUBMIT_AND_HOLD}" \
               -e COLLECTION_NAME="${COLLECTION_NAME}" \
               -e GCLOUD_PROJECT="${GCLOUD_PROJECT}" \
               -e GCS_ROOT="${GCS_ROOT}" \
@@ -481,10 +485,13 @@ docker run -i --rm \
               -e SS2_WORKFLOW_NAME="${SS2_WORKFLOW_NAME}" \
               -e SS2_VERSION="${SS2_VERSION}" \
               -v "${VAULT_TOKEN_PATH}":/root/.vault-token \
-              -v "${PWD}/lira/deploy/config_files":/working \
+              -v "${PWD}":/working \
+              --privileged \
               broadinstitute/dsde-toolbox:ra_rendering \
               /usr/local/bin/render-ctmpls.sh \
-              -k "/working/${LIRA_CONFIG_FILE}.ctmpl" || true
+              -k "${LIRA_CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl" || true
+
+cat "${LIRA_CONFIG_DIR}/${LIRA_CONFIG_FILE}"
 
 # 7. Retrieve the caas-<<env>>-key.json file from vault
 if [ ${USE_CAAS} ];
