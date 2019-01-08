@@ -537,8 +537,9 @@ trap "stop_lira_on_error" ERR
 
 if [ ${USE_CAAS} ];
 then
-    print_style "info" "docker run -d \
+    print_style "info" "docker run \
         -p ${LIRA_HOST_PORT}:8080 \
+        -a stdout -a stderr \
         -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/deploy/config_files/${CAAS_ENVIRONMENT}-key.json \
         -v ${LIRA_DIR}/deploy/config_files/lira-config.json:/etc/lira/lira-config.json \
@@ -547,10 +548,11 @@ then
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
-        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}"
+        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION} &"
 
-    docker run -d \
+    docker run \
         -p ${LIRA_HOST_PORT}:8080 \
+        -a stdout -a stderr \
         -e lira_config=/etc/lira/lira-config.json \
         -e caas_key=/etc/lira/${CAAS_ENVIRONMENT}-key.json \
         -v "${LIRA_DIR}/deploy/config_files/lira-config.json":/etc/lira/lira-config.json \
@@ -559,28 +561,30 @@ then
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
-        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}
+        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION} &
 
 else
-    print_style "info" "docker run -d \
+    print_style "info" "docker run \
         -p ${LIRA_HOST_PORT}:8080 \
+        -a stdout -a stderr \
         -e lira_config=/etc/lira/lira-config.json \
         -v "${LIRA_DIR}/deploy/config_files/lira-config.json":/etc/lira/lira-config.json \
         --name=${LIRA_DOCKER_CONTAINER_NAME} \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
-        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}"
+        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION} &"
 
-    docker run -d \
+    docker run \
         -p ${LIRA_HOST_PORT}:8080 \
+        -a stdout -a stderr \
         -e lira_config=/etc/lira/lira-config.json \
         -v "${LIRA_DIR}/deploy/config_files/lira-config.json":/etc/lira/lira-config.json \
         --name="${LIRA_DOCKER_CONTAINER_NAME}" \
         $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
         $(echo ${MOUNT_TENX} | xargs) \
         $(echo ${MOUNT_SS2} | xargs) \
-        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION}
+        quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE_VERSION} &
 fi
 
 print_style "info" "Waiting for Lira to finish start up"
