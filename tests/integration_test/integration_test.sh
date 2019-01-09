@@ -191,11 +191,11 @@ if [ ${LIRA_ENVIRONMENT} == "prod" ];
 then
     DSS_URL="https://dss.data.humancellatlas.org/v1"
     SCHEMA_URL="https://schema.humancellatlas.org/"
-    INGEST_URL="http://api.ingest.data.humancellatlas.org/"
+    INGEST_URL="https://api.ingest.data.humancellatlas.org/"
 else
     DSS_URL="https://dss.${ENV}.data.humancellatlas.org/v1"
     SCHEMA_URL="http://schema.${ENV}.data.humancellatlas.org/"
-    INGEST_URL="http://api.ingest.${ENV}.data.humancellatlas.org/"
+    INGEST_URL="https://api.ingest.${ENV}.data.humancellatlas.org/"
 fi
 
 GCS_ROOT="gs://${GCLOUD_PROJECT}-cromwell-execution/caas-cromwell-executions"

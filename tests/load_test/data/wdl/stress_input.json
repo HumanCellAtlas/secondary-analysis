@@ -12,7 +12,7 @@
   "StressTestAdapterSmartSeq2SingleCell.reference_bundle": "bf51d668-3e14-4843-9bc7-5d676fdf0e01",
   "StressTestAdapterSmartSeq2SingleCell.format_map": "gs://hca-dcp-mint-test-data/adapters/file_format_map.json",
   "StressTestAdapterSmartSeq2SingleCell.dss_url": "https://dss.dev.data.humancellatlas.org/v1",
-  "StressTestAdapterSmartSeq2SingleCell.submit_url": "http://api.ingest.dev.data.humancellatlas.org/",
+  "StressTestAdapterSmartSeq2SingleCell.submit_url": "https://api.ingest.dev.data.humancellatlas.org/",
   "StressTestAdapterSmartSeq2SingleCell.method": "SmartSeq2SingleCell",
   "StressTestAdapterSmartSeq2SingleCell.schema_version": "4.6.1",
   "StressTestAdapterSmartSeq2SingleCell.run_type": "run",
