@@ -617,17 +617,19 @@ fi
 
 print_style "info" "Sending in notifications"
 # Uses the docker image built from Dockerfile next to this script
-SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                    -e LIRA_URL="http://lira:8080/notifications" \
-                    -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
-                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
-                    $(echo "${AUTH_PARAMS}" | xargs))
+#SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+#                    -e LIRA_URL="http://lira:8080/notifications" \
+#                    -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
+#                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+#                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+#                    $(echo "${AUTH_PARAMS}" | xargs))
 
-print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
+#print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
+print_style "Skipping SS2"
 
 # Make sure the Github won't refuse to establish connection with Lira
 sleep 10
+print_style "Finished sleep for 10s"
 
 # Uses the docker image built from Dockerfile next to this script
 TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
