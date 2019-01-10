@@ -630,6 +630,7 @@ print_style "Skipping SS2"
 # Make sure the Github won't refuse to establish connection with Lira
 sleep 10
 print_style "Finished sleep for 10s"
+print_style "$(cat /etc/resolv.conf)"
 
 # Uses the docker image built from Dockerfile next to this script
 TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
