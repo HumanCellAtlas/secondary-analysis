@@ -528,6 +528,8 @@ set +ex
 function stop_lira_on_error {
   print_style "error" "Stopping Lira"
   docker stop ${LIRA_DOCKER_CONTAINER_NAME}
+  print_style "error" "Lira Log:"
+  docker logs ${LIRA_DOCKER_CONTAINER_NAME}
   print_style "error" "Removing Lira"
   docker rm -v ${LIRA_DOCKER_CONTAINER_NAME}
   print_style "error" "Test failed!"
