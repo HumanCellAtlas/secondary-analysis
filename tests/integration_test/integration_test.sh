@@ -626,6 +626,9 @@ SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
 
 print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
+# Make sure the Github won't refuse to establish connection with Lira
+sleep 10
+
 # Uses the docker image built from Dockerfile next to this script
 TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
