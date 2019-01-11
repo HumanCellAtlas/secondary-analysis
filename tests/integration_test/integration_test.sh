@@ -616,7 +616,7 @@ else
 fi
 
 print_style "info" "Sending in notifications"
- Uses the docker image built from Dockerfile next to this script
+# Uses the docker image built from Dockerfile next to this script
 SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     -e LIRA_URL="http://lira:8080/notifications" \
                     -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
