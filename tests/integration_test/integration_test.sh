@@ -616,19 +616,6 @@ else
 fi
 
 print_style "info" "Sending in notifications"
-# Uses the docker image built from Dockerfile next to this script
-SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                    -e LIRA_URL="http://lira:8080/notifications" \
-                    -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
-                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
-                    $(echo "${AUTH_PARAMS}" | xargs))
-
-print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
-
-# Make sure the Github won't refuse to establish connection with Lira
-sleep 10
-print_style "Finished sleeping for 10s"
 
 # Uses the docker image built from Dockerfile next to this script
 TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
@@ -639,6 +626,16 @@ TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                     $(echo "${AUTH_PARAMS}" | xargs))
 
 print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
+
+# Uses the docker image built from Dockerfile next to this script
+SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                    -e LIRA_URL="http://lira:8080/notifications" \
+                    -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
+                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                    $(echo "${AUTH_PARAMS}" | xargs))
+
+print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
 # 10. Poll for completion
 print_style "info" "Awaiting workflow completion"
