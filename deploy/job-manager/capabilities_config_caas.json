@@ -1,6 +1,16 @@
 {
   "displayFields": [
     {
+      "field": "name",
+      "display": "Name",
+      "fieldType": "text",
+      "filterable": "true"
+    },
+    {
+      "field": "id",
+      "display": "Workflow Id"
+    },
+    {
       "field": "status",
       "display": "Status"
     },
@@ -13,13 +23,10 @@
       "display": "End Time"
     },
     {
-      "field": "labels.cromwell-workflow-id",
-      "display": "Workflow ID"
-    },
-    {
       "field": "labels.workflow-version",
       "display": "Workflow Version",
-      "fieldType": "text"
+      "fieldType": "text",
+      "filterable": "true"
     },
     {
       "field": "labels.bundle-version",
@@ -34,27 +41,36 @@
     {
       "field": "labels.caas-collection-name",
       "display": "CaaS Collection",
-      "fieldType": "text"
+      "fieldType": "text",
+      "filterable": "true"
     },
     {
       "field": "labels.project_shortname",
       "display": "Project Shortname",
-      "fieldType": "text"
+      "fieldType": "text",
+      "filterable": "true"
     },
     {
       "field": "labels.project_uuid",
       "display": "Project UUID",
-      "fieldType": "text"
+      "fieldType": "text",
+      "filterable": "true"
     },
     {
       "field": "labels.sample_id",
       "display": "Sample ID",
-      "fieldType": "text"
+      "fieldType": "text",
+      "filterable": "true"
     },
     {
       "field": "labels.submitter_id",
       "display": "Submitter ID",
       "fieldType": "text"
+    },
+    {
+     "field": "labels.estimated_cost",
+     "display": "Estimated Cost",
+     "fieldType": "text"
     },
     {
       "field": "labels.comment",
@@ -76,7 +92,7 @@
     }
   ],
   "commonLabels": [
-    "cromwell-workflow-id",
+    "id",
     "bundle-uuid",
     "bundle-version",
     "workflow-version",
