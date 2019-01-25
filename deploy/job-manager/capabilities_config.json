@@ -1,6 +1,16 @@
 {
   "displayFields": [
     {
+      "field": "name",
+      "display": "Name",
+      "fieldType": "text",
+      "filterable": "true"
+    },
+    {
+      "field": "id",
+      "display": "Workflow Id"
+    },
+    {
       "field": "status",
       "display": "Status"
     },
@@ -11,10 +21,6 @@
     {
       "field": "end",
       "display": "End Time"
-    },
-    {
-      "field": "labels.cromwell-workflow-id",
-      "display": "Workflow ID"
     },
     {
       "field": "labels.workflow-version",
@@ -47,20 +53,26 @@
       "fieldType": "text"
     },
     {
-      "field": "labels.submitter_id",
-      "display": "Submitter ID",
-      "fieldType": "text"
-    },
-    {
       "field": "labels.comment",
       "display": "Comment",
       "fieldType": "text",
       "editable": true,
       "bulkEditable": true
+    },
+    {
+      "field": "labels.flag",
+      "display": "Flag",
+      "editable": true,
+      "bulkEditable": true,
+      "fieldType": "list",
+      "validFieldValues": [
+        "archive",
+        "follow-up"
+      ]
     }
   ],
   "commonLabels": [
-    "cromwell-workflow-id",
+    "id",
     "bundle-uuid",
     "bundle-version",
     "workflow-version",
@@ -69,7 +81,8 @@
     "submitter_id",
     "sample_id",
     "project_shortname",
-    "project_uuid"
+    "project_uuid",
+    "flag"
   ],
   "queryExtensions": []
 }
