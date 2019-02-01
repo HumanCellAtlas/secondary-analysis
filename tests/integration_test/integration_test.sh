@@ -149,18 +149,26 @@ PIPELINE_TOOLS_DIR=${10}
 TENX_MODE=${11}
 TENX_VERSION=${12}
 TENX_DIR=${13}
-SS2_MODE=${14}
-SS2_VERSION=${15}
-SS2_DIR=${16}
-TENX_SUBSCRIPTION_ID=${17}
-SS2_SUBSCRIPTION_ID=${18:-"placeholder_ss2_subscription_id"}
-VAULT_TOKEN_PATH=${19}
-SUBMIT_WDL_DIR=${20}
-USE_CAAS=${21}
-USE_HMAC=${22}
-SUBMIT_AND_HOLD=${23}
-REMOVE_TEMP_DIR=${24:-"true"}
-COLLECTION_NAME=${25:-"lira-${LIRA_ENVIRONMENT}"}
+OPTIMUS_MODE=${14}
+OPTIMUS_VERSION=${15}
+OPTIMUS_DIR=${16}
+SS2_MODE=${17}
+SS2_VERSION=${18}
+SS2_DIR=${19}
+TENX_SUBSCRIPTION_ID=${20:-"placeholder_10x_subscription_id"}
+SS2_SUBSCRIPTION_ID=${21:-"placeholder_ss2_subscription_id"}
+OPTIMUS_SUBSCRIPTION_ID=${22:-"placeholder_optimus_subscription_id"}
+VAULT_TOKEN_PATH=${23}
+SUBMIT_WDL_DIR=${24}
+USE_CAAS=${25}
+USE_HMAC=${26}
+SUBMIT_AND_HOLD=${27}
+REMOVE_TEMP_DIR=${28:-"true"}
+COLLECTION_NAME=${29:-"lira-${LIRA_ENVIRONMENT}"}
+
+DOMAIN="localhost"
+
+
 DOMAIN="localhost"
 
 WORK_DIR=$(pwd)
@@ -784,6 +792,8 @@ get_10x_analysis_pipeline
 
 get_ss2_analysis_pipeline
 
+get_optimus_analysis_pipeline
+
 
 # 9. Create config.json file
 
@@ -812,6 +822,13 @@ print_style "debug" "TENX_WDL_STATIC_INPUTS_LINK=${TENX_WDL_STATIC_INPUTS_LINK}"
 print_style "debug" "TENX_WDL_LINK=${TENX_WDL_LINK}"
 print_style "debug" "TENX_WORKFLOW_NAME=${TENX_WORKFLOW_NAME}"
 print_style "debug" "TENX_VERSION=${TENX_VERSION}"
+print_style "debug" "OPTIMUS_ANALYSIS_WDLS=${OPTIMUS_ANALYSIS_WDLS}"
+print_style "debug" "OPTIMUS_OPTIONS_LINK=${OPTIMUS_OPTIONS_LINK}"
+print_style "debug" "OPTIMUS_SUBSCRIPTION_ID=${OPTIMUS_SUBSCRIPTION_ID}"
+print_style "debug" "OPTIMUS_WDL_STATIC_INPUTS_LINK=${OPTIMUS_WDL_STATIC_INPUTS_LINK}"
+print_style "debug" "OPTIMUS_WDL_LINK=${OPTIMUS_WDL_LINK}"
+print_style "debug" "OPTIMUS_WORKFLOW_NAME=${OPTIMUS_WORKFLOW_NAME}"
+print_style "debug" "OPTIMUS_VERSION=${OPTIMUS_VERSION}"
 print_style "debug" "SS2_ANALYSIS_WDLS=${SS2_ANALYSIS_WDLS}"
 print_style "debug" "SS2_OPTIONS_LINK=${SS2_OPTIONS_LINK}"
 print_style "debug" "SS2_SUBSCRIPTION_ID=${SS2_SUBSCRIPTION_ID}"
@@ -822,6 +839,7 @@ print_style "debug" "SS2_VERSION=${SS2_VERSION}"
 print_style "debug" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
 print_style "debug" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
 print_style "debug" "CTMPL FILE=${CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl"
+print_style "debug" "DOMAIN=${DOMAIN}"
 
 docker run -i --rm \
               -e ENVIRONMENT="${LIRA_ENVIRONMENT}" \
@@ -846,6 +864,13 @@ docker run -i --rm \
               -e TENX_WDL_LINK="${TENX_WDL_LINK}" \
               -e TENX_WORKFLOW_NAME="${TENX_WORKFLOW_NAME}" \
               -e TENX_VERSION="${TENX_VERSION}" \
+              -e OPTIMUS_ANALYSIS_WDLS="${OPTIMUS_ANALYSIS_WDLS}" \
+              -e OPTIMUS_OPTIONS_LINK="${OPTIMUS_OPTIONS_LINK}" \
+              -e OPTIMUS_SUBSCRIPTION_ID="${OPTIMUS_SUBSCRIPTION_ID}" \
+              -e OPTIMUS_WDL_STATIC_INPUTS_LINK="${OPTIMUS_WDL_STATIC_INPUTS_LINK}" \
+              -e OPTIMUS_WDL_LINK="${OPTIMUS_WDL_LINK}" \
+              -e OPTIMUS_WORKFLOW_NAME="${OPTIMUS_WORKFLOW_NAME}" \
+              -e OPTIMUS_VERSION="${OPTIMUS_VERSION}" \
               -e SS2_ANALYSIS_WDLS="${SS2_ANALYSIS_WDLS}" \
               -e SS2_OPTIONS_LINK="${SS2_OPTIONS_LINK}" \
               -e SS2_SUBSCRIPTION_ID="${SS2_SUBSCRIPTION_ID}" \
