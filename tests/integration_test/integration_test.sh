@@ -626,29 +626,68 @@ SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
 
 print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
-# Make sure the Github won't refuse to establish connection with Lira
-sleep 10
+#### # Disabling the 10x notification to bypass the Jenkins transient docker host error for now ####
+# # Uses the docker image built from Dockerfile next to this script
+# TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+#                     -e LIRA_URL="http://lira:8080/notifications" \
+#                     -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
+#                     --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+#                     quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+#                     $(echo "${AUTH_PARAMS}" | xargs))
 
-# Uses the docker image built from Dockerfile next to this script
-TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                    -e LIRA_URL="http://lira:8080/notifications" \
-                    -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
-                    --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                    quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
-                    $(echo "${AUTH_PARAMS}" | xargs))
-
-print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
+# print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
 
 # 10. Poll for completion
 print_style "info" "Awaiting workflow completion"
 
 # Uses the docker image built from Dockerfile next to this script
+
+#### Disabling the 10x workflow polling to bypass the Jenkins transient docker host error for now ####
+
+# if [ ${USE_CAAS} == "true" ];
+# then
+#     docker run --rm -v "${SCRIPT_DIR}:/app" \
+#         -v "${LIRA_DIR}/deploy/config_files/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
+#         -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
+#         -e WORKFLOW_NAMES="SmartSeq2, 10x" \
+#         -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+#         -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
+#         -e TIMEOUT_MINUTES=120 \
+#         -e PYTHONUNBUFFERED=0 \
+#         --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
+#         quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
+
+# else
+#     export CROMWELL_USER="$(docker run -i --rm \
+#                                        -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+#                                        broadinstitute/dsde-toolbox \
+#                                        vault read -field=cromwell_user \
+#                                                   secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+
+#     export CROMWELL_PASSWORD="$(docker run -i --rm \
+#                                           -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+#                                           broadinstitute/dsde-toolbox \
+#                                           vault read -field=cromwell_password \
+#                                                      secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+
+#     docker run --rm -v "${SCRIPT_DIR}:/app" \
+#         -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
+#         -e WORKFLOW_NAMES="SmartSeq2, 10x" \
+#         -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+#         -e CROMWELL_USER="${CROMWELL_USER}" \
+#         -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
+#         -e TIMEOUT_MINUTES=120 \
+#         -e PYTHONUNBUFFERED=0 \
+#         --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
+#         quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
+# fi
+
 if [ ${USE_CAAS} == "true" ];
 then
     docker run --rm -v "${SCRIPT_DIR}:/app" \
         -v "${LIRA_DIR}/deploy/config_files/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
-        -e WORKFLOW_NAMES="SmartSeq2, 10x" \
+        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
+        -e WORKFLOW_NAMES="SmartSeq2" \
         -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
         -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
         -e TIMEOUT_MINUTES=120 \
@@ -670,8 +709,8 @@ else
                                                      secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
     docker run --rm -v "${SCRIPT_DIR}:/app" \
-        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
-        -e WORKFLOW_NAMES="SmartSeq2, 10x" \
+        -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
+        -e WORKFLOW_NAMES="SmartSeq2" \
         -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
         -e CROMWELL_USER="${CROMWELL_USER}" \
         -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
