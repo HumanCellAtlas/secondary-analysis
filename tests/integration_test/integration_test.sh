@@ -138,7 +138,7 @@ USE_CAAS=${14}
 USE_HMAC=${15}
 SUBMIT_AND_HOLD=${16}
 COLLECTION_NAME=${17:-"lira-${LIRA_ENVIRONMENT}"}
-DOMAIN = "localhost"
+DOMAIN="localhost"
 
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
