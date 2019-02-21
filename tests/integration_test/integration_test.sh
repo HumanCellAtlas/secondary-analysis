@@ -91,6 +91,9 @@
 # USE_CAAS
 # Uses Cromwell-as-a-Service if true
 #
+# DOMAIN
+# The domain of the deployed Lira instance, we hard-code it to use "localhost" here for testing
+#
 # USE_HMAC
 # Uses hmac for authenticating notifications if true, otherwise uses query param token
 
@@ -135,6 +138,7 @@ USE_CAAS=${14}
 USE_HMAC=${15}
 SUBMIT_AND_HOLD=${16}
 COLLECTION_NAME=${17:-"lira-${LIRA_ENVIRONMENT}"}
+DOMAIN = "localhost"
 
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -424,6 +428,7 @@ print_style "info" "Creating Lira config"
 print_style "info" "LIRA_ENVIRONMENT: ${LIRA_ENVIRONMENT}"
 print_style "info" "CROMWELL_URL=${CROMWELL_URL}"
 print_style "info" "USE_CAAS=${USE_CAAS}"
+print_style "info" "DOMAIN=${DOMAIN}"
 print_style "info" "SUBMIT_AND_HOLD=${SUBMIT_AND_HOLD}"
 print_style "info" "COLLECTION_NAME=${COLLECTION_NAME}"
 print_style "info" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
@@ -459,6 +464,7 @@ docker run -i --rm \
               -e LIRA_ENVIRONMENT="${LIRA_ENVIRONMENT}" \
               -e CROMWELL_URL="${CROMWELL_URL}" \
               -e USE_CAAS="${USE_CAAS}" \
+              -e DOMAIN="${DOMAIN}" \
               -e SUBMIT_AND_HOLD="${SUBMIT_AND_HOLD}" \
               -e COLLECTION_NAME="${COLLECTION_NAME}" \
               -e GCLOUD_PROJECT="${GCLOUD_PROJECT}" \
