@@ -332,6 +332,7 @@ function build_lira {
 }
 
 function build_pipeline_tools {
+# TODO: add conditional statement to use prebuilt pipeline-tools image as with lira?
     if [ "${PIPELINE_TOOLS_MODE}" == "local" ] || [ ${PIPELINE_TOOLS_MODE} == "github" ];
     then
         cd "${PIPELINE_TOOLS_DIR}"
@@ -346,14 +347,6 @@ function build_pipeline_tools {
                                 -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
                                 broadinstitute/dsde-toolbox \
                                 vault read -field=password secret/dsde/mint/common/quay_robot)
-
-###################################################################################################################
-# You may be able to remove this section since you are already in a temp dir
-    ## Use a temp directory for saving the docker config to avoid permissions issues in Jenkins
-    #DOCKER_TEMP_DIR=${WORK_DIR}/docker_temp
-    #mkdir ${DOCKER_TEMP_DIR}
-    #export DOCKER_CONFIG=${DOCKER_TEMP_DIR}
-###################################################################################################################
 
         print_style "info" "Logging into quay.io using robot account ${QUAY_USERNAME}"
         docker login -u=${QUAY_USERNAME} -p=${QUAY_TOKEN} quay.io
