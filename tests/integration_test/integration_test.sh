@@ -712,8 +712,8 @@ fi
 
 # Check that the Lira version is as expected
 
-print_style "info" "SECONDARY_ANALYSIS_VERSION=${SECONDARY_ANALYSIS_VERSION}"
-print_style "info" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
+print_style "debug" "SECONDARY_ANALYSIS_VERSION=${SECONDARY_ANALYSIS_VERSION}"
+print_style "debug" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
 
 # 2. Define Location of Lira (Image, Repo or Local)
 
@@ -727,8 +727,8 @@ fi
 
 # Check that the Lira version is as expected
 
-print_style "info" "LIRA_VERSION=${LIRA_VERSION}"
-print_style "info" "LIRA_DIR=${LIRA_DIR}"
+print_style "debug" "LIRA_VERSION=${LIRA_VERSION}"
+print_style "debug" "LIRA_DIR=${LIRA_DIR}"
 
 
 # 3. Define Location of pipeline-tools (Image, Repo or Local)
@@ -743,8 +743,8 @@ fi
 
 # Check that the pipeline-tools version is as expected
 
-print_style "info" "PIPELINE_TOOLS_VERSION=${PIPELINE_TOOLS_VERSION}"
-print_style "info" "PIPELINE_TOOLS_DIR=${PIPELINE_TOOLS_DIR}"
+print_style "debug" "PIPELINE_TOOLS_VERSION=${PIPELINE_TOOLS_VERSION}"
+print_style "debug" "PIPELINE_TOOLS_DIR=${PIPELINE_TOOLS_DIR}"
 
 
 # 4. Define the pipeline tools prefix:
@@ -761,7 +761,7 @@ fi
 
 # Check that the pipeline-tools prefix is as expected
 
-print_style "info" "PIPELINE_TOOLS_PREFIX=${PIPELINE_TOOLS_PREFIX}"
+print_style "debug" "PIPELINE_TOOLS_PREFIX=${PIPELINE_TOOLS_PREFIX}"
 
 
 # 5. Define the submit wdl path
@@ -775,7 +775,7 @@ fi
 
 # Check that the submit wdl path is as expected
 
-print_style "info" "PIPELINE_TOOLS_PREFIX=${PIPELINE_TOOLS_PREFIX}"
+print_style "debug" "PIPELINE_TOOLS_PREFIX=${PIPELINE_TOOLS_PREFIX}"
 
 
 # 6. Build or Pull Lira Image
@@ -784,7 +784,7 @@ build_lira
 
 # Check that the values are correct
 
-print_style "info" "LIRA_IMAGE=${LIRA_IMAGE}"
+print_style "debug" "LIRA_IMAGE=${LIRA_IMAGE}"
 
 
 # 7. Build or pull pipeline-tools image
@@ -793,7 +793,7 @@ build_pipeline_tools
 
 # Check that the values are correct
 
-print_style "info" "PIPELINE_TOOLS_IMAGE=${PIPELINE_TOOLS_IMAGE}"
+print_style "debug" "PIPELINE_TOOLS_IMAGE=${PIPELINE_TOOLS_IMAGE}"
 
 
 # 8. Get analysis pipeline versions to use
@@ -803,11 +803,10 @@ get_10x_analysis_pipeline
 get_ss2_analysis_pipeline
 
 
+# 9. Create config.json file
+
 cd "${SECONDARY_ANALYSIS_DIR}"
 export CONFIG_DIR="${SECONDARY_ANALYSIS_DIR}/config_files"
-
-
-# 9. Create config.json file
 
 print_style "debug" "LIRA_ENVIRONMENT=${LIRA_ENVIRONMENT}"
 print_style "debug" "CROMWELL_URL=${CROMWELL_URL}"
@@ -921,7 +920,10 @@ docker rm -v "${LIRA_DOCKER_CONTAINER_NAME}"
 cd ${WORK_DIR}
 if [ "${REMOVE_TEMP_DIR}" == "true" ];
 then
-    rm -r ${TEMP_DIR}
+    if [ ! -z ${TEMP_DIR} ];
+    then
+        rm -rf ${TEMP_DIR}
+    fi
 fi
 
 print_style "success" "Test succeeded!"
