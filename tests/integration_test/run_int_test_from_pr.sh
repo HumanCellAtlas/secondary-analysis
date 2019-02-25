@@ -31,7 +31,7 @@ else
 fi
 
 #Arguments to integration_test.sh:
-#ENV=${1}
+#LIRA_ENVIRONMENT=${1}
 #LIRA_MODE=${2}
 #LIRA_VERSION=${3}
 #LIRA_DIR=${4}
@@ -54,8 +54,8 @@ fi
 #USE_CAAS=${21}
 #USE_HMAC=${22}
 #SUBMIT_AND_HOLD=${23}
-#COLLECTION_NAME=${24:-"lira-${LIRA_ENVIRONMENT}"}
-#REMOVE_TEMP_DIR=${25:-"true"}
+#REMOVE_TEMP_DIR=${24:-"true"}
+#COLLECTION_NAME=${25:-"lira-${LIRA_ENVIRONMENT}"}
 
 bash "${SCRIPT_DIR}/integration_test.sh" \
         "${ENVIRONMENT}" \
@@ -80,5 +80,4 @@ bash "${SCRIPT_DIR}/integration_test.sh" \
         "${SUBMIT_WDL_DIR}" \
         "true" \
         "false" \
-        "true" \
         "true"
