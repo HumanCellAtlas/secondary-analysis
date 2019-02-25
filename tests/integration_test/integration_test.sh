@@ -715,6 +715,7 @@ fi
 print_style "debug" "SECONDARY_ANALYSIS_VERSION=${SECONDARY_ANALYSIS_VERSION}"
 print_style "debug" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
 
+
 # 2. Define Location of Lira (Image, Repo or Local)
 
 if [ "${LIRA_MODE}" == "github" ] || [ ${LIRA_MODE} == "image" ];
@@ -911,12 +912,15 @@ send_10x_notification
 print_style "success" "Stopping Lira"
 docker stop "${LIRA_DOCKER_CONTAINER_NAME}"
 
+
 # 14. Cleanup - Remove the lira container
 
 print_style "success" "Removing Lira"
 docker rm -v "${LIRA_DOCKER_CONTAINER_NAME}"
 
+
 # 15. Cleanup - Delete the temp directory
+
 cd ${WORK_DIR}
 if [ "${REMOVE_TEMP_DIR}" == "true" ];
 then
