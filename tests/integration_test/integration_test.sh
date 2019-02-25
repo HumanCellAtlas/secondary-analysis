@@ -125,7 +125,7 @@ function print_style {
     then
         if [ "${DEBUG}" == "true" ];
         then
-            printf '\e[1;93m%-6s\e[m\n' "$2" # print yellow
+            printf '\e[1;90m%-6s\e[m\n' "$2" # print gray
         fi
     else
         printf "$1"
