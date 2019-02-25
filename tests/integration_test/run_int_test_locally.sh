@@ -3,7 +3,7 @@
 SECONDARY_ANALYSIS_REPO_ROOT=$1
 VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 
-#ENV=${1}
+#LIRA_ENVIRONMENT=${1}
 #LIRA_MODE=${2}
 #LIRA_VERSION=${3}
 #LIRA_DIR=${4}
@@ -26,8 +26,8 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 #USE_CAAS=${21}
 #USE_HMAC=${22}
 #SUBMIT_AND_HOLD=${23}
-#COLLECTION_NAME=${24:-"lira-${LIRA_ENVIRONMENT}"}
-#REMOVE_TEMP_DIR=${25:-"true"}
+#REMOVE_TEMP_DIR=${24:-"true"}
+#COLLECTION_NAME=${25:-"lira-${LIRA_ENVIRONMENT}"}
 
 SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 
@@ -52,7 +52,6 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f2)" \
         "${VAULT_TOKEN_PATH}" \
         "" \
-        "true" \
         "true" \
         "true" \
         "true"

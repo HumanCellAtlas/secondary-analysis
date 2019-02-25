@@ -159,8 +159,8 @@ SUBMIT_WDL_DIR=${20}
 USE_CAAS=${21}
 USE_HMAC=${22}
 SUBMIT_AND_HOLD=${23}
-COLLECTION_NAME=${24:-"lira-${LIRA_ENVIRONMENT}"}
-REMOVE_TEMP_DIR=${25:-"true"}
+REMOVE_TEMP_DIR=${24:-"true"}
+COLLECTION_NAME=${25:-"lira-${LIRA_ENVIRONMENT}"}
 DOMAIN="localhost"
 
 WORK_DIR=$(pwd)
@@ -196,7 +196,7 @@ else
 fi
 
 function get_unused_port {
-    PORT=$(gshuf -i 2000-65000 -n 1)
+    PORT=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
     QUIT=0
 
     while [ "${QUIT}" -ne 1 ]; do
@@ -205,7 +205,7 @@ function get_unused_port {
         QUIT=1
         echo "${PORT}"
       else
-        PORT=$(gshuf -i 2000-65000 -n 1)
+        PORT=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
       fi
     done
 }
@@ -258,14 +258,6 @@ function clone_secondary_analysis_repo {
 
     export SECONDARY_ANALYSIS_DIR="${PWD}/secondary-analysis-deploy"
     cd "${SECONDARY_ANALYSIS_DIR}"
-
-    if [ "${SECONDARY_ANALYSIS_VERSION}" == "latest_released" ];
-    then
-        print_style "info" "Determining latest release tag"
-        export SECONDARY_ANALYSIS_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/lira)"
-    else
-        export SECONDARY_ANALYSIS_VERSION="$(get_version lira ${SECONDARY_ANALYSIS_VERSION})"
-    fi
 
     print_style "info" "Checking out ${SECONDARY_ANALYSIS_VERSION}"
     git checkout ${SECONDARY_ANALYSIS_VERSION}
@@ -385,7 +377,7 @@ function get_10x_analysis_pipeline {
         if [ "${TENX_VERSION}" == "latest_released" ];
         then
             print_style "info" "Determining latest released version of 10x pipeline"
-            export TENX_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix 10x_v)"
+            export TENX_VERSION="$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix cellranger_v)"
         else
             export TENX_VERSION=$(get_version skylab ${TENX_VERSION})
         fi
