@@ -91,6 +91,9 @@
 # USE_CAAS
 # Uses Cromwell-as-a-Service if true
 #
+# DOMAIN
+# The domain of the deployed Lira instance, we hard-code it to use "localhost" here for testing
+#
 # USE_HMAC
 # Uses hmac for authenticating notifications if true, otherwise uses query param token
 
@@ -532,7 +535,7 @@ function start_lira {
 
 }
 
-function send_notification {
+function send_ss2_notification {
     if [ "${USE_HMAC}" == "true" ];
     then
         print_style "info" "Getting hmac key"
@@ -553,7 +556,7 @@ function send_notification {
     print_style "info" "Getting list of running docker containers"
     docker ps
 
-    print_style "info" "Sending in notifications"
+    print_style "info" "Sending in SS2 notifications"
     # Uses the docker image built from Dockerfile next to this script
     export SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                         -e LIRA_URL="http://lira:8080/notifications" \
@@ -564,20 +567,6 @@ function send_notification {
 
     print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
-    # Make sure the Github won't refuse to establish connection with Lira
-    sleep 10
-
-    # Uses the docker image built from Dockerfile next to this script
-    export TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                        -e LIRA_URL="http://lira:8080/notifications" \
-                        -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
-                        --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
-                        $(echo "${AUTH_PARAMS}" | xargs))
-
-    print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
-
-    # 10. Poll for completion
     print_style "info" "Awaiting workflow completion"
 
     # Uses the docker image built from Dockerfile next to this script
@@ -585,14 +574,15 @@ function send_notification {
     then
         docker run --rm -v "${SCRIPT_DIR}:/app" \
             -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
-            -e WORKFLOW_NAMES="SmartSeq2, 10x" \
+            -e WORKFLOW_IDS="${SS2_WORKFLOW_ID} \
+            -e WORKFLOW_NAMES="SmartSeq2" \
             -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
             -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
             -e TIMEOUT_MINUTES=120 \
             -e PYTHONUNBUFFERED=0 \
             --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
-            quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
+            quay.io/humancellatlas/secondary-analysis-mintegration \
+            /app/await_workflow_completion.py
 
     else
         export CROMWELL_USER="$(docker run -i --rm \
@@ -608,15 +598,94 @@ function send_notification {
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
         docker run --rm -v "${SCRIPT_DIR}:/app" \
-            -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}, ${TENX_WORKFLOW_ID}" \
-            -e WORKFLOW_NAMES="SmartSeq2, 10x" \
-            -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
-            -e CROMWELL_USER="${CROMWELL_USER}" \
-            -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
+                   -e WORKFLOW_IDS="${SS2_WORKFLOW_ID} \
+                   -e WORKFLOW_NAMES="SmartSeq2" \
+                   -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+                   -e CROMWELL_USER="${CROMWELL_USER}" \
+                   -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
+                   -e TIMEOUT_MINUTES=120 \
+                   -e PYTHONUNBUFFERED=0 \
+                   --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
+                   quay.io/humancellatlas/secondary-analysis-mintegration \
+                   /app/await_workflow_completion.py
+    fi
+}
+
+function send_10x_notification {
+    if [ "${USE_HMAC}" == "true" ];
+    then
+        print_style "info" "Getting hmac key"
+        export HMAC_KEY=$(docker run -i --rm \
+            -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+            broadinstitute/dsde-toolbox \
+            vault read -field=current_key secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/hmac_keys)
+        export AUTH_PARAMS="--hmac_key ${HMAC_KEY} --hmac_key_id current_key"
+    else
+        print_style "info" "Getting notification token"
+        export notification_token=$(docker run -i --rm \
+            -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+            broadinstitute/dsde-toolbox \
+            vault read -field=notification_token secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/lira_secret)
+        export AUTH_PARAMS="--query_param_token $notification_token"
+    fi
+
+    print_style "info" "Getting list of running docker containers"
+    docker ps
+
+    print_style "info" "Sending in 10X notifications"
+    # Uses the docker image built from Dockerfile next to this script
+
+    # Uses the docker image built from Dockerfile next to this script
+    export TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                        -e LIRA_URL="http://lira:8080/notifications" \
+                        -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
+                        --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                        $(echo "${AUTH_PARAMS}" | xargs))
+
+    print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
+
+    print_style "info" "Awaiting workflow completion"
+
+    # Uses the docker image built from Dockerfile next to this script
+    if [ "${USE_CAAS}" == "true" ];
+    then
+        docker run --rm -v "${SCRIPT_DIR}:/app" \
+            -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
+            -e WORKFLOW_IDS="${10X_WORKFLOW_ID} \
+            -e WORKFLOW_NAMES="10x" \
+            -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+            -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
             -e TIMEOUT_MINUTES=120 \
             -e PYTHONUNBUFFERED=0 \
             --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
-            quay.io/humancellatlas/secondary-analysis-mintegration /app/await_workflow_completion.py
+            quay.io/humancellatlas/secondary-analysis-mintegration \
+            /app/await_workflow_completion.py
+
+    else
+        export CROMWELL_USER="$(docker run -i --rm \
+                                           -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+                                           broadinstitute/dsde-toolbox \
+                                           vault read -field=cromwell_user \
+                                                      secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+
+        export CROMWELL_PASSWORD="$(docker run -i --rm \
+                                              -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+                                              broadinstitute/dsde-toolbox \
+                                              vault read -field=cromwell_password \
+                                                         secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+
+        docker run --rm -v "${SCRIPT_DIR}:/app" \
+                   -e WORKFLOW_IDS="${10X_WORKFLOW_ID} \
+                   -e WORKFLOW_NAMES="10x" \
+                   -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+                   -e CROMWELL_USER="${CROMWELL_USER}" \
+                   -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
+                   -e TIMEOUT_MINUTES=120 \
+                   -e PYTHONUNBUFFERED=0 \
+                   --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
+                   quay.io/humancellatlas/secondary-analysis-mintegration \
+                   /app/await_workflow_completion.py
     fi
 }
 
@@ -726,7 +795,7 @@ print_style "info" "PIPELINE_TOOLS_IMAGE=${PIPELINE_TOOLS_IMAGE}"
 
 # 8. Get analysis pipeline versions to use
 
-get_10x_analysis_pipeline
+# get_10x_analysis_pipeline
 
 get_ss2_analysis_pipeline
 
@@ -833,7 +902,9 @@ start_lira
 
 # 12. Send in a notification
 
-send_notification
+send_ss2_notification
+
+send_10x_notification
 
 
 # 13. Stop Lira
