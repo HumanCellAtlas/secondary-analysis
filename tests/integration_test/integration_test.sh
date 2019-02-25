@@ -97,6 +97,17 @@
 # USE_HMAC
 # Uses hmac for authenticating notifications if true, otherwise uses query param token
 
+DEBUG="false"
+
+function set_debug {
+    if [ ${DEBUG} == "true" ];
+    then
+        set -ex
+    else
+        set -e
+    fi
+}
+
 function print_style {
     if [ "$1" == "info" ];
     then
@@ -110,6 +121,12 @@ function print_style {
     elif [ "$1" == "warn" ];
     then
         printf '\e[1;93m%-6s\e[m\n' "$2" # print yellow
+    elif [ "$1" == "debug" ];
+    then
+        if [ "${DEBUG}" == "true" ];
+        then
+            printf '\e[1;93m%-6s\e[m\n' "$2" # print yellow
+        fi
     else
         printf "$1"
     fi
@@ -118,8 +135,6 @@ function print_style {
 
 print_style "info" "Starting integration test"
 print_style "info" "$(date +"%Y-%m-%d %H:%M:%S")"
-
-set -e
 
 LIRA_ENVIRONMENT=${1}
 LIRA_MODE=${2}
@@ -495,10 +510,6 @@ function start_lira {
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
             quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE}
-
-        print_style "info" "Getting first list of docker images"
-        docker ps
-
     else
         print_style "info" "docker run -d \
             -p ${LIRA_HOST_PORT}:8080 \
@@ -553,9 +564,6 @@ function send_ss2_notification {
         export AUTH_PARAMS="--query_param_token $notification_token"
     fi
 
-    print_style "info" "Getting list of running docker containers"
-    docker ps
-
     print_style "info" "Sending in SS2 notifications"
     # Uses the docker image built from Dockerfile next to this script
     export SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
@@ -574,7 +582,7 @@ function send_ss2_notification {
     then
         docker run --rm -v "${SCRIPT_DIR}:/app" \
             -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e WORKFLOW_IDS="${SS2_WORKFLOW_ID} \
+            -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
             -e WORKFLOW_NAMES="SmartSeq2" \
             -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
             -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
@@ -598,7 +606,7 @@ function send_ss2_notification {
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
         docker run --rm -v "${SCRIPT_DIR}:/app" \
-                   -e WORKFLOW_IDS="${SS2_WORKFLOW_ID} \
+                   -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
                    -e WORKFLOW_NAMES="SmartSeq2" \
                    -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
                    -e CROMWELL_USER="${CROMWELL_USER}" \
@@ -629,12 +637,7 @@ function send_10x_notification {
         export AUTH_PARAMS="--query_param_token $notification_token"
     fi
 
-    print_style "info" "Getting list of running docker containers"
-    docker ps
-
     print_style "info" "Sending in 10X notifications"
-    # Uses the docker image built from Dockerfile next to this script
-
     # Uses the docker image built from Dockerfile next to this script
     export TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                         -e LIRA_URL="http://lira:8080/notifications" \
@@ -652,7 +655,7 @@ function send_10x_notification {
     then
         docker run --rm -v "${SCRIPT_DIR}:/app" \
             -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e WORKFLOW_IDS="${10X_WORKFLOW_ID} \
+            -e WORKFLOW_IDS="${TENX_WORKFLOW_ID}" \
             -e WORKFLOW_NAMES="10x" \
             -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
             -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
@@ -676,7 +679,7 @@ function send_10x_notification {
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
         docker run --rm -v "${SCRIPT_DIR}:/app" \
-                   -e WORKFLOW_IDS="${10X_WORKFLOW_ID} \
+                   -e WORKFLOW_IDS="${TENX_WORKFLOW_ID}" \
                    -e WORKFLOW_NAMES="10x" \
                    -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
                    -e CROMWELL_USER="${CROMWELL_USER}" \
@@ -795,7 +798,7 @@ print_style "info" "PIPELINE_TOOLS_IMAGE=${PIPELINE_TOOLS_IMAGE}"
 
 # 8. Get analysis pipeline versions to use
 
-# get_10x_analysis_pipeline
+get_10x_analysis_pipeline
 
 get_ss2_analysis_pipeline
 
@@ -806,38 +809,38 @@ export CONFIG_DIR="${SECONDARY_ANALYSIS_DIR}/config_files"
 
 # 9. Create config.json file
 
-print_style "info" "LIRA_ENVIRONMENT=${LIRA_ENVIRONMENT}"
-print_style "info" "CROMWELL_URL=${CROMWELL_URL}"
-print_style "info" "USE_CAAS=${USE_CAAS}"
-print_style "info" "DOMAIN=${DOMAIN}"
-print_style "info" "SUBMIT_AND_HOLD=${SUBMIT_AND_HOLD}"
-print_style "info" "COLLECTION_NAME=${COLLECTION_NAME}"
-print_style "info" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
-print_style "info" "GCS_ROOT=${GCS_ROOT}"
-print_style "info" "LIRA_VERSION=${LIRA_VERSION}"
-print_style "info" "DSS_URL=${DSS_URL}"
-print_style "info" "SCHEMA_URL=${SCHEMA_URL}"
-print_style "info" "INGEST_URL=${INGEST_URL}"
-print_style "info" "USE_HMAC=${USE_HMAC}"
-print_style "info" "SUBMIT_WDL=${SUBMIT_WDL}"
-print_style "info" "MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES}"
-print_style "info" "TENX_ANALYSIS_WDLS=${TENX_ANALYSIS_WDLS}"
-print_style "info" "TENX_OPTIONS_LINK=${TENX_OPTIONS_LINK}"
-print_style "info" "TENX_SUBSCRIPTION_ID=${TENX_SUBSCRIPTION_ID}"
-print_style "info" "TENX_WDL_STATIC_INPUTS_LINK=${TENX_WDL_STATIC_INPUTS_LINK}"
-print_style "info" "TENX_WDL_LINK=${TENX_WDL_LINK}"
-print_style "info" "TENX_WORKFLOW_NAME=${TENX_WORKFLOW_NAME}"
-print_style "info" "TENX_VERSION=${TENX_VERSION}"
-print_style "info" "SS2_ANALYSIS_WDLS=${SS2_ANALYSIS_WDLS}"
-print_style "info" "SS2_OPTIONS_LINK=${SS2_OPTIONS_LINK}"
-print_style "info" "SS2_SUBSCRIPTION_ID=${SS2_SUBSCRIPTION_ID}"
-print_style "info" "SS2_WDL_STATIC_INPUTS_LINK=${SS2_WDL_STATIC_INPUTS_LINK}"
-print_style "info" "SS2_WDL_LINK=${SS2_WDL_LINK}"
-print_style "info" "SS2_WORKFLOW_NAME=${SS2_WORKFLOW_NAME}"
-print_style "info" "SS2_VERSION=${SS2_VERSION}"
-print_style "info" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
-print_style "info" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
-print_style "info" "CTMPL FILE=${CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl"
+print_style "debug" "LIRA_ENVIRONMENT=${LIRA_ENVIRONMENT}"
+print_style "debug" "CROMWELL_URL=${CROMWELL_URL}"
+print_style "debug" "USE_CAAS=${USE_CAAS}"
+print_style "debug" "DOMAIN=${DOMAIN}"
+print_style "debug" "SUBMIT_AND_HOLD=${SUBMIT_AND_HOLD}"
+print_style "debug" "COLLECTION_NAME=${COLLECTION_NAME}"
+print_style "debug" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
+print_style "debug" "GCS_ROOT=${GCS_ROOT}"
+print_style "debug" "LIRA_VERSION=${LIRA_VERSION}"
+print_style "debug" "DSS_URL=${DSS_URL}"
+print_style "debug" "SCHEMA_URL=${SCHEMA_URL}"
+print_style "debug" "INGEST_URL=${INGEST_URL}"
+print_style "debug" "USE_HMAC=${USE_HMAC}"
+print_style "debug" "SUBMIT_WDL=${SUBMIT_WDL}"
+print_style "debug" "MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES}"
+print_style "debug" "TENX_ANALYSIS_WDLS=${TENX_ANALYSIS_WDLS}"
+print_style "debug" "TENX_OPTIONS_LINK=${TENX_OPTIONS_LINK}"
+print_style "debug" "TENX_SUBSCRIPTION_ID=${TENX_SUBSCRIPTION_ID}"
+print_style "debug" "TENX_WDL_STATIC_INPUTS_LINK=${TENX_WDL_STATIC_INPUTS_LINK}"
+print_style "debug" "TENX_WDL_LINK=${TENX_WDL_LINK}"
+print_style "debug" "TENX_WORKFLOW_NAME=${TENX_WORKFLOW_NAME}"
+print_style "debug" "TENX_VERSION=${TENX_VERSION}"
+print_style "debug" "SS2_ANALYSIS_WDLS=${SS2_ANALYSIS_WDLS}"
+print_style "debug" "SS2_OPTIONS_LINK=${SS2_OPTIONS_LINK}"
+print_style "debug" "SS2_SUBSCRIPTION_ID=${SS2_SUBSCRIPTION_ID}"
+print_style "debug" "SS2_WDL_STATIC_INPUTS_LINK=${SS2_WDL_STATIC_INPUTS_LINK}"
+print_style "debug" "SS2_WDL_LINK=${SS2_WDL_LINK}"
+print_style "debug" "SS2_WORKFLOW_NAME=${SS2_WORKFLOW_NAME}"
+print_style "debug" "SS2_VERSION=${SS2_VERSION}"
+print_style "debug" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
+print_style "debug" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
+print_style "debug" "CTMPL FILE=${CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl"
 
 docker run -i --rm \
               -e ENVIRONMENT="${LIRA_ENVIRONMENT}" \
@@ -875,8 +878,6 @@ docker run -i --rm \
               broadinstitute/dsde-toolbox:ra_rendering \
               /usr/local/bin/render-ctmpls.sh \
               -k "${LIRA_CONFIG_FILE}.ctmpl" || true
-
-echo "GOT HERE"
 
 cat "${CONFIG_DIR}/${LIRA_CONFIG_FILE}"
 
