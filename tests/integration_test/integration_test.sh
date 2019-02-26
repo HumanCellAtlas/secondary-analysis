@@ -791,7 +791,7 @@ print_style "debug" "PIPELINE_TOOLS_IMAGE=${PIPELINE_TOOLS_IMAGE}"
 
 # 8. Get analysis pipeline versions to use
 
-#get_10x_analysis_pipeline
+get_10x_analysis_pipeline
 
 get_ss2_analysis_pipeline
 
@@ -897,7 +897,7 @@ start_lira
 
 send_ss2_notification
 
-send_10x_notification
+#send_10x_notification
 
 
 # 13. Stop Lira
