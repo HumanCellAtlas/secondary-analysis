@@ -14,7 +14,7 @@ notifications:
 groups:
   pullapprove-admins:  # group name
     conditions:  # the group is activated when all of these statements are true
-      - "base.ref == 'ra_test_pullapprove_yml'"
+      - "base.ref in text_list(['ra_test_pullapprove_yml', 'master'])"
     reviewers:  # people who can approve for this group
       users:
         - rhiananthony
