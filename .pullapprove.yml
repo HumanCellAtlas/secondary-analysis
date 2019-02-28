@@ -1,12 +1,15 @@
 version: 3
 
-extends: https://api.github.com/repos/example/pullapprove-config/contents/.pullapprove.yml
-
 pullapprove_conditions:
-- "'WIP' not in title"
-- "base.ref == 'master'"
-- "'hotfix' not in labels"
-- "'*travis*' in statuses.succeeded"
+- condition: "base.ref == 'master'"
+  unmet_status: success
+  explanation: "Review not required unless merging to master"
+- condition: "base.ref == 'ra_master_pullapprove_yml'"
+  unmet_status: success
+  explanation: "Review not required unless merging to master"
+- condition: "'*travis*' in statuses.successful"
+  unmet_status: failure
+  explanation: "Tests must pass before review starts"
 
 notifications:
 - when: pull_request.opened
@@ -20,25 +23,16 @@ notifications:
   comment: "The review is completed. @exampleuser, please merge this in when ready."
 
 groups:
-  pullapprove-admins:
-    required: 1
-    conditions:
-      files:
-        - ".pullapprove.yml"
-    users:
-      - rhiananthony
-    teams:
-      - dsp-devops
-    author_approval:
-      ignored: true
-
-  master-reviewers:
-    required: 1
-    teams:
-      - dsde-pipelines-developers
-      - dsp-devops
-    author_approval:
-      ignored: true
-    conditions:
-      branches:
-        - master # only need to approve if merging to master
+  pullapprove-admins:  # group name
+    conditions:  # the group is activated when all of these statements are true
+      - "'*.py' in files"
+    reviewers:  # people who can approve for this group
+      users:
+        - rhiananthony
+      teams:
+        - pipelines-team
+    reviews:  # settings for approval and reviewer selection
+        required: 1  # 1 approval1 from this group are required
+        request: 1  # 1 review request will be sent at a time
+        request_order: given  # reviewers will be selected in the given order
+        author_value: 1  # if the PR author is in this group, automatically add +1
