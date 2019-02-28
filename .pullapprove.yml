@@ -14,7 +14,6 @@ notifications:
 groups:
   pullapprove-admins:  # group name
     conditions:  # the group is activated when all of these statements are true
-      - "'.pullapprove.yml' in files"
       - "base.ref == 'ra_test_pullapprove_yml'"
     reviewers:  # people who can approve for this group
       users:
