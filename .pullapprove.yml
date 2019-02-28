@@ -1,9 +1,5 @@
 version: 3
 
-pullapprove_conditions:
-- condition: "base.ref == 'master'"
-- condition: "base.repo. == 'ra_master_pullapprove_yml'"
-
 notifications:
 - when: pull_request.opened
   # only need to send this to external-contributors
@@ -23,7 +19,7 @@ groups:
       users:
         - rhiananthony
       teams:
-        - pipelines-team
+        - ra-test
     reviews:  # settings for approval and reviewer selection
         required: 1  # 1 approval1 from this group are required
         request: 1  # 1 review request will be sent at a time
