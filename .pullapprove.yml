@@ -2,14 +2,7 @@ version: 3
 
 pullapprove_conditions:
 - condition: "base.ref == 'master'"
-  unmet_status: success
-  explanation: "Review not required unless merging to master"
 - condition: "base.ref == 'ra_master_pullapprove_yml'"
-  unmet_status: success
-  explanation: "Review not required unless merging to master"
-- condition: "'*travis*' in statuses.successful"
-  unmet_status: failure
-  explanation: "Tests must pass before review starts"
 
 notifications:
 - when: pull_request.opened
@@ -36,4 +29,4 @@ groups:
         request: 1  # 1 review request will be sent at a time
         request_order: given  # reviewers will be selected in the given order
         author_value: 1  # if the PR author is in this group, automatically add +1
-        
+
