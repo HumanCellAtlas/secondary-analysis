@@ -1,9 +1,5 @@
 version: 3
 
-pullapprove_conditions:
-- condition: "base.ref == 'master'"
-- condition: "base.repo. == 'ra_master_pullapprove_yml'"
-
 notifications:
 - when: pull_request.opened
   # only need to send this to external-contributors
@@ -18,15 +14,14 @@ notifications:
 groups:
   pullapprove-admins:  # group name
     conditions:  # the group is activated when all of these statements are true
-      - "'.pullapprove.yml' in files"
+      - "base.ref in text_list(['ra_test_pullapprove_yml', 'master'])"
     reviewers:  # people who can approve for this group
       users:
         - rhiananthony
       teams:
-        - pipelines-team
+        - ra-test
     reviews:  # settings for approval and reviewer selection
         required: 1  # 1 approval1 from this group are required
         request: 1  # 1 review request will be sent at a time
         request_order: given  # reviewers will be selected in the given order
         author_value: 1  # if the PR author is in this group, automatically add +1
-
