@@ -29,4 +29,3 @@ groups:
         request: 1  # 1 review request will be sent at a time
         request_order: given  # reviewers will be selected in the given order
         author_value: 1  # if the PR author is in this group, automatically add +1
-
