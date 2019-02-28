@@ -3,7 +3,6 @@ version: 3
 pullapprove_conditions:
 - condition: "base.ref == 'master'"
 - condition: "base.repo. == 'ra_master_pullapprove_yml'"
-- condition:
 
 notifications:
 - when: pull_request.opened
