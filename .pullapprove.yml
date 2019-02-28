@@ -24,4 +24,4 @@ groups:
         required: 1  # 1 approval1 from this group are required
         request: 1  # 1 review request will be sent at a time
         request_order: given  # reviewers will be selected in the given order
-        author_value: 1  # if the PR author is in this group, automatically add +1
+        author_value: 0  # if the PR author is in this group, automatically add +1
