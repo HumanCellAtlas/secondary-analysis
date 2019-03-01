@@ -175,7 +175,7 @@ PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline
 MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES:-"1"}
 
 # Cromwell URL - usually will be caas, but can be set to local environment
-CROMWELL_URL=${CROMWELL_URL:-"https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org/api/workflows/v1"}
+CROMWELL_URL=${CROMWELL_URL:-"https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org"}
 
 # Derived Variables
 CAAS_KEY_FILE="${CAAS_ENVIRONMENT}-key.json"
