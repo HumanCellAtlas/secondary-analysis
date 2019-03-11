@@ -571,20 +571,15 @@ function send_ss2_notification {
 
     print_style "info" "Awaiting workflow completion"
 
-    # Uses the docker image built from Dockerfile next to this script
+    # Wait for status to update in Cromwell before polling
+    sleep 10
+
     if [ "${USE_CAAS}" == "true" ];
     then
-        docker run --rm -v "${SCRIPT_DIR}:/app" \
-            -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
-            -e WORKFLOW_NAMES="SmartSeq2" \
-            -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-            -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e TIMEOUT_MINUTES=120 \
-            -e PYTHONUNBUFFERED=0 \
-            --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
-            quay.io/humancellatlas/secondary-analysis-mintegration \
-            /app/await_workflow_completion.py
+        cromwell-tools wait "${SS2_WORKFLOW_ID}" \
+            --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+            --service-account-key ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json \
+            --timeout-minutes 120
 
     else
         export CROMWELL_USER="$(docker run -i --rm \
@@ -599,17 +594,12 @@ function send_ss2_notification {
                                               vault read -field=cromwell_password \
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
-        docker run --rm -v "${SCRIPT_DIR}:/app" \
-                   -e WORKFLOW_IDS="${SS2_WORKFLOW_ID}" \
-                   -e WORKFLOW_NAMES="SmartSeq2" \
-                   -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
-                   -e CROMWELL_USER="${CROMWELL_USER}" \
-                   -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
-                   -e TIMEOUT_MINUTES=120 \
-                   -e PYTHONUNBUFFERED=0 \
-                   --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
-                   quay.io/humancellatlas/secondary-analysis-mintegration \
-                   /app/await_workflow_completion.py
+        cromwell-tools wait "${SS2_WORKFLOW_ID}" \
+            --username "${CROMWELL_USER}" \
+            --password "${CROMWELL_PASSWORD}" \
+            --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+            --timeout-minutes 120 \
+
     fi
 }
 
@@ -644,20 +634,15 @@ function send_10x_notification {
 
     print_style "info" "Awaiting workflow completion"
 
-    # Uses the docker image built from Dockerfile next to this script
+    # Wait for status to update in Cromwell before polling
+    sleep 10
+
     if [ "${USE_CAAS}" == "true" ];
     then
-        docker run --rm -v "${SCRIPT_DIR}:/app" \
-            -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e WORKFLOW_IDS="${TENX_WORKFLOW_ID}" \
-            -e WORKFLOW_NAMES="10x" \
-            -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-            -e CAAS_KEY="/etc/lira/${CAAS_ENVIRONMENT}-key.json" \
-            -e TIMEOUT_MINUTES=120 \
-            -e PYTHONUNBUFFERED=0 \
-            --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
-            quay.io/humancellatlas/secondary-analysis-mintegration \
-            /app/await_workflow_completion.py
+        cromwell-tools wait "${TENX_WORKFLOW_ID}" \
+            --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+            --service-account-key ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json \
+            --timeout-minutes 120
 
     else
         export CROMWELL_USER="$(docker run -i --rm \
@@ -672,17 +657,11 @@ function send_10x_notification {
                                               vault read -field=cromwell_password \
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
 
-        docker run --rm -v "${SCRIPT_DIR}:/app" \
-                   -e WORKFLOW_IDS="${TENX_WORKFLOW_ID}" \
-                   -e WORKFLOW_NAMES="10x" \
-                   -e CROMWELL_URL="https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
-                   -e CROMWELL_USER="${CROMWELL_USER}" \
-                   -e CROMWELL_PASSWORD="${CROMWELL_PASSWORD}" \
-                   -e TIMEOUT_MINUTES=120 \
-                   -e PYTHONUNBUFFERED=0 \
-                   --link ${LIRA_DOCKER_CONTAINER_NAME}:${LIRA_DOCKER_CONTAINER_NAME} \
-                   quay.io/humancellatlas/secondary-analysis-mintegration \
-                   /app/await_workflow_completion.py
+        cromwell-tools wait "${SS2_WORKFLOW_ID}" \
+            --username "${CROMWELL_USER}" \
+            --password "${CROMWELL_PASSWORD}" \
+            --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+            --timeout-minutes 60
     fi
 }
 
