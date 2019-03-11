@@ -168,6 +168,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 GCLOUD_PROJECT=${GCLOUD_PROJECT:-"broad-dsde-mint-${LIRA_ENVIRONMENT}"} # other envs - broad-dsde-mint-test, broad-dsde-mint-staging, hca-dcp-pipelines-prod
 
+LIRA_DOCKER_REPO="quay.io/humancellatlas/secondary-analysis-lira"
+
 CAAS_ENVIRONMENT="caas-prod"
 LIRA_CONFIG_FILE="lira-config.json"
 
@@ -319,7 +321,7 @@ function build_lira {
             export LIRA_IMAGE=${LIRA_VERSION}
         fi
 
-        docker pull quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE}
+        docker pull ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
 
     elif [ "${LIRA_MODE}" == "local" ] || [ ${LIRA_MODE} == "github" ];
     then
@@ -335,7 +337,7 @@ function build_lira {
             export LIRA_IMAGE=${LIRA_VERSION}
         fi
 
-        docker build -t quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE} .
+        docker build -t ${LIRA_DOCKER_REPO}:${LIRA_IMAGE} .
     fi
     
     cd "${WORK_DIR}/${TEMP_DIR}"
@@ -489,7 +491,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
-            quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE}"
+            ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}"
 
         docker run -d \
             -p ${LIRA_HOST_PORT}:8080 \
@@ -501,7 +503,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
-            quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE}
+            ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
     else
         print_style "info" "docker run -d \
             -p ${LIRA_HOST_PORT}:8080 \
@@ -511,7 +513,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
-            quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE}"
+            ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}"
 
         docker run -d \
             -p ${LIRA_HOST_PORT}:8080 \
@@ -521,7 +523,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
-            quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE}
+            ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
     fi
 
     print_style "info" "Waiting for Lira to finish start up"
