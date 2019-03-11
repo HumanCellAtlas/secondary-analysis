@@ -335,7 +335,7 @@ function build_lira {
             export LIRA_IMAGE=${LIRA_VERSION}
         fi
 
-        docker build -t quay.io/humancellatlas/lira:${LIRA_IMAGE} .
+        docker build -t quay.io/humancellatlas/secondary-analysis-lira:${LIRA_IMAGE} .
     fi
     
     cd "${WORK_DIR}/${TEMP_DIR}"
