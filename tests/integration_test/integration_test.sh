@@ -603,7 +603,7 @@ function send_ss2_notification {
                 --username "${CROMWELL_USER}" \
                 --password "${CROMWELL_PASSWORD}" \
                 --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
-                --timeout-minutes 120 \
+                --timeout-minutes 120
 
     fi
 }
@@ -667,7 +667,7 @@ function send_10x_notification {
         docker run --rm \
             -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
             quay.io/broadinstitute/cromwell-tools:v1.1.1 \
-            cromwell-tools wait "${SS2_WORKFLOW_ID}" \
+            cromwell-tools wait "${TENX_WORKFLOW_ID}" \
                 --username "${CROMWELL_USER}" \
                 --password "${CROMWELL_PASSWORD}" \
                 --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
