@@ -576,10 +576,13 @@ function send_ss2_notification {
 
     if [ "${USE_CAAS}" == "true" ];
     then
-        cromwell-tools wait "${SS2_WORKFLOW_ID}" \
-            --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-            --service-account-key ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json \
-            --timeout-minutes 120
+        docker run --rm \
+            -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${SS2_WORKFLOW_ID}" \
+                --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                --service-account-key /etc/lira/${CAAS_ENVIRONMENT}-key.json \
+                --timeout-minutes 120
 
     else
         export CROMWELL_USER="$(docker run -i --rm \
@@ -593,12 +596,13 @@ function send_ss2_notification {
                                               broadinstitute/dsde-toolbox \
                                               vault read -field=cromwell_password \
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
-
-        cromwell-tools wait "${SS2_WORKFLOW_ID}" \
-            --username "${CROMWELL_USER}" \
-            --password "${CROMWELL_PASSWORD}" \
-            --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
-            --timeout-minutes 120 \
+        docker run --rm \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${SS2_WORKFLOW_ID}" \
+                --username "${CROMWELL_USER}" \
+                --password "${CROMWELL_PASSWORD}" \
+                --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+                --timeout-minutes 120
 
     fi
 }
@@ -639,10 +643,13 @@ function send_10x_notification {
 
     if [ "${USE_CAAS}" == "true" ];
     then
-        cromwell-tools wait "${TENX_WORKFLOW_ID}" \
-            --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-            --service-account-key ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json \
-            --timeout-minutes 120
+        docker run --rm \
+            -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${TENX_WORKFLOW_ID}" \
+                --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                --service-account-key ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json \
+                --timeout-minutes 120
 
     else
         export CROMWELL_USER="$(docker run -i --rm \
@@ -656,12 +663,13 @@ function send_10x_notification {
                                               broadinstitute/dsde-toolbox \
                                               vault read -field=cromwell_password \
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
-
-        cromwell-tools wait "${SS2_WORKFLOW_ID}" \
-            --username "${CROMWELL_USER}" \
-            --password "${CROMWELL_PASSWORD}" \
-            --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
-            --timeout-minutes 60
+        docker run --rm \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${TENX_WORKFLOW_ID}" \
+                --username "${CROMWELL_USER}" \
+                --password "${CROMWELL_PASSWORD}" \
+                --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+                --timeout-minutes 120
     fi
 }
 
