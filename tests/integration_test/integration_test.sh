@@ -597,7 +597,6 @@ function send_ss2_notification {
                                               vault read -field=cromwell_password \
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
         docker run --rm \
-            -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
             quay.io/broadinstitute/cromwell-tools:v1.1.1 \
             cromwell-tools wait "${SS2_WORKFLOW_ID}" \
                 --username "${CROMWELL_USER}" \
@@ -665,7 +664,6 @@ function send_10x_notification {
                                               vault read -field=cromwell_password \
                                                          secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
         docker run --rm \
-            -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
             quay.io/broadinstitute/cromwell-tools:v1.1.1 \
             cromwell-tools wait "${TENX_WORKFLOW_ID}" \
                 --username "${CROMWELL_USER}" \
