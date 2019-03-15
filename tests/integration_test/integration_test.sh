@@ -224,7 +224,7 @@ then
     INGEST_URL="https://api.ingest.data.humancellatlas.org/"
 else
     DSS_URL="https://dss.${ENV}.data.humancellatlas.org/v1"
-    SCHEMA_URL="http://schema.${ENV}.data.humancellatlas.org/"
+    SCHEMA_URL="https://schema.${ENV}.data.humancellatlas.org/"
     INGEST_URL="https://api.ingest.${ENV}.data.humancellatlas.org/"
 fi
 
