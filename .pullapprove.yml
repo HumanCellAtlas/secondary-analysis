@@ -23,7 +23,7 @@ groups:
 
     reviewers:
       teams:
-      - pipelines-software-engineers
+      - pipelines-software-engineers-hornet
       - pipelines-devops
 
 notifications:
