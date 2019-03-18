@@ -615,6 +615,75 @@ function send_ss2_notification {
     fi
 }
 
+
+function send_optimus_notification {
+    if [ "${USE_HMAC}" == "true" ];
+    then
+        print_style "info" "Getting hmac key"
+        export HMAC_KEY=$(docker run -i --rm \
+            -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+            broadinstitute/dsde-toolbox \
+            vault read -field=current_key secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/hmac_keys)
+        export AUTH_PARAMS="--hmac_key ${HMAC_KEY} --hmac_key_id current_key"
+    else
+        print_style "info" "Getting notification token"
+        export notification_token=$(docker run -i --rm \
+            -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+            broadinstitute/dsde-toolbox \
+            vault read -field=notification_token secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/lira_secret)
+        export AUTH_PARAMS="--query_param_token $notification_token"
+    fi
+
+    print_style "info" "Sending in OPTIMUS notifications"
+    # Uses the docker image built from Dockerfile next to this script
+    export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                           -e LIRA_URL="http://lira:8080/notifications" \
+                           -e NOTIFICATION=/app/optimus_notification_dss_${LIRA_ENVIRONMENT}.json \
+                           --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                           quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                           $(echo "${AUTH_PARAMS}" | xargs))
+
+    print_style "info" "OPTIMUS_WORKFLOW_ID: ${OPTIMUS_WORKFLOW_ID}"
+
+    print_style "info" "Awaiting workflow completion"
+
+    # Wait for status to update in Cromwell before polling
+    sleep 10
+
+    if [ "${USE_CAAS}" == "true" ];
+    then
+        docker run --rm \
+            -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${OPTIMUS_WORKFLOW_ID}" \
+                --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                --service-account-key /etc/lira/${CAAS_ENVIRONMENT}-key.json \
+                --timeout-minutes 120
+
+    else
+        export CROMWELL_USER="$(docker run -i --rm \
+                                           -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+                                           broadinstitute/dsde-toolbox \
+                                           vault read -field=cromwell_user \
+                                                      secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+
+        export CROMWELL_PASSWORD="$(docker run -i --rm \
+                                              -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+                                              broadinstitute/dsde-toolbox \
+                                              vault read -field=cromwell_password \
+                                                         secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+        docker run --rm \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${OPTIMUS_WORKFLOW_ID}" \
+                --username "${CROMWELL_USER}" \
+                --password "${CROMWELL_PASSWORD}" \
+                --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+                --timeout-minutes 120
+
+    fi
+}
+
+
 function send_10x_notification {
     if [ "${USE_HMAC}" == "true" ];
     then
@@ -909,9 +978,11 @@ start_lira
 
 # 12. Send in a notification
 
-send_ss2_notification
+# send_ss2_notification
 
-#send_10x_notification
+send_optimus_notification
+
+# send_10x_notification
 
 
 # 13. Stop Lira
