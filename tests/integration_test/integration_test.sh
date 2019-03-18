@@ -452,6 +452,55 @@ function get_ss2_analysis_pipeline {
     export SS2_WORKFLOW_NAME="AdapterSmartSeq2SingleCell"
 }
 
+
+function get_optimus_analysis_pipeline {
+    if [ "${OPTIMUS_MODE}" == "github" ];
+    then
+        if [ "${OPTIMUS_VERSION}" == "latest_released" ];
+        then
+            print_style "info" "Determining latest released version of optimus pipeline"
+            export OPTIMUS_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix optimus_v)
+        else
+            export OPTIMUS_VERSION=$(get_version skylab ${OPTIMUS_VERSION})
+        fi
+
+        print_style "info" "Configuring Lira to use optimus wdl from skylab GitHub repo, version: ${OPTIMUS_VERSION}"
+        export OPTIMUS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${OPTIMUS_VERSION}"
+    elif [ "${OPTIMUS_MODE}" == "local" ];
+    then
+        cd "${OPTIMUS_DIR}"
+        export OPTIMUS_DIR=$(pwd)
+
+        cd "${WORK_DIR}/${TEMP_DIR}"
+        export OPTIMUS_PREFIX="/optimus"
+
+        print_style "info" "Using optimus wdl in dir: ${OPTIMUS_DIR}"
+    fi
+
+    export OPTIMUS_ANALYSIS_WDLS="[
+                        \"${OPTIMUS_PREFIX}/pipelines/optimus/Optimus.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/FastqToUBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/Attach10xBarcodes.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/SplitBamByCellBarcode.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/MergeSortBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/CreateCountMatrix.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/StarAlignBamSingleEnd.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/TagGeneExon.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/CorrectUmiMarkDuplicates.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/SequenceDataWithMoleculeTagMetrics.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/TagSortBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/RunEmptyDrops.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/ZarrUtils.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/Picard.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/MarkDuplicates.wdl\"
+                    ]"
+    export OPTIMUS_OPTIONS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/options.json"
+    export OPTIMUS_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/adapter_example_static.json"
+    export OPTIMUS_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/adapter.wdl"
+    export OPTIMUS_WORKFLOW_NAME="AdapterOptimus"
+}
+
+
 function stop_lira_on_error {
     print_style "error" "Stopping Lira"
     docker stop ${LIRA_DOCKER_CONTAINER_NAME}
@@ -483,6 +532,11 @@ function start_lira {
         export MOUNT_SS2="-v ${SS2_DIR}:/ss2"
         print_style "info" "Mounting SS2_DIR: ${SS2_DIR}\n"
     fi
+    if [ ${OPTIMUS_MODE} == "local" ];
+    then
+        export MOUNT_OPTIMUS="-v ${OPTIMUS_DIR}:/OPTIMUS"
+        print_style "info" "Mounting OPTIMUS_DIR: ${OPTIMUS_DIR}\n"
+    fi
 
     set +ex
     trap "stop_lira_on_error" ERR
@@ -499,6 +553,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}"
 
         docker run -d \
@@ -511,6 +566,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
     else
         print_style "info" "docker run -d \
@@ -521,6 +577,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}"
 
         docker run -d \
@@ -531,6 +588,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
     fi
 
