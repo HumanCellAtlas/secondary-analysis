@@ -135,3 +135,4 @@ venv.bak/
 # Lira Repository
 tests/integration_test/lira/*
 tests/integration_test/mint-deployment/*
+tests/integration_test/mint_integration_test.*

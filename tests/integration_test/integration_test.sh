@@ -97,7 +97,7 @@
 # USE_HMAC
 # Uses hmac for authenticating notifications if true, otherwise uses query param token
 
-DEBUG="false"
+DEBUG="true"
 
 function set_debug {
     if [ ${DEBUG} == "true" ];
