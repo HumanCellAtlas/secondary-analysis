@@ -42,7 +42,7 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "master" \
         "" \
         "github" \
-        "master" \
+        "dev" \  # we use `dev` as the default branch in secondary-analysis-deploy repo, not `master`
         "" \
         "github" \
         "master" \
