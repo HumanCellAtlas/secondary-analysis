@@ -16,15 +16,15 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 # TENX_MODE=${11}
 # TENX_VERSION=${12}
 # TENX_DIR=${13}
-# OPTIMUS_MODE=${14}
-# OPTIMUS_VERSION=${15}
-# OPTIMUS_DIR=${16}
-# SS2_MODE=${17}
-# SS2_VERSION=${18}
-# SS2_DIR=${19}
-# TENX_SUBSCRIPTION_ID=${20:-"placeholder_10x_subscription_id"}
-# SS2_SUBSCRIPTION_ID=${21:-"placeholder_ss2_subscription_id"}
-# OPTIMUS_SUBSCRIPTION_ID=${22:-"placeholder_optimus_subscription_id"}
+# TENX_SUBSCRIPTION_ID=${14:-"placeholder_10x_subscription_id"}
+# OPTIMUS_MODE=${15}
+# OPTIMUS_VERSION=${16}
+# OPTIMUS_DIR=${17}
+# OPTIMUS_SUBSCRIPTION_ID=${18:-"placeholder_optimus_subscription_id"}
+# SS2_MODE=${19}
+# SS2_VERSION=${20}
+# SS2_DIR=${21}
+# SS2_SUBSCRIPTION_ID=${22:-"placeholder_ss2_subscription_id"}
 # VAULT_TOKEN_PATH=${23}
 # SUBMIT_WDL_DIR=${24}
 # USE_CAAS=${25}
@@ -51,14 +51,14 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "github" \
         "master" \
         "" \
-        "github" \
-        "master" \
-        "" \
-        "github" \
-        "master" \
-        "" \
         "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f1)" \
+        "github" \
+        "master" \
+        "" \
         "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f2)" \
+        "github" \
+        "master" \
+        "" \
         "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f3)" \
         "${VAULT_TOKEN_PATH}" \
         "" \
