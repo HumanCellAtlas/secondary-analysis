@@ -1033,9 +1033,9 @@ start_lira
 
 # 12. Send in a notification
 
-# send_ss2_notification
+send_ss2_notification
 
-send_optimus_notification
+# send_optimus_notification
 
 # send_10x_notification
 
