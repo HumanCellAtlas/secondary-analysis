@@ -149,18 +149,23 @@ PIPELINE_TOOLS_DIR=${10}
 TENX_MODE=${11}
 TENX_VERSION=${12}
 TENX_DIR=${13}
-SS2_MODE=${14}
-SS2_VERSION=${15}
-SS2_DIR=${16}
-TENX_SUBSCRIPTION_ID=${17}
-SS2_SUBSCRIPTION_ID=${18:-"placeholder_ss2_subscription_id"}
-VAULT_TOKEN_PATH=${19}
-SUBMIT_WDL_DIR=${20}
-USE_CAAS=${21}
-USE_HMAC=${22}
-SUBMIT_AND_HOLD=${23}
-REMOVE_TEMP_DIR=${24:-"true"}
-COLLECTION_NAME=${25:-"lira-${LIRA_ENVIRONMENT}"}
+TENX_SUBSCRIPTION_ID=${14:-"placeholder_10x_subscription_id"}
+OPTIMUS_MODE=${15}
+OPTIMUS_VERSION=${16}
+OPTIMUS_DIR=${17}
+OPTIMUS_SUBSCRIPTION_ID=${18:-"placeholder_optimus_subscription_id"}
+SS2_MODE=${19}
+SS2_VERSION=${20}
+SS2_DIR=${21}
+SS2_SUBSCRIPTION_ID=${22:-"placeholder_ss2_subscription_id"}
+VAULT_TOKEN_PATH=${23}
+SUBMIT_WDL_DIR=${24}
+USE_CAAS=${25}
+USE_HMAC=${26}
+SUBMIT_AND_HOLD=${27}
+REMOVE_TEMP_DIR=${28:-"true"}
+COLLECTION_NAME=${29:-"lira-${LIRA_ENVIRONMENT}"}
+
 DOMAIN="localhost"
 
 WORK_DIR=$(pwd)
@@ -444,6 +449,55 @@ function get_ss2_analysis_pipeline {
     export SS2_WORKFLOW_NAME="AdapterSmartSeq2SingleCell"
 }
 
+
+function get_optimus_analysis_pipeline {
+    if [ "${OPTIMUS_MODE}" == "github" ];
+    then
+        if [ "${OPTIMUS_VERSION}" == "latest_released" ];
+        then
+            print_style "info" "Determining latest released version of optimus pipeline"
+            export OPTIMUS_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/skylab --tag_prefix optimus_v)
+        else
+            export OPTIMUS_VERSION=$(get_version skylab ${OPTIMUS_VERSION})
+        fi
+
+        print_style "info" "Configuring Lira to use optimus wdl from skylab GitHub repo, version: ${OPTIMUS_VERSION}"
+        export OPTIMUS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/skylab/${OPTIMUS_VERSION}"
+    elif [ "${OPTIMUS_MODE}" == "local" ];
+    then
+        cd "${OPTIMUS_DIR}"
+        export OPTIMUS_DIR=$(pwd)
+
+        cd "${WORK_DIR}/${TEMP_DIR}"
+        export OPTIMUS_PREFIX="/optimus"
+
+        print_style "info" "Using optimus wdl in dir: ${OPTIMUS_DIR}"
+    fi
+
+    export OPTIMUS_ANALYSIS_WDLS="[
+                        \"${OPTIMUS_PREFIX}/pipelines/optimus/Optimus.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/FastqToUBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/Attach10xBarcodes.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/SplitBamByCellBarcode.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/MergeSortBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/CreateCountMatrix.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/StarAlignBamSingleEnd.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/TagGeneExon.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/CorrectUmiMarkDuplicates.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/SequenceDataWithMoleculeTagMetrics.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/TagSortBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/RunEmptyDrops.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/ZarrUtils.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/Picard.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/MarkDuplicates.wdl\"
+                    ]"
+    export OPTIMUS_OPTIONS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/options.json"
+    export OPTIMUS_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/adapter_example_static.json"
+    export OPTIMUS_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/adapter.wdl"
+    export OPTIMUS_WORKFLOW_NAME="AdapterOptimus"
+}
+
+
 function stop_lira_on_error {
     print_style "error" "Stopping Lira"
     docker stop ${LIRA_DOCKER_CONTAINER_NAME}
@@ -475,6 +529,11 @@ function start_lira {
         export MOUNT_SS2="-v ${SS2_DIR}:/ss2"
         print_style "info" "Mounting SS2_DIR: ${SS2_DIR}\n"
     fi
+    if [ ${OPTIMUS_MODE} == "local" ];
+    then
+        export MOUNT_OPTIMUS="-v ${OPTIMUS_DIR}:/OPTIMUS"
+        print_style "info" "Mounting OPTIMUS_DIR: ${OPTIMUS_DIR}\n"
+    fi
 
     set +ex
     trap "stop_lira_on_error" ERR
@@ -491,6 +550,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}"
 
         docker run -d \
@@ -503,6 +563,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
     else
         print_style "info" "docker run -d \
@@ -513,6 +574,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}"
 
         docker run -d \
@@ -523,6 +585,7 @@ function start_lira {
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
+            $(echo ${MOUNT_OPTIMUS} | xargs) \
             ${LIRA_DOCKER_REPO}:${LIRA_IMAGE}
     fi
 
@@ -606,6 +669,75 @@ function send_ss2_notification {
 
     fi
 }
+
+
+function send_optimus_notification {
+    if [ "${USE_HMAC}" == "true" ];
+    then
+        print_style "info" "Getting hmac key"
+        export HMAC_KEY=$(docker run -i --rm \
+            -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+            broadinstitute/dsde-toolbox \
+            vault read -field=current_key secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/hmac_keys)
+        export AUTH_PARAMS="--hmac_key ${HMAC_KEY} --hmac_key_id current_key"
+    else
+        print_style "info" "Getting notification token"
+        export notification_token=$(docker run -i --rm \
+            -e VAULT_TOKEN="$(cat ${VAULT_TOKEN_PATH})" \
+            broadinstitute/dsde-toolbox \
+            vault read -field=notification_token secret/dsde/mint/${LIRA_ENVIRONMENT}/lira/lira_secret)
+        export AUTH_PARAMS="--query_param_token $notification_token"
+    fi
+
+    print_style "info" "Sending in OPTIMUS notifications"
+    # Uses the docker image built from Dockerfile next to this script
+    export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                           -e LIRA_URL="http://lira:8080/notifications" \
+                           -e NOTIFICATION=/app/optimus_notification_dss_${LIRA_ENVIRONMENT}.json \
+                           --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                           quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                           $(echo "${AUTH_PARAMS}" | xargs))
+
+    print_style "info" "OPTIMUS_WORKFLOW_ID: ${OPTIMUS_WORKFLOW_ID}"
+
+    print_style "info" "Awaiting workflow completion"
+
+    # Wait for status to update in Cromwell before polling
+    sleep 10
+
+    if [ "${USE_CAAS}" == "true" ];
+    then
+        docker run --rm \
+            -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${OPTIMUS_WORKFLOW_ID}" \
+                --url "https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                --service-account-key /etc/lira/${CAAS_ENVIRONMENT}-key.json \
+                --timeout-minutes 120
+
+    else
+        export CROMWELL_USER="$(docker run -i --rm \
+                                           -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+                                           broadinstitute/dsde-toolbox \
+                                           vault read -field=cromwell_user \
+                                                      secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+
+        export CROMWELL_PASSWORD="$(docker run -i --rm \
+                                              -e VAULT_TOKEN=$(cat ${VAULT_TOKEN_PATH}) \
+                                              broadinstitute/dsde-toolbox \
+                                              vault read -field=cromwell_password \
+                                                         secret/dsde/mint/${LIRA_ENVIRONMENT}/common/htpasswd)"
+        docker run --rm \
+            quay.io/broadinstitute/cromwell-tools:v1.1.1 \
+            cromwell-tools wait "${OPTIMUS_WORKFLOW_ID}" \
+                --username "${CROMWELL_USER}" \
+                --password "${CROMWELL_PASSWORD}" \
+                --url "https://cromwell.mint-${LIRA_ENVIRONMENT}.broadinstitute.org" \
+                --timeout-minutes 120
+
+    fi
+}
+
 
 function send_10x_notification {
     if [ "${USE_HMAC}" == "true" ];
@@ -784,6 +916,8 @@ get_10x_analysis_pipeline
 
 get_ss2_analysis_pipeline
 
+get_optimus_analysis_pipeline
+
 
 # 9. Create config.json file
 
@@ -812,6 +946,13 @@ print_style "debug" "TENX_WDL_STATIC_INPUTS_LINK=${TENX_WDL_STATIC_INPUTS_LINK}"
 print_style "debug" "TENX_WDL_LINK=${TENX_WDL_LINK}"
 print_style "debug" "TENX_WORKFLOW_NAME=${TENX_WORKFLOW_NAME}"
 print_style "debug" "TENX_VERSION=${TENX_VERSION}"
+print_style "debug" "OPTIMUS_ANALYSIS_WDLS=${OPTIMUS_ANALYSIS_WDLS}"
+print_style "debug" "OPTIMUS_OPTIONS_LINK=${OPTIMUS_OPTIONS_LINK}"
+print_style "debug" "OPTIMUS_SUBSCRIPTION_ID=${OPTIMUS_SUBSCRIPTION_ID}"
+print_style "debug" "OPTIMUS_WDL_STATIC_INPUTS_LINK=${OPTIMUS_WDL_STATIC_INPUTS_LINK}"
+print_style "debug" "OPTIMUS_WDL_LINK=${OPTIMUS_WDL_LINK}"
+print_style "debug" "OPTIMUS_WORKFLOW_NAME=${OPTIMUS_WORKFLOW_NAME}"
+print_style "debug" "OPTIMUS_VERSION=${OPTIMUS_VERSION}"
 print_style "debug" "SS2_ANALYSIS_WDLS=${SS2_ANALYSIS_WDLS}"
 print_style "debug" "SS2_OPTIONS_LINK=${SS2_OPTIONS_LINK}"
 print_style "debug" "SS2_SUBSCRIPTION_ID=${SS2_SUBSCRIPTION_ID}"
@@ -822,6 +963,7 @@ print_style "debug" "SS2_VERSION=${SS2_VERSION}"
 print_style "debug" "VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH}"
 print_style "debug" "SECONDARY_ANALYSIS_DIR=${SECONDARY_ANALYSIS_DIR}"
 print_style "debug" "CTMPL FILE=${CONFIG_DIR}/${LIRA_CONFIG_FILE}.ctmpl"
+print_style "debug" "DOMAIN=${DOMAIN}"
 
 docker run -i --rm \
               -e ENVIRONMENT="${LIRA_ENVIRONMENT}" \
@@ -846,6 +988,13 @@ docker run -i --rm \
               -e TENX_WDL_LINK="${TENX_WDL_LINK}" \
               -e TENX_WORKFLOW_NAME="${TENX_WORKFLOW_NAME}" \
               -e TENX_VERSION="${TENX_VERSION}" \
+              -e OPTIMUS_ANALYSIS_WDLS="${OPTIMUS_ANALYSIS_WDLS}" \
+              -e OPTIMUS_OPTIONS_LINK="${OPTIMUS_OPTIONS_LINK}" \
+              -e OPTIMUS_SUBSCRIPTION_ID="${OPTIMUS_SUBSCRIPTION_ID}" \
+              -e OPTIMUS_WDL_STATIC_INPUTS_LINK="${OPTIMUS_WDL_STATIC_INPUTS_LINK}" \
+              -e OPTIMUS_WDL_LINK="${OPTIMUS_WDL_LINK}" \
+              -e OPTIMUS_WORKFLOW_NAME="${OPTIMUS_WORKFLOW_NAME}" \
+              -e OPTIMUS_VERSION="${OPTIMUS_VERSION}" \
               -e SS2_ANALYSIS_WDLS="${SS2_ANALYSIS_WDLS}" \
               -e SS2_OPTIONS_LINK="${SS2_OPTIONS_LINK}" \
               -e SS2_SUBSCRIPTION_ID="${SS2_SUBSCRIPTION_ID}" \
@@ -886,7 +1035,9 @@ start_lira
 
 send_ss2_notification
 
-#send_10x_notification
+# send_optimus_notification
+
+# send_10x_notification
 
 
 # 13. Stop Lira

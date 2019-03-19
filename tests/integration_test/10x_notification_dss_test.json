@@ -1,11 +1,12 @@
 {
   "transaction_id": "eed1414b-4e70-45a3-b6d1-7ec19ce5b666",
-  "subscription_id": "513a39a6-eb65-450b-ba5f-ce50f56c42d4",
+  "subscription_id": "placeholder_10x_subscription_id",
   "match": {
     "bundle_uuid": "ca6ea399-7ddf-46e6-a904-4d5f02025231",
     "bundle_version": "2019-02-22T222251.233303Z"
   },
   "labels": {
-    "mintegration-test": "true"
+    "mintegration-test": "true",
+    "comment": "mintegration-test"
   }
 }

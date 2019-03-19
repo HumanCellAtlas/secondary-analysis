@@ -1,0 +1,12 @@
+{
+  "transaction_id": "eed1414b-4e70-45a3-b6d1-7ec19ce5b666",
+  "subscription_id": "placeholder_optimus_subscription_id",
+  "match": {
+    "bundle_uuid": "00ba4f21-7a70-4517-8bdd-a9ac9aa4c444",
+    "bundle_version": "2019-03-14T182551.998189Z"
+  },
+  "labels": {
+    "mintegration-test": "true",
+    "comment": "mintegration-test"
+  }
+}
