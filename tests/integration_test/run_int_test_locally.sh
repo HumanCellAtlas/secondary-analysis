@@ -51,15 +51,15 @@ bash ${SCRIPT_DIR}/integration_test.sh \
         "github" \
         "master" \
         "" \
-        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f1)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | cut -f1 -d " ")" \
         "github" \
         "master" \
         "" \
-        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f2)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | cut -f2 -d " ")" \
         "github" \
         "master" \
         "" \
-        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | head -n1 | cut -f3)" \
+        "$(tail -n+2 ${SCRIPT_DIR}/mintegration_subscription_ids.tsv | cut -f3 -d " ")" \
         "${VAULT_TOKEN_PATH}" \
         "" \
         "true" \
