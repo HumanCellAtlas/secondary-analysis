@@ -36,13 +36,14 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 
 SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 
+# Note: we use `dev` as the default branch in secondary-analysis-deploy repo, not `master`
 bash ${SCRIPT_DIR}/integration_test.sh \
         "test" \
         "github" \
         "master" \
         "" \
         "github" \
-        "dev" \  # we use `dev` as the default branch in secondary-analysis-deploy repo, not `master`
+        "dev" \
         "" \
         "github" \
         "master" \

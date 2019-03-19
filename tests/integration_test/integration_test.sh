@@ -168,9 +168,6 @@ COLLECTION_NAME=${29:-"lira-${LIRA_ENVIRONMENT}"}
 
 DOMAIN="localhost"
 
-
-DOMAIN="localhost"
-
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
