@@ -1,5 +1,11 @@
 # secondary-analysis
 
+[![Snyk Vulnerabilities for GitHub Repo (Specific Manifest)](https://img.shields.io/snyk/vulnerabilities/github/HumanCellAtlas/secondary-analysis/dashboards/requirements.txt.svg?label=Snyk%20Dashboards%20Vulnerabilities&logo=Snyk)](https://snyk.io/test/github/HumanCellAtlas/secondary-analysis?targetFile=dashboards/requirements.txt)
+[![Snyk Vulnerabilities for GitHub Repo (Specific Manifest)](https://img.shields.io/snyk/vulnerabilities/github/HumanCellAtlas/secondary-analysis/tests/integration_test/requirements.txt.svg?label=Snyk%20Integration%20Test%20Vulnerabilities&logo=Snyk)](https://snyk.io/test/github/HumanCellAtlas/secondary-analysis?targetFile=tests/integration_test/requirements.txt)
+[![Snyk Vulnerabilities for GitHub Repo (Specific Manifest)](https://img.shields.io/snyk/vulnerabilities/github/HumanCellAtlas/secondary-analysis/tests/load_test/requirements.txt.svg?label=Snyk%20Load%20Test%20Vulnerabilities&logo=Snyk)](https://snyk.io/test/github/HumanCellAtlas/secondary-analysis?targetFile=tests/load_test/requirements.txt)
+[![Snyk Vulnerabilities for GitHub Repo (Specific Manifest)](https://img.shields.io/snyk/vulnerabilities/github/HumanCellAtlas/secondary-analysis/tests/scale_test/requirements.txt.svg?label=Snyk%20Scale%20Test%20Vulnerabilities&logo=Snyk)](https://snyk.io/test/github/HumanCellAtlas/secondary-analysis?targetFile=tests/scale_test/requirements.txt)
+
+
 This repo will contain integration test scripts and other automation related to the Secondary Analysis Service, which is part of the Human Cell Atlas Data Coordination Platform.
 
 Other Secondary Analysis Service repos:
