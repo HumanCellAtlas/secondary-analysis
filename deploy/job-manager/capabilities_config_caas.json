@@ -16,11 +16,13 @@
     },
     {
       "field": "submission",
-      "display": "Submitted"
+      "display": "Submitted",
+      "fieldType": "date"
     },
     {
       "field": "end",
-      "display": "End Time"
+      "display": "End Time",
+      "fieldType": "date"
     },
     {
       "field": "labels.workflow-version",
