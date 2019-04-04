@@ -1,0 +1,17 @@
+language: python
+
+python:
+  - '3.6'
+
+# Get latest setuptools below because metadata-api installation fails without at least 40.1.0
+install: "pip install -r dev-requirements.txt"
+
+jobs:
+  include:
+    # The linting test is fast and cheap so run it first
+    - stage: Linting Test
+      script: 
+        # Check Black code style compliance
+        - black --skip-string-normalization --check
+        # Check PEP-8 compliance
+        - flake8
