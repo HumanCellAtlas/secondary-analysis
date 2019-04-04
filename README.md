@@ -16,15 +16,21 @@ This repo is the gateway of the Secondary Analysis Service which is part of the 
 
 Other Secondary Analysis Service repos:
 
-- [Cromwell Tools](https://github.com/broadinstitute/cromwell-tools): A collection of Python clients and accessory scripts for interacting with the [Cromwell workflow execution engine](https://github.com/broadinstitute/cromwell) - a scientific workflow engine designed for simplicity and scalability  
+- [Cromwell Tools](https://github.com/broadinstitute/cromwell-tools): A collection of Python clients and accessory scripts for interacting with the [Cromwell workflow execution engine](https://github.com/broadinstitute/cromwell) - a scientific workflow engine designed for simplicity and scalability
 
-- [Falcon](https://github.com/HumanCellAtlas/falcon): Queueing system that (after launching) throttles and inititates workflows  
+- [Falcon](https://github.com/HumanCellAtlas/falcon): Queueing system that (after launching) throttles and inititates workflows 
 
-- [Lira](https://github.com/HumanCellAtlas/lira): Listens to storage service notifications and launches workflows  
+- [Lira](https://github.com/HumanCellAtlas/lira): Listens to storage service notifications and launches workflows
 
-- [Pipeline Tools](https://github.com/HumanCellAtlas/pipeline-tools): Contains Data Coordination Platform adapter pipelines and associated tools  
+- [Pipeline Tools](https://github.com/HumanCellAtlas/pipeline-tools): Contains Data Coordination Platform adapter pipelines and associated tools
 
-- [Secondary Analysis Deploy](https://github.com/HumanCellAtlas/secondary-analysis-deploy): Contains the deployment configuration and scripts for the Pipeline Execution Service 
+- [scTools](https://github.com/HumanCellAtlas/sctools): Tools for single cell data processing
+
+- [Secondary Analysis Deploy](https://github.com/HumanCellAtlas/secondary-analysis-deploy): Contains the deployment configuration and scripts for the Pipeline Execution Service
+
+- [Skylab Analysis](https://github.com/HumanCellAtlas/skylab-analysis): Analysis and benchmarking reports for standardized HCA pipelines
+
+- [Skylab](https://github.com/HumanCellAtlas/skylab): Standardized HCA data processing pipelines
 
 ## Development
 
