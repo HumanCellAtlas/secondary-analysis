@@ -9,7 +9,7 @@ repos:
       # But since we only have one argument here, and
       # we don't force developers to use editor plugins,
       # putting the args here seems to be fine
-      args: [--skip-string-normalization]
+      args: [./, --skip-string-normalization]
 
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.7
