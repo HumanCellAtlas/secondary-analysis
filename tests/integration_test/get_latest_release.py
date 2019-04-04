@@ -26,11 +26,15 @@ class Tag:
 
 
 def run(repo, tag_prefix):
-    url = 'https://api.github.com/repos/{0}/git/refs/tags/'.format(repo) 
+    url = 'https://api.github.com/repos/{0}/git/refs/tags/'.format(repo)
     response = requests.get(url)
     if response.status_code != 200:
-        raise ValueError('Return code was {0} for {1}, message:\n'.format(response.status_code, url, response.json()))
-    
+        raise ValueError(
+            'Return code was {0} for {1}, message:\n'.format(
+                response.status_code, url, response.json()
+            )
+        )
+
     if not tag_prefix:
         tag_prefix = ''
     p = re.compile(r'^' + tag_prefix + r'(\d+)\.(\d+)\.(\d+)$')
