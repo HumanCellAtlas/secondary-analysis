@@ -9,9 +9,7 @@ import logging
 def prep_json(query_json):
     with open(query_json) as f:
         query = json.load(f)
-    return {
-        "es_query": query
-    }
+    return {"es_query": query}
 
 
 def get_bundles(query_json, dss_url, output_format, replica):
@@ -28,7 +26,9 @@ def get_bundles(query_json, dss_url, output_format, replica):
         list: List of dicts in the format { bundle_uuid: <uuid>, bundle_version: <version> }
 
     """
-    search_url = '{}/v1/search?output_format={}&replica={}&per_page=500'.format(dss_url.strip('/'), output_format, replica)
+    search_url = '{}/v1/search?output_format={}&replica={}&per_page=500'.format(
+        dss_url.strip('/'), output_format, replica
+    )
     headers = {'Content-type': 'application/json'}
     response = requests.post(search_url, json=query_json, headers=headers)
     results = response.json()['results']
@@ -53,22 +53,37 @@ def get_bundles(query_json, dss_url, output_format, replica):
 
 def format_bundle(bundle_fqid):
     bundle_components = bundle_fqid.split('.', 1)
-    return {
-        'bundle_uuid': bundle_components[0],
-        'bundle_version': bundle_components[1]
-    }
+    return {'bundle_uuid': bundle_components[0], 'bundle_version': bundle_components[1]}
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("dss_url", help='URL for data storage service.')
-    parser.add_argument("query_json", help='JSON file containing the query to register.')
-    parser.add_argument("--output_format", required=False, default='summary',
-                        help=('Format of the query results, either "summary" for a list of UUIDs or "raw" to ' +
-                              'include the bundle JSON metadata.'))
-    parser.add_argument("--replica", required=False, default='gcp', help='The cloud replica to search in, either "gcp" or "aws".')
-    parser.add_argument("--output_file_path", required=False, default="bundles.json", help="Path to output JSON file.")
+    parser.add_argument(
+        "query_json", help='JSON file containing the query to register.'
+    )
+    parser.add_argument(
+        "--output_format",
+        required=False,
+        default='summary',
+        help=(
+            'Format of the query results, either "summary" for a list of UUIDs or "raw" to '
+            + 'include the bundle JSON metadata.'
+        ),
+    )
+    parser.add_argument(
+        "--replica",
+        required=False,
+        default='gcp',
+        help='The cloud replica to search in, either "gcp" or "aws".',
+    )
+    parser.add_argument(
+        "--output_file_path",
+        required=False,
+        default="bundles.json",
+        help="Path to output JSON file.",
+    )
     args = parser.parse_args()
     es_query = prep_json(args.query_json)
     bundles_list = get_bundles(es_query, args.dss_url, args.output_format, args.replica)

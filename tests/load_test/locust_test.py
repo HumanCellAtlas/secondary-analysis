@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from load_test.models import Payload, locust_agent_factory
+from load_test.models import locust_agent_factory
 from locust import HttpLocust
 import json
 import logging
@@ -14,6 +14,10 @@ except (IOError, TypeError):
 
 
 class UserClass(HttpLocust):
-    task_set = locust_agent_factory(payload=config.get('content'), params=config.get('params'), notification_ratio=config.get('notification_ratio'))
+    task_set = locust_agent_factory(
+        payload=config.get('content'),
+        params=config.get('params'),
+        notification_ratio=config.get('notification_ratio'),
+    )
     min_wait = 1000
     max_wait = 5000

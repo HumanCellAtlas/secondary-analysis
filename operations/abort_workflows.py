@@ -6,7 +6,9 @@ from cromwell_tools import cromwell_tools
 
 
 def get_workflows(cromwell_url, query_dict, caas_key):
-    response = cromwell_tools.query_workflows(cromwell_url, query_dict, caas_key=caas_key)
+    response = cromwell_tools.query_workflows(
+        cromwell_url, query_dict, caas_key=caas_key
+    )
     if response.status_code != 200:
         logging.info('Could not retrieve workflows from Cromwell')
     else:
@@ -34,10 +36,10 @@ if __name__ == '__main__':
     parser.add_argument('--caas_key', default=os.environ.get('CAAS_KEY'))
     parser.add_argument('--dry_run', default=os.environ.get('DRY_RUN', 'false'))
     args = parser.parse_args()
-    query_dict = {
-        'status': ['On Hold', 'Running']
-    }
+    query_dict = {'status': ['On Hold', 'Running']}
     dry_run = True if args.dry_run.lower() == 'true' else False
     target_workflows = get_workflows(args.cromwell_url, query_dict, args.caas_key)
     if target_workflows:
-        abort_workflows(args.cromwell_url, target_workflows, args.caas_key, dry_run=dry_run)
+        abort_workflows(
+            args.cromwell_url, target_workflows, args.caas_key, dry_run=dry_run
+        )

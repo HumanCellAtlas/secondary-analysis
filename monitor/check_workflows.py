@@ -6,8 +6,15 @@ import json
 import string
 import requests
 
-workflow_names = ['AdapterSmartSeq2SingleCell', 'SmartSeq2SingleCell', 'RunHisat2RsemPipeline', 'RunHisat2Pipeline', 'total']
+workflow_names = [
+    'AdapterSmartSeq2SingleCell',
+    'SmartSeq2SingleCell',
+    'RunHisat2RsemPipeline',
+    'RunHisat2Pipeline',
+    'total',
+]
 ignore_before = '2018-03-01T00:00:00.000Z'
+
 
 def run(cromwell_url, user, password):
     auth = requests.auth.HTTPBasicAuth(user, password)
@@ -26,13 +33,15 @@ def run(cromwell_url, user, password):
     log = now + '\t' + string.join(counts, '\t')
     print(log)
 
+
 def query(url, auth):
     response = requests.get(url, auth=auth)
-    count = 'unknown' 
+    count = 'unknown'
     if response.status_code == 200:
         response_js = response.json()
         count = response_js.get('totalResultsCount', 'unknown')
-    return count 
+    return count
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

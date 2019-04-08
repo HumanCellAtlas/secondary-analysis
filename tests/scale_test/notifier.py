@@ -105,27 +105,39 @@ def cli():
 
 
 @cli.group(context_settings=dict(max_content_width=120))
-@click.option('--lira_url',
-              default='https://pipelines.dev.data.humancellatlas.org/',
-              help='The url to a Lira instance.',
-              show_default=True)
-@click.option('--label',
-              default='{' + str('"comment": "notifier-{}"'.format(time.strftime('%Y-%m-%d'))) + '}',
-              help='The label to be added to the workflows from notifications. '
-                   'Note: the label should comply with the Cromwell\'s rules!!',
-              show_default=True)
-@click.option('--workflow_name',
-              default='AdapterSmartSeq2SingleCell',
-              help='The name of the workflow to start',
-              show_default=True)
-@click.option('--es_query_path',
-              default='./subscription_queries/smartseq2-query.json',
-              help='The path to the ES query json file which is used for making subscription in BlueBox.',
-              show_default=True)
-@click.option('--save_path',
-              default='./',
-              help='The path to the folder to save metrics of this notifier.',
-              show_default=True)
+@click.option(
+    '--lira_url',
+    default='https://pipelines.dev.data.humancellatlas.org/',
+    help='The url to a Lira instance.',
+    show_default=True,
+)
+@click.option(
+    '--label',
+    default='{'
+    + str('"comment": "notifier-{}"'.format(time.strftime('%Y-%m-%d')))
+    + '}',
+    help='The label to be added to the workflows from notifications. '
+    'Note: the label should comply with the Cromwell\'s rules!!',
+    show_default=True,
+)
+@click.option(
+    '--workflow_name',
+    default='AdapterSmartSeq2SingleCell',
+    help='The name of the workflow to start',
+    show_default=True,
+)
+@click.option(
+    '--es_query_path',
+    default='./subscription_queries/smartseq2-query.json',
+    help='The path to the ES query json file which is used for making subscription in BlueBox.',
+    show_default=True,
+)
+@click.option(
+    '--save_path',
+    default='./',
+    help='The path to the folder to save metrics of this notifier.',
+    show_default=True,
+)
 @click.pass_context
 def notify(ctx, lira_url, label, workflow_name, es_query_path, save_path):
     ctx.obj['lira_url'] = utils.harmonize_url(lira_url)
@@ -135,12 +147,12 @@ def notify(ctx, lira_url, label, workflow_name, es_query_path, save_path):
     ctx.obj['save_path'] = save_path
 
 
-@notify.command(short_help='Send one notification from a given bundle UUID and bundle VERSION.')
+@notify.command(
+    short_help='Send one notification from a given bundle UUID and bundle VERSION.'
+)
 @click.pass_context
-@click.option('--uuid',
-              help='A bundle UUID in Blue Box.')
-@click.option('--version',
-              help='A bundle VERSION matches the UUID in Blue Box')
+@click.option('--uuid', help='A bundle UUID in Blue Box.')
+@click.option('--version', help='A bundle VERSION matches the UUID in Blue Box')
 def once(ctx, uuid, version):
 
     # Using a custom checker instead of the required=True flag of Click, so it shows the help text
@@ -153,7 +165,12 @@ def once(ctx, uuid, version):
     start = timeit.default_timer()
 
     # Prepare arguments
-    lira_url, label, workflow_name, es_query_path = ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['workflow_name'], ctx.obj['es_query_path']
+    lira_url, label, workflow_name, es_query_path = (
+        ctx.obj['lira_url'],
+        ctx.obj['label'],
+        ctx.obj['workflow_name'],
+        ctx.obj['es_query_path'],
+    )
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
@@ -163,11 +180,13 @@ def once(ctx, uuid, version):
     logging.info('Using subscription_id: {}'.format(subscription_id))
 
     # Prepare
-    notification = utils.prepare_notification(bundle_uuid=uuid,
-                                              bundle_version=version,
-                                              es_query_path=es_query_path,
-                                              subscription_id=subscription_id,
-                                              label=label)
+    notification = utils.prepare_notification(
+        bundle_uuid=uuid,
+        bundle_version=version,
+        es_query_path=es_query_path,
+        subscription_id=subscription_id,
+        label=label,
+    )
 
     # Send notifications
     response = utils.send_notification(lira_url, auth_dict, notification)
@@ -176,29 +195,39 @@ def once(ctx, uuid, version):
     stop = timeit.default_timer()
 
     # Output metrics
-    logging.info('Sent notification with in {total_time} seconds, status is {status}, Round-Trip-Time is {rtt},'.format(
+    logging.info(
+        'Sent notification with in {total_time} seconds, status is {status}, Round-Trip-Time is {rtt},'.format(
             total_time=stop - start,
             status=response.status_code,
-            rtt=response.elapsed.total_seconds()
-    ))
+            rtt=response.elapsed.total_seconds(),
+        )
+    )
 
 
-@notify.command(short_help='Send notifications from a file of a list of bundle UUIDs and VERSIONs.')
+@notify.command(
+    short_help='Send notifications from a file of a list of bundle UUIDs and VERSIONs.'
+)
 @click.pass_context
-@click.option('--bundle_list_file',
-              help='The path to the file of a list of bundles',
-              type=click.Path(exists=True))
-@click.option('--async',
-              'run_mode',
-              flag_value='async',
-              default=True,
-              help='Asynchronously send notifications, faster.',
-              show_default=True)
-@click.option('--sync',
-              'run_mode',
-              flag_value='sync',
-              help='Synchronously send notifications, linear and slower.',
-              show_default=True)
+@click.option(
+    '--bundle_list_file',
+    help='The path to the file of a list of bundles',
+    type=click.Path(exists=True),
+)
+@click.option(
+    '--async',
+    'run_mode',
+    flag_value='async',
+    default=True,
+    help='Asynchronously send notifications, faster.',
+    show_default=True,
+)
+@click.option(
+    '--sync',
+    'run_mode',
+    flag_value='sync',
+    help='Synchronously send notifications, linear and slower.',
+    show_default=True,
+)
 def batch(ctx, bundle_list_file, run_mode):
     # Using a custom checker instead of the required=True flag of Click, so it shows the help text
     utils.required_checker(ctx, file=bundle_list_file)
@@ -208,20 +237,31 @@ def batch(ctx, bundle_list_file, run_mode):
 
     # Prepare arguments
     bundles = utils.read_bundles(bundle_list_file)
-    lira_url, label, workflow_name, save_path, es_query_path = \
-        ctx.obj['lira_url'], ctx.obj['label'], ctx.obj['workflow_name'], ctx.obj['save_path'], ctx.obj['es_query_path']
+    lira_url, label, workflow_name, save_path, es_query_path = (
+        ctx.obj['lira_url'],
+        ctx.obj['label'],
+        ctx.obj['workflow_name'],
+        ctx.obj['save_path'],
+        ctx.obj['es_query_path'],
+    )
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
 
     if run_mode == 'async':
-        async_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path)
+        async_notify(
+            bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path
+        )
 
     if run_mode == 'sync':
-        linear_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path)
+        linear_notify(
+            bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path
+        )
 
 
-def linear_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path):
+def linear_notify(
+    bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path
+):
     logging.info('Sending notifications synchronously...\n')
 
     # Start the timer
@@ -235,14 +275,20 @@ def linear_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_d
     queue = deque([])
     for bundle in bundles:
         queue.append(
-                utils.prepare_notification(bundle_uuid=bundle['bundle_uuid'],
-                                           bundle_version=bundle['bundle_version'],
-                                           es_query_path=es_query_path,
-                                           subscription_id=subscription_id,
-                                           label=label))
+            utils.prepare_notification(
+                bundle_uuid=bundle['bundle_uuid'],
+                bundle_version=bundle['bundle_version'],
+                es_query_path=es_query_path,
+                subscription_id=subscription_id,
+                label=label,
+            )
+        )
 
     # Send notifications
-    responses = [utils.send_notification(lira_url, auth_dict, notification) for notification in tqdm(queue)]
+    responses = [
+        utils.send_notification(lira_url, auth_dict, notification)
+        for notification in tqdm(queue)
+    ]
 
     # Stop the timer
     stop = timeit.default_timer()
@@ -251,13 +297,17 @@ def linear_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_d
     rtt = [response.elapsed.total_seconds() for response in responses]
     status = [response.status_code for response in responses]
     total_time = stop - start
-    save_file = pathlib.Path(save_path) / 'notifier_metrics_{}.json'.format(time.strftime("%Y%m%d-%H%M%S"))
+    save_file = pathlib.Path(save_path) / 'notifier_metrics_{}.json'.format(
+        time.strftime("%Y%m%d-%H%M%S")
+    )
     utils.dump_metrics(save_file, rtt=rtt, status=status, total_time=total_time)
 
     logging.info('Saved the metrics file to {}'.format(save_file))
 
 
-def async_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path):
+def async_notify(
+    bundles, lira_url, label, workflow_name, es_query_path, auth_dict, save_path
+):
     logging.info('Sending notifications asynchronously...\n')
 
     # Start the timer
@@ -271,14 +321,19 @@ def async_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_di
     queue = deque([])
     for bundle in bundles:
         queue.append(
-                utils.prepare_notification(bundle_uuid=bundle['bundle_uuid'],
-                                           bundle_version=bundle['bundle_version'],
-                                           es_query_path=es_query_path,
-                                           subscription_id=subscription_id,
-                                           label=label))
+            utils.prepare_notification(
+                bundle_uuid=bundle['bundle_uuid'],
+                bundle_version=bundle['bundle_version'],
+                es_query_path=es_query_path,
+                subscription_id=subscription_id,
+                label=label,
+            )
+        )
 
     # Send notifications
-    partial_send_notification = functools.partial(utils.send_notification, lira_url, auth_dict)
+    partial_send_notification = functools.partial(
+        utils.send_notification, lira_url, auth_dict
+    )
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
         responses = deque(executor.map(partial_send_notification, queue))
@@ -290,7 +345,9 @@ def async_notify(bundles, lira_url, label, workflow_name, es_query_path, auth_di
     rtt = [response.elapsed.total_seconds() for response in responses]
     status = [response.status_code for response in responses]
     total_time = stop - start
-    save_file = pathlib.Path(save_path) / 'notifier_metrics_{}.json'.format(time.strftime("%Y%m%d-%H%M%S"))
+    save_file = pathlib.Path(save_path) / 'notifier_metrics_{}.json'.format(
+        time.strftime("%Y%m%d-%H%M%S")
+    )
     utils.dump_metrics(save_file, rtt=rtt, status=status, total_time=total_time)
 
     logging.info('Saved the metrics file to {}'.format(save_file))
