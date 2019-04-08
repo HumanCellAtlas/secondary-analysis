@@ -4,11 +4,17 @@ import logging
 from google.cloud import logging as gcloud_logging
 
 
-def main(service_account_path, pre_defined_metrics_json='metrics_template.json', google_project=None):
+def main(
+    service_account_path,
+    pre_defined_metrics_json='metrics_template.json',
+    google_project=None,
+):
     logging.basicConfig(level=logging.INFO)
 
     # Instantiate a client from the service account JSON key path
-    logging_client = gcloud_logging.Client.from_service_account_json(service_account_path)
+    logging_client = gcloud_logging.Client.from_service_account_json(
+        service_account_path
+    )
 
     # Load pre-defined metrics JSON
     with open(pre_defined_metrics_json, 'r') as f:
@@ -24,7 +30,11 @@ def main(service_account_path, pre_defined_metrics_json='metrics_template.json',
     google_project = logging_client.project
 
     for metric in METRICS:
-        check_and_create_metrics(gcloud_log_client=logging_client, metric_json=metric, google_project=google_project)
+        check_and_create_metrics(
+            gcloud_log_client=logging_client,
+            metric_json=metric,
+            google_project=google_project,
+        )
 
     # List the current metrics again
     list_metrics(logging_client)
@@ -60,11 +70,17 @@ def check_and_create_metrics(gcloud_log_client, metric_json, google_project):
 
     # The following line would not fail even if the metric_json is not parameterized :)
     # e.g. "FILTER": "\nresource.type=\"container\"\nlogName=\"projects/project_name/logs/lira\" won't fail
-    metric = gcloud_log_client.metric(name=metric_json["NAME"],
-                                      filter_=metric_json["FILTER"].format(google_project=google_project))
+    metric = gcloud_log_client.metric(
+        name=metric_json["NAME"],
+        filter_=metric_json["FILTER"].format(google_project=google_project),
+    )
 
     if metric.exists():
-        logging.warning("The current metric {} exists, skipping creating the metric.".format(metric.name))
+        logging.warning(
+            "The current metric {} exists, skipping creating the metric.".format(
+                metric.name
+            )
+        )
     else:
         logging.info("Creating the metric {}.".format(metric.name))
         metric.create()
@@ -96,16 +112,23 @@ def delete_metric(gcloud_log_client, metric_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--service_account_path',
-                        help='Path to the service account JSON key.')
-    parser.add_argument('--pre_defined_metrics_json',
-                        default='metrics_template.json',
-                        help='Path to the pre-defined log-based metrics JSON file.')
-    parser.add_argument('--google_project',
-                        default=None,
-                        help='A string representing the google cloud project name.')
+    parser.add_argument(
+        '--service_account_path', help='Path to the service account JSON key.'
+    )
+    parser.add_argument(
+        '--pre_defined_metrics_json',
+        default='metrics_template.json',
+        help='Path to the pre-defined log-based metrics JSON file.',
+    )
+    parser.add_argument(
+        '--google_project',
+        default=None,
+        help='A string representing the google cloud project name.',
+    )
     args = parser.parse_args()
 
-    main(service_account_path=args.service_account_path,
-         pre_defined_metrics_json=args.pre_defined_metrics_json,
-         google_project=args.google_project)
+    main(
+        service_account_path=args.service_account_path,
+        pre_defined_metrics_json=args.pre_defined_metrics_json,
+        google_project=args.google_project,
+    )

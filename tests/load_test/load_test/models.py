@@ -1,6 +1,7 @@
 import logging
 import json
 from locust import TaskSet, task
+
 # requests must be imported after locust or the test will run into an error, according to
 # https://github.com/gevent/gevent/issues/941
 import requests
@@ -16,6 +17,7 @@ from tqdm import tqdm
 
 class Payload(object):
     """Payload class for storing information such as payload data and target url."""
+
     def __init__(self, url, content, params):
         self.__url = url
 
@@ -75,13 +77,18 @@ class Payload(object):
             with open(path) as file:
                 content = json.load(file)
         except (IOError, TypeError):
-            logging.warning('Failed to load payload from file, using the default {0} now.'.format(content))
+            logging.warning(
+                'Failed to load payload from file, using the default {0} now.'.format(
+                    content
+                )
+            )
         finally:
             return content
 
 
 class OrdinaryLoadTestAgent(object):
     """An ordinary class to perform sequential load testing."""
+
     def __init__(self, payload, scenario, counts=1, interval=0):
         if isinstance(payload, Payload):
             self.payload = payload
@@ -109,10 +116,7 @@ class OrdinaryLoadTestAgent(object):
                 'users': 1,
                 'interval': self.interval,
             },
-            'data': {
-                'responses': None,
-                'rtt': None,
-            },
+            'data': {'responses': None, 'rtt': None},
         }
 
     @property
@@ -123,16 +127,17 @@ class OrdinaryLoadTestAgent(object):
         if self.payload.params:
             if self.interval:
                 time.sleep(self.interval)
-            response = requests.post(url=self.payload.url, params=self.payload.params, json=self.payload.content)
+            response = requests.post(
+                url=self.payload.url,
+                params=self.payload.params,
+                json=self.payload.content,
+            )
         else:
             response = requests.post(url=self.payload.url, json=self.payload.content)
         return response
 
     def save_responses(self, response):
-        data = {
-            'id': None,
-            'rtt': response.elapsed.total_seconds()
-        }
+        data = {'id': None, 'rtt': response.elapsed.total_seconds()}
         if response.ok:
             data['id'] = response.json().get('id')
         self.response_pool.append(data)
@@ -144,7 +149,9 @@ class OrdinaryLoadTestAgent(object):
         self.metrics['metrics']['rtt'] = sum(rtts)
         self.metrics['metrics']['avg_rtt'] = statistics.mean(rtts)
         self.metrics['data']['rtt'] = rtts
-        self.metrics['data']['responses'] = [dic.get('id') for dic in self.response_pool]
+        self.metrics['data']['responses'] = [
+            dic.get('id') for dic in self.response_pool
+        ]
         self.metrics['metadata']['end_time'] = str(datetime.datetime.now())
 
     def run(self):
@@ -152,17 +159,22 @@ class OrdinaryLoadTestAgent(object):
             probe = self.send_notifications().status_code
             if probe == '405':
                 raise ValueError('Payload\'s Auth token is invalid!')
-        except (ConnectionRefusedError,
-                requests.exceptions.RequestException,
-                urllib3.exceptions.NewConnectionError,
-                requests.exceptions.ConnectionError) as err:
+        except (
+            ConnectionRefusedError,
+            requests.exceptions.RequestException,
+            urllib3.exceptions.NewConnectionError,
+            requests.exceptions.ConnectionError,
+        ) as err:
             logging.critical(err)
-            raise requests.exceptions.HTTPError('Failed to connect to {}!'.format(self.payload.url))
+            raise requests.exceptions.HTTPError(
+                'Failed to connect to {}!'.format(self.payload.url)
+            )
 
         try:
             for count in tqdm(range(self.counts)):
                 self.save_responses(self.send_notifications())
-        except:  # Intentionally using broad catch here to consider any exceptions, such as Lira down during the testing
+        # Intentionally using broad catch here to consider any exceptions, such as Lira down during the testing
+        except:  # noqa
             logging.error('An error occurred, stopping test and saving metrics now')
         finally:
             self.save_metrics()
@@ -184,7 +196,9 @@ def locust_agent_factory(payload, params, notification_ratio=1):
             @task(notification_ratio)
             def send_notifications(self):
                 self.client.post("/notifications", json=payload, params=auth_token)
+
     else:
+
         class LocustLoadTestAgent(TaskSet):
             @task(notification_ratio)
             def send_notifications(self):
