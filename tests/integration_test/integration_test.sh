@@ -509,6 +509,19 @@ function stop_lira_on_error {
     docker rm -v ${LIRA_DOCKER_CONTAINER_NAME}
 
     print_style "error" "Test failed!"
+    print_style "error" "Please check if the following workflows failed:"
+    if [ -n "${SS2_WORKFLOW_ID}" ]; then
+        print_style "info" "SS2 Workflow: https://job-manager.caas-${CAAS_ENVIRONMENT}.broadinstitute.org/jobs/${SS2_WORKFLOW_ID}"
+    fi
+    
+    if [ -n "${OPTIMUS_WORKFLOW_ID}" ]; then
+        print_style "info" "Optimus Workflow: https://job-manager.caas-${CAAS_ENVIRONMENT}.broadinstitute.org/jobs/${OPTIMUS_WORKFLOW_ID}"
+    fi
+    
+    if [ -n "${TENX_WORKFLOW_ID}" ]; then
+        print_style "info" "CellRanger Workflow: https://job-manager.caas-${CAAS_ENVIRONMENT}.broadinstitute.org/jobs/${TENX_WORKFLOW_ID}"
+    fi
+    
     exit 1
 }
 
