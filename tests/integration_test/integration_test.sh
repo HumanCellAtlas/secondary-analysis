@@ -512,12 +512,15 @@ function stop_lira_on_error {
     print_style "error" "Please check if the following workflows failed:"
     if [ -z "${SS2_WORKFLOW_ID}" ]; then
         print_style "info" "SS2 Workflow: https://job-manager.caas-${CAAS_ENVIRONMENT}.broadinstitute.org/jobs/${SS2_WORKFLOW_ID}"
+    fi
     
     if [ -z "${OPTIMUS_WORKFLOW_ID}" ]; then
         print_style "info" "Optimus Workflow: https://job-manager.caas-${CAAS_ENVIRONMENT}.broadinstitute.org/jobs/${OPTIMUS_WORKFLOW_ID}"
+    fi
     
     if [ -z "${TENX_WORKFLOW_ID}" ]; then
         print_style "info" "CellRanger Workflow: https://job-manager.caas-${CAAS_ENVIRONMENT}.broadinstitute.org/jobs/${TENX_WORKFLOW_ID}"
+    fi
     
     exit 1
 }
