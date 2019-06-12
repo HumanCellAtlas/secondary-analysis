@@ -136,3 +136,6 @@ venv.bak/
 tests/integration_test/lira/*
 tests/integration_test/mint-deployment/*
 tests/integration_test/mint_integration_test.*
+
+# IDE
+.vscode/
