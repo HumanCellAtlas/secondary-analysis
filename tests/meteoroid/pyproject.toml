@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "meteoroid"
+version = "0.1.0"
+description = "HCA DCP Data Processing Service Test Suite"
+authors = ["Hornet Team <hornet@broadinstitute.org>"]
+license = "BSD-3-Clause"
+packages = [
+    { include = "meteoroid", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+requests = "^2.22"
+pytest = "^4.6"
+cromwell-tools = "^2.2"
+hvac = "^0.9.1"
+docker = "^4.0"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^18.3-alpha.0",allows-prereleases = true}
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
