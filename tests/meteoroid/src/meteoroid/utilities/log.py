@@ -43,7 +43,10 @@ def dye_msg_with_color(msg: str, color: str) -> str:
 def dye_logger(
     logger: logging.Logger, style_mapping: dict = STYLE_MAPPING
 ) -> logging.Logger:
-    """Dye a logger with colors according to the style_mapping dict."""
+    """Dye a logger with colors according to the style_mapping dict.
+
+    Derived from: https://gist.github.com/herrkaefer/3582e2ab5a344647e325782e1a1f3c84
+    """
     try:
         if logger.dyed:
             return logger

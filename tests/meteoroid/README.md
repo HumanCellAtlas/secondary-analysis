@@ -23,4 +23,4 @@ Once you have Poetry installed:
 - use `poetry add $PACKAGE` to add a new dependency.
 - use `poetry install` to install the dependencies based on the `poetry.lock` file.
 - use `poetry -h` to print help messages.
-- use `poetry install --develop DEVELOPE` to install Meteoroid istelf for developemnt puerposes. (similar to `pip install -e .`)
+- use `poetry install --develop DEVELOP` to install Meteoroid istelf for developemnt puerposes. (similar to `pip install -e .`)

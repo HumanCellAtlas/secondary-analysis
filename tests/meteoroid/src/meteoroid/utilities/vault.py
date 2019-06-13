@@ -12,7 +12,7 @@ VAULT_TOKEN = os.environ['VAULT_TOKEN']
 def get_authenticated_vault_client(token: str) -> hvac.Client:
     """Returns an authenticated hvac.Client instance."""
     if pathlib.Path(token).is_file():
-        logging.info(f"Reading the Vault token from file {token}")
+        logging.info("Reading the Vault token from file")
         with open(token, 'r') as token_file:
             token = token_file.read()
 
