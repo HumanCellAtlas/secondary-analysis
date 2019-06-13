@@ -3,6 +3,7 @@ import os
 import pathlib
 from meteoroid import exceptions
 import logging
+from typing import Union
 
 
 VAULT_ADDR = "https://clotho.broadinstitute.org:8200"
@@ -25,7 +26,7 @@ def get_authenticated_vault_client(token: str) -> hvac.Client:
     return client
 
 
-def read_secret(client: hvac.Client, path: str, pure_data: bool = True) -> dict:
+def read_secret(client: hvac.Client, path: str) -> Union[dict, None]:
     """Returns the secret in a dictionary given the path in Vault."""
     secret = client.read(path=path)
 
@@ -34,15 +35,11 @@ def read_secret(client: hvac.Client, path: str, pure_data: bool = True) -> dict:
             f"Failed to retrieve secret from {path}"
         )
 
-    if pure_data:
-        secret = secret['data']
-    return secret
+    return secret.get('data', None)
 
 
-def list_secrets(client: hvac.Client, path: str, pure_data: bool = True) -> dict:
+def list_secrets(client: hvac.Client, path: str) -> Union[dict, None]:
     """Returns the secret list in a dictionary under the path given the path in Vault."""
     secret_list = client.list(path=path)
 
-    if pure_data:
-        secret_list = secret_list['data']
-    return secret_list
+    return secret_list.get('data', None)
