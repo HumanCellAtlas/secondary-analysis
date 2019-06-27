@@ -141,8 +141,7 @@ def cli():
 @click.option(
     '--force/--no-force',
     default=False,
-    help='Whether or not to force analysis when a workflow with functionally '
-    'equivalent metadata already exists',
+    help='True to re-analyze data even though its functional equivalent exists already.',
     show_default=True,
 )
 @click.pass_context
