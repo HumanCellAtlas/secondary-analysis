@@ -138,13 +138,20 @@ def cli():
     help='The path to the folder to save metrics of this notifier.',
     show_default=True,
 )
+@click.option(
+    '--force/--no-force',
+    default=False,
+    help='True to re-analyze data even though its functional equivalent exists already.',
+    show_default=True,
+)
 @click.pass_context
-def notify(ctx, lira_url, label, workflow_name, es_query_path, save_path):
+def notify(ctx, lira_url, label, workflow_name, es_query_path, save_path, force):
     ctx.obj['lira_url'] = utils.harmonize_url(lira_url)
     ctx.obj['label'] = utils.compose_label(label)
     ctx.obj['workflow_name'] = workflow_name
     ctx.obj['es_query_path'] = es_query_path
     ctx.obj['save_path'] = save_path
+    ctx.obj['force'] = force
 
 
 @notify.command(
@@ -171,6 +178,11 @@ def once(ctx, uuid, version):
         ctx.obj['workflow_name'],
         ctx.obj['es_query_path'],
     )
+    if ctx.obj['force']:
+        if label is None:
+            label = {'force': None}
+        else:
+            label['force'] = None
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
