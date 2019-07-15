@@ -8,5 +8,6 @@
   "labels": {
     "mintegration-test": "true",
     "comment": "mintegration-test"
+    "force": "true"
   }
 }
