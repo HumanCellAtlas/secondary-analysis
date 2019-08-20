@@ -5,6 +5,7 @@ import json
 import requests
 import uuid
 from requests_http_signature import HTTPSignatureAuth
+import pathlib
 
 
 def compose_label(label_string):
@@ -217,6 +218,7 @@ def auth_checker(ctx):
             'Please enter a valid auth method for Lira (token/hmac)',
             type=str,
             hide_input=False,
+            default="hmac",
         )
 
     if auth_method == 'token':
@@ -232,15 +234,22 @@ def auth_checker(ctx):
     else:
         lira_auth_dict['method'] = auth_method
         lira_auth_dict['vault_server_url'] = click.prompt(
-            'Please enter your full Vault server URL', type=str, hide_input=False
+            'Please enter your full Vault server URL',
+            type=str,
+            hide_input=False,
+            default="https://clotho.broadinstitute.org:8200",
         )
         lira_auth_dict['path_to_vault_token'] = click.prompt(
-            'Please enter the path to your Vault token file', type=str, hide_input=False
+            'Please enter the path to your Vault token file',
+            type=click.Path(exists=True),
+            hide_input=False,
+            default=(pathlib.Path.home() / '.vault-token').absolute(),
         )
         lira_auth_dict['path_to_hmac_cred'] = click.prompt(
             'Please enter the path to HMAC credentials in your Vault',
             type=str,
             hide_input=False,
+            default="secret/dsde/mint/prod/lira/hmac_keys",
         )
 
         valid_auth_dict = prepare_auth(lira_auth_dict)
