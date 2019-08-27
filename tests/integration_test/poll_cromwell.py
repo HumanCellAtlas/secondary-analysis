@@ -22,10 +22,10 @@ def run(auth, pubsub_message_id, timeout_minutes=15, poll_interval_seconds=30):
             })
 
         workflows = results.json()['results']
-        print(len(workflows))
         if len(workflows) != 0:
             workflow_id = workflows[0]['id']
             print(workflow_id)
+            break
         time.sleep(poll_interval_seconds)
 
 
