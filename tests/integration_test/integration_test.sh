@@ -637,20 +637,26 @@ function send_ss2_notification {
 
     print_style "info" "Sending in SS2 notifications"
     # Uses the docker image built from Dockerfile next to this script
-    export SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+    export SS2_MESSAGE_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                         -e LIRA_URL="http://lira:8080/notifications" \
                         -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
                         --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_lira_notification.py \
                         $(echo "${AUTH_PARAMS}" | xargs))
 
-    print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
+
+    # Return the message ID
+    print_style "info" "SS2_MESSAGE_ID: ${SS2_MESSAGE_ID}"
+
+    print_style "info" "Poll Cromwell for workflow id"
+    export SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                        -e SERVICE_ACCOUNT_KEY /etc/lira/${CAAS_ENVIRONMENT}-key.json \
+                        -e PUBSUB_MESSAGE_ID="{SS2_MESSAGE_ID}" \
+                        --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/poll_cromwell.py)
 
     print_style "info" "Awaiting workflow completion"
-
-    # Wait for status to update in Cromwell before polling
-    sleep 10
-
     if [ "${USE_CAAS}" == "true" ];
     then
         docker run --rm \
@@ -705,14 +711,23 @@ function send_optimus_notification {
 
     print_style "info" "Sending in OPTIMUS notifications"
     # Uses the docker image built from Dockerfile next to this script
-    export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+    export OPTIMUS_MESSAGE_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                            -e LIRA_URL="http://lira:8080/notifications" \
                            -e NOTIFICATION=/app/optimus_notification_dss_${LIRA_ENVIRONMENT}.json \
                            --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                           quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                           quay.io/humancellatlas/secondary-analysis-mintegration /app/send_lira_notification.py \
                            $(echo "${AUTH_PARAMS}" | xargs))
 
-    print_style "info" "OPTIMUS_WORKFLOW_ID: ${OPTIMUS_WORKFLOW_ID}"
+    # Return the message ID
+    print_style "info" "OPTIMUS_MESSAGE_ID: ${OPTIMUS_MESSAGE_ID}"
+
+    print_style "info" "Poll Cromwell for workflow id"
+    export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                        -e SERVICE_ACCOUNT_KEY /etc/lira/${CAAS_ENVIRONMENT}-key.json \
+                        -e PUBSUB_MESSAGE_ID="{OPTIMUS_MESSAGE_ID}" \
+                        --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/poll_cromwell.py)
 
     print_style "info" "Awaiting workflow completion"
 
@@ -773,14 +788,23 @@ function send_10x_notification {
 
     print_style "info" "Sending in 10X notifications"
     # Uses the docker image built from Dockerfile next to this script
-    export TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+    export TENX_MESSAGE_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
                         -e LIRA_URL="http://lira:8080/notifications" \
                         -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
                         --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_notification.py \
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_lira_notification.py \
                         $(echo "${AUTH_PARAMS}" | xargs))
 
-    print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
+    # Return the message ID
+    print_style "info" "TENX_MESSAGE_ID: ${TENX_MESSAGE_ID}"
+
+    print_style "info" "Poll Cromwell for workflow id"
+    export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
+                        -e SERVICE_ACCOUNT_KEY /etc/lira/${CAAS_ENVIRONMENT}-key.json \
+                        -e PUBSUB_MESSAGE_ID="{TENX_MESSAGE_ID}" \
+                        --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/poll_cromwell.py)
 
     print_style "info" "Awaiting workflow completion"
 
