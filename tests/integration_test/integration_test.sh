@@ -167,6 +167,7 @@ REMOVE_TEMP_DIR=${28:-"true"}
 COLLECTION_NAME=${29:-"lira-${LIRA_ENVIRONMENT}"}
 
 DOMAIN="localhost"
+TEST_MODE="true"
 
 WORK_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -189,9 +190,10 @@ CAAS_KEY_FILE="${CAAS_ENVIRONMENT}-key.json"
 
 # Jumping through some hoops due to mismatch of names between our environments and the environments used by the other
 # teams within the HCA - this sets up the correct name for the DSS URL and the INGEST URL
-if [ ${LIRA_ENVIRONMENT} == "test" ];
+if [ ${LIRA_ENVIRONMENT} == "integration" ];
 then
     ENV="integration"
+    COLLECTION_NAME="lira-int"
 elif [ ${LIRA_ENVIRONMENT} == "int" ];
 then
     ENV="integration"
@@ -648,15 +650,21 @@ function send_ss2_notification {
     # Return the message ID
     print_style "info" "SS2_MESSAGE_ID: ${SS2_MESSAGE_ID}"
 
-    print_style "info" "Poll Cromwell for workflow id"
+    # Send message to Lira because pub/sub push subscriptions do not work for local endpoints
+    print_style "info" "Send message to lira"
     export SS2_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-                        -e SERVICE_ACCOUNT_KEY /etc/lira/${CAAS_ENVIRONMENT}-key.json \
-                        -e PUBSUB_MESSAGE_ID="{SS2_MESSAGE_ID}" \
+                        -e LIRA_SUBMIT_URL="http://lira:8080/submissions" \
+                        -e NOTIFICATION=/app/ss2_notification_dss_${LIRA_ENVIRONMENT}.json \
                         --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                        quay.io/humancellatlas/secondary-analysis-mintegration /app/poll_cromwell.py)
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_message.py)
+
+    print_style "info" "SS2_WORKFLOW_ID: ${SS2_WORKFLOW_ID}"
 
     print_style "info" "Awaiting workflow completion"
+
+    # Wait for status to update in Cromwell before polling
+    sleep 10
+
     if [ "${USE_CAAS}" == "true" ];
     then
         docker run --rm \
@@ -721,13 +729,15 @@ function send_optimus_notification {
     # Return the message ID
     print_style "info" "OPTIMUS_MESSAGE_ID: ${OPTIMUS_MESSAGE_ID}"
 
-    print_style "info" "Poll Cromwell for workflow id"
+    # Send message to Lira because pub/sub push subscriptions do not work for local endpoints
+    print_style "info" "Send message to lira"
     export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-                        -e SERVICE_ACCOUNT_KEY /etc/lira/${CAAS_ENVIRONMENT}-key.json \
-                        -e PUBSUB_MESSAGE_ID="{OPTIMUS_MESSAGE_ID}" \
+                        -e LIRA_SUBMIT_URL="http://lira:8080/submissions" \
+                        -e NOTIFICATION=/app/optimus_notification_dss_${LIRA_ENVIRONMENT}.json \
                         --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                        quay.io/humancellatlas/secondary-analysis-mintegration /app/poll_cromwell.py)
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_message.py)
+
+    print_style "info" "OPTIMUS_WORKFLOW_ID: ${OPTIMUS_WORKFLOW_ID}"
 
     print_style "info" "Awaiting workflow completion"
 
@@ -798,13 +808,15 @@ function send_10x_notification {
     # Return the message ID
     print_style "info" "TENX_MESSAGE_ID: ${TENX_MESSAGE_ID}"
 
-    print_style "info" "Poll Cromwell for workflow id"
-    export OPTIMUS_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
-                        -e CROMWELL_URL="https://cromwell.${CAAS_ENVIRONMENT}.broadinstitute.org" \
-                        -e SERVICE_ACCOUNT_KEY /etc/lira/${CAAS_ENVIRONMENT}-key.json \
-                        -e PUBSUB_MESSAGE_ID="{TENX_MESSAGE_ID}" \
+    # Send message to Lira because pub/sub push subscriptions do not work for local endpoints
+    print_style "info" "Send message to lira"
+    export TENX_WORKFLOW_ID=$(docker run --rm -v ${SCRIPT_DIR}:/app \
+                        -e LIRA_SUBMIT_URL="http://lira:8080/submissions" \
+                        -e NOTIFICATION=/app/10x_notification_dss_${LIRA_ENVIRONMENT}.json \
                         --link ${LIRA_DOCKER_CONTAINER_NAME}:lira \
-                        quay.io/humancellatlas/secondary-analysis-mintegration /app/poll_cromwell.py)
+                        quay.io/humancellatlas/secondary-analysis-mintegration /app/send_message.py)
+
+    print_style "info" "TENX_WORKFLOW_ID: ${TENX_WORKFLOW_ID}"
 
     print_style "info" "Awaiting workflow completion"
 
@@ -967,8 +979,10 @@ print_style "debug" "CROMWELL_URL=${CROMWELL_URL}"
 print_style "debug" "USE_CAAS=${USE_CAAS}"
 print_style "debug" "DOMAIN=${DOMAIN}"
 print_style "debug" "SUBMIT_AND_HOLD=${SUBMIT_AND_HOLD}"
+print_style "debug" "TEST_MODE=${TEST_MODE}"
 print_style "debug" "COLLECTION_NAME=${COLLECTION_NAME}"
 print_style "debug" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
+print_style "debug" "GOOGLE_PUBSUB_TOPIC=hca-notifications-${ENV}"
 print_style "debug" "GCS_ROOT=${GCS_ROOT}"
 print_style "debug" "LIRA_VERSION=${LIRA_VERSION}"
 print_style "debug" "DSS_URL=${DSS_URL}"
@@ -1009,8 +1023,10 @@ docker run -i --rm \
               -e USE_CAAS="${USE_CAAS}" \
               -e DOMAIN="${DOMAIN}" \
               -e SUBMIT_AND_HOLD="${SUBMIT_AND_HOLD}" \
+              -e TEST_MODE="${TEST_MODE}" \
               -e COLLECTION_NAME="${COLLECTION_NAME}" \
               -e GCLOUD_PROJECT="${GCLOUD_PROJECT}" \
+              -e GOOGLE_PUBSUB_TOPIC="hca-notifications-${ENV}" \
               -e GCS_ROOT="${GCS_ROOT}" \
               -e LIRA_VERSION="${LIRA_VERSION}" \
               -e DSS_URL="${DSS_URL}" \

@@ -38,12 +38,12 @@ SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 
 # Note: we use `dev` as the default branch in secondary-analysis-deploy repo, not `master`
 bash ${SCRIPT_DIR}/integration_test.sh \
-        "test" \
+        "integration" \
         "github" \
-        "master" \
+        "se-add-test-flag" \
         "" \
         "github" \
-        "dev" \
+        "se-add-test-flag" \
         "" \
         "github" \
         "master" \
