@@ -192,16 +192,7 @@ CAAS_KEY_FILE="${CAAS_ENVIRONMENT}-key.json"
 # teams within the HCA - this sets up the correct name for the DSS URL and the INGEST URL
 if [ ${LIRA_ENVIRONMENT} == "integration" ];
 then
-    ENV="integration"
     COLLECTION_NAME="lira-int"
-elif [ ${LIRA_ENVIRONMENT} == "int" ];
-then
-    ENV="integration"
-elif [ ${LIRA_ENVIRONMENT} == "dev" ];
-then
-    ENV="integration"
-else
-    ENV="${LIRA_ENVIRONMENT}"
 fi
 
 function get_unused_port {
@@ -230,9 +221,9 @@ then
     SCHEMA_URL="https://schema.humancellatlas.org/"
     INGEST_URL="https://api.ingest.data.humancellatlas.org/"
 else
-    DSS_URL="https://dss.${ENV}.data.humancellatlas.org/v1"
-    SCHEMA_URL="https://schema.${ENV}.data.humancellatlas.org/"
-    INGEST_URL="https://api.ingest.${ENV}.data.humancellatlas.org/"
+    DSS_URL="https://dss.${LIRA_ENVIRONMENT}.data.humancellatlas.org/v1"
+    SCHEMA_URL="https://schema.${LIRA_ENVIRONMENT}.data.humancellatlas.org/"
+    INGEST_URL="https://api.ingest.${LIRA_ENVIRONMENT}.data.humancellatlas.org/"
 fi
 
 print_style "info" "getting version"
@@ -982,7 +973,7 @@ print_style "debug" "SUBMIT_AND_HOLD=${SUBMIT_AND_HOLD}"
 print_style "debug" "TEST_MODE=${TEST_MODE}"
 print_style "debug" "COLLECTION_NAME=${COLLECTION_NAME}"
 print_style "debug" "GCLOUD_PROJECT=${GCLOUD_PROJECT}"
-print_style "debug" "GOOGLE_PUBSUB_TOPIC=hca-notifications-${ENV}"
+print_style "debug" "GOOGLE_PUBSUB_TOPIC=hca-notifications-${LIRA_ENVIRONMENT}"
 print_style "debug" "GCS_ROOT=${GCS_ROOT}"
 print_style "debug" "LIRA_VERSION=${LIRA_VERSION}"
 print_style "debug" "DSS_URL=${DSS_URL}"
@@ -1026,7 +1017,7 @@ docker run -i --rm \
               -e TEST_MODE="${TEST_MODE}" \
               -e COLLECTION_NAME="${COLLECTION_NAME}" \
               -e GCLOUD_PROJECT="${GCLOUD_PROJECT}" \
-              -e GOOGLE_PUBSUB_TOPIC="hca-notifications-${ENV}" \
+              -e GOOGLE_PUBSUB_TOPIC="hca-notifications-${LIRA_ENVIRONMENT}" \
               -e GCS_ROOT="${GCS_ROOT}" \
               -e LIRA_VERSION="${LIRA_VERSION}" \
               -e DSS_URL="${DSS_URL}" \
