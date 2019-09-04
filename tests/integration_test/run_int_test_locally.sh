@@ -40,10 +40,10 @@ SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
 bash ${SCRIPT_DIR}/integration_test.sh \
         "integration" \
         "github" \
-        "se-add-test-flag" \
+        "master" \
         "" \
         "github" \
-        "se-add-test-flag" \
+        "dev" \
         "" \
         "github" \
         "master" \
