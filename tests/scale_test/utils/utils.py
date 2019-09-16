@@ -8,6 +8,11 @@ from requests_http_signature import HTTPSignatureAuth
 import pathlib
 
 
+SUBSCRIPTION_QUERIES = {
+    'AdapterSmartSeq2SingleCell': './subscription_queries/smartseq2-query.json',
+    'AdapterOptimus': './subscription_queries/tenx_query.json'
+}
+
 def compose_label(label_string):
     """Compose a valid label for Lira from a string of object.
 
@@ -70,8 +75,9 @@ def load_es_query(es_query_path):
 def prepare_notification(
     bundle_uuid,
     bundle_version,
-    es_query_path,
     subscription_id,
+    workflow_name,
+    es_query_path=None,
     label=None,
     transaction_id=None,
 ):
@@ -80,8 +86,9 @@ def prepare_notification(
     Args:
         bundle_uuid (str): A Blue Box bundle uuid.
         bundle_version (str): A Blue Box bundle version.
-        es_query_path (str): The path to the ES query json file which is used for making subscription in BlueBox.
         subscription_id (str): A valid Lira subscription id in Blue Box.
+        workflow_name (str): The name of the workflow to start.
+        es_query_path (str): The path to the ES query json file which is used for making subscription in BlueBox.
         label (str): A label to be added to the notification, which will then be added to the workflow started by Lira.
         transaction_id (str): A valid transaction id.
 
@@ -89,6 +96,8 @@ def prepare_notification(
         notification (dict): A dict of valid notification content.
 
     """
+    if not es_query_path:
+        es_query_path = SUBSCRIPTION_QUERIES[workflow_name]
     notification = {
         'match': {'bundle_uuid': bundle_uuid, 'bundle_version': bundle_version},
         'subscription_id': subscription_id,
