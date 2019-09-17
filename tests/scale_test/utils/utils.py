@@ -221,6 +221,12 @@ def auth_checker(ctx):
     """
     auth_method = None
     lira_auth_dict = {'method': auth_method, 'value': {}}
+    lira_url = ctx.obj['lira_url']
+    env = lira_url.split('.')[1]
+    if env in ('dev', 'integration', 'staging'):
+        lira_env = env
+    else:
+        lira_env = 'prod'
 
     while auth_method not in ('token', 'hmac'):
         auth_method = click.prompt(
@@ -258,7 +264,7 @@ def auth_checker(ctx):
             'Please enter the path to HMAC credentials in your Vault',
             type=str,
             hide_input=False,
-            default="secret/dsde/mint/prod/lira/hmac_keys",
+            default=f"secret/dsde/mint/{lira_env}/lira/hmac_keys",
         )
 
         valid_auth_dict = prepare_auth(lira_auth_dict)
