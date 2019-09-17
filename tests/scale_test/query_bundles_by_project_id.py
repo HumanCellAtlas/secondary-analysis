@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+from datetime import datetime
 from utils import utils
 
 
@@ -20,15 +21,37 @@ def get_dss_url(env):
         return 'https://dss.data.humancellatlas.org'
     return f'https://dss.{env}.data.humancellatlas.org'
 
+def get_bundle_datetime(bundle_version):
+    return datetime.strptime(bundle_version, '%Y-%m-%dT%H%M%S.%fZ')
+
+def get_latest_bundle_versions(bundle_list):
+    bundle_ids = [b['bundle_uuid'] for b in bundle_list]
+    if len(bundle_ids) == len(set(bundle_ids)):
+        return bundle_list
+    else:
+        bundle_map = {}
+        for each in bundle_list:
+            bundle_uuid = each['bundle_uuid']
+            bundle_version = each['bundle_version']
+            if bundle_uuid in bundle_map:
+                existing_version = bundle_map['bundle_uuid']['bundle_version']
+                if get_bundle_datetime(bundle_version) > get_bundle_datetime(existing_version):
+                    bundle_map[bundle_uuid] = each
+            else:
+                bundle_map[bundle_uuid] = each
+        return bundle_map.values()
+
 def main(project_uuid, workflow_name, env, output_file_path):
     query = format_query(project_uuid, workflow_name)
     dss_url = get_dss_url(env)
     bundles_list = utils.get_bundles(query, dss_url)
-    # TODO: Make sure it's the latest version of the bundles if there is more than one!!!
     if len(bundles_list) == 0:
         raise ValueError(f'No {workflow_name} bundles found for project {project_uuid}')
+
+    # Check for multiple versions of the same bundle and only return the newest
+    latest_bundles = get_latest_bundle_versions(bundles_list)
     with open(output_file_path, 'w') as f:
-        json.dump(bundles_list, f, indent=2)
+        json.dump(latest_bundles, f, indent=2)
 
 
 if __name__ == '__main__':

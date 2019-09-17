@@ -365,7 +365,7 @@ def prepare_auth(lira_auth_dict):
     return valid_auth_dict
 
 
-def get_bundles(query_json, dss_url, output_format, replica):
+def get_bundles(query_json, dss_url, output_format='summary', replica='gcp'):
     """ Search for bundles in the HCA Data Storage Service using an elasticsearch query.
 
     Args:
