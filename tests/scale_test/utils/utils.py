@@ -10,7 +10,7 @@ import pathlib
 
 
 SUBSCRIPTION_QUERIES = {
-    'AdapterSmartSeq2SingleCell': './subscription_queries/smartseq2-query.json',
+    'AdapterSmartSeq2SingleCell': './subscription_queries/smartseq2_query.json',
     'AdapterOptimus': './subscription_queries/tenx_query.json'
 }
 
