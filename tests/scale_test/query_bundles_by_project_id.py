@@ -11,9 +11,7 @@ def format_query(project_uuid, workflow_name):
         raise ValueError(f'No subscription query available for {workflow_name}.')
     query = utils.load_es_query(es_query_path)
     project_id_query = {'match': {'files.project_json.provenance.document_id': project_uuid}}
-    must_match = query['query']['bool']['must']
-    must_match.append(project_id_query)
-    query['query']['bool']['must'] = must_match
+    query['query']['bool']['must'].append(project_id_query)
     return {"es_query": query}
 
 def get_dss_url(env):

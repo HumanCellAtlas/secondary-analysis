@@ -379,14 +379,13 @@ def get_bundles(query_json, dss_url, output_format='summary', replica='gcp'):
         list: List of dicts in the format { bundle_uuid: <uuid>, bundle_version: <version> }
 
     """
-    search_url = '{}/v1/search?output_format={}&replica={}&per_page=500'.format(
-        dss_url.strip('/'), output_format, replica
-    )
+    dss_url = dss_url.strip('/')
+    search_url = f'{dss_url}/v1/search?output_format={output_format}&replica={replica}&per_page=500'
     headers = {'Content-type': 'application/json'}
     response = requests.post(search_url, json=query_json, headers=headers)
     results = response.json()['results']
     total_hits = response.json()['total_hits']
-    logging.info('{} matching bundles found in {}'.format(total_hits, dss_url))
+    logging.info(f'{total_hits} matching bundles found in {dss_url}')
     bundles = [format_bundle(r['bundle_fqid']) for r in results]
 
     # The 'link' header refers to the next page of results to fetch. If there is no link header present,
