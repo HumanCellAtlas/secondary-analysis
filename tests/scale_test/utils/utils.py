@@ -100,8 +100,10 @@ def prepare_notification(
         notification (dict): A dict of valid notification content.
 
     """
+    es_query_path = es_query_path or SUBSCRIPTION_QUERIES.get(workflow_name)
     if not es_query_path:
-        es_query_path = SUBSCRIPTION_QUERIES[workflow_name]
+        raise ValueError(f'No subscription query available for {workflow_name}.')
+
     notification = {
         'match': {'bundle_uuid': bundle_uuid, 'bundle_version': bundle_version},
         'subscription_id': subscription_id,
