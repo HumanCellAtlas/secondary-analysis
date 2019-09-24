@@ -7,6 +7,9 @@ import requests
 import uuid
 from requests_http_signature import HTTPSignatureAuth
 import pathlib
+from datetime import datetime
+from itertools import groupby
+from functools import reduce
 
 
 SUBSCRIPTION_QUERIES = {
@@ -402,6 +405,25 @@ def get_bundles(query_json, dss_url, output_format='summary', replica='gcp'):
         link_header = response.headers.get('link', None)
     return bundles
 
+def get_latest_bundle_versions(bundle_list):
+    bundle_ids = [b['bundle_uuid'] for b in bundle_list]
+    if len(bundle_ids) == len(set(bundle_ids)):
+        return bundle_list
+    else:
+        keyfn = lambda x : x['bundle_uuid']
+        sorted_bundles = sorted(bundle_list, key=keyfn)
+        grouped_bundles = groupby(sorted_bundles, keyfn)
+        return [reduce(choose_more_recent_bundle, g) for k, g in grouped_bundles]
+
+def choose_more_recent_bundle(bundle1, bundle2):
+    bundle_version_1 = get_bundle_datetime(bundle1['bundle_version'])
+    bundle_version_2 = get_bundle_datetime(bundle2['bundle_version'])
+    if bundle_version_1 > bundle_version_2:
+        return bundle1
+    return bundle2
+
+def get_bundle_datetime(bundle_version):
+    return datetime.strptime(bundle_version, '%Y-%m-%dT%H%M%S.%fZ')
 
 def format_bundle(bundle_fqid):
     bundle_components = bundle_fqid.split('.', 1)
