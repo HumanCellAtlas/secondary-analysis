@@ -5,11 +5,18 @@ PROJECT_SHORTNAME=${2}
 WORKFLOW_NAME=${3}  #E.g. AdapterOptimus
 ENV=${4}
 DRY_RUN=${5:-true}
+FORCE_REANALYSIS=${6:-false}
 
 if [ ${ENV} == prod ]; then
     LIRA_URL=https://pipelines.data.humancellatlas.org
 else
     LIRA_URL="https://pipelines.${ENV}.data.humancellatlas.org"
+fi
+
+if [ ${FORCE_REANALYSIS} == true ]; then
+    FORCE_FLAG='--force'
+else
+    FORCE_FLAG='--no-force'
 fi
 
 BUNDLE_LIST_FILE="${PROJECT_UUID}_bundles.json"
@@ -20,7 +27,8 @@ python query_bundles_by_project_id.py ${PROJECT_UUID} ${WORKFLOW_NAME} ${ENV} --
 
 if [ ${DRY_RUN} == false ]; then
     printf "Running ${WORKFLOW_NAME} on ${PROJECT_SHORTNAME} dataset in ${ENV}"
-    python notifier.py notify --lira_url ${LIRA_URL} --workflow_name ${WORKFLOW_NAME} --label ${LABELS} batch --bundle_list_file ${BUNDLE_LIST_FILE} --sync
+    python notifier.py notify --lira_url ${LIRA_URL} --workflow_name ${WORKFLOW_NAME} --label ${LABELS} ${FORCE_FLAG} \
+    batch --bundle_list_file ${BUNDLE_LIST_FILE} --sync
 else
     printf "Running with DRY_RUN=true. Set DRY_RUN=false to run analysis workflows."
 fi
