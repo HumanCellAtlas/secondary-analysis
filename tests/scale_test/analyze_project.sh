@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
+# This script streamlines triggering analysis of HCA datasets and has two main components:
+# 1. Querying for the primary data bundles for a project based on the ${PROJECT_UUID}, DSS ${ENV} and ${WORKFLOW_NAME}
+# 2. Sending notifications to ${ENV} Lira to process data bundles from step 1 with ${WORKFLOW_NAME}
+#
+# Note: If the project does not contain any data that matches the specified pipeline, the script will throw
+# an error to prevent incorrect analysis.
+#
+# The script uses DRY_RUN=true by default, which allows you to see how many primary bundles were found for
+# the specified project as well as which pipeline would be run. To run the analysis, set this parameter to true.
+#
+# If the workflows were previously analyzed and need to be re-run with a new pipeline version,
+# set FORCE_REANALYSIS=true, otherwise the AUDR mechanism will consider these to be duplicate workflows
+#
+# Example Usage:
+#   bash analyze_project.sh 12345 Test_SS2_Project AdapterSmartSeq2SingleCell prod true
+#
+# If a project contains data that matches more than one pipeline subscription:
+#   bash analyze_project.sh 678910 Test_SS2_Optimus_Project AdapterSmartSeq2SingleCell prod true
+#   bash analyze_project.sh 678910 Test_SS2_Optimus_Project AdapterOptimus prod true
 
 PROJECT_UUID=${1}
 PROJECT_SHORTNAME=${2}
-WORKFLOW_NAME=${3}  #E.g. AdapterOptimus
+WORKFLOW_NAME=${3}
 ENV=${4}
 DRY_RUN=${5:-true}
 FORCE_REANALYSIS=${6:-false}
