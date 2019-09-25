@@ -415,7 +415,9 @@ def get_latest_bundle_versions(bundle_list):
         keyfn = lambda x : x['bundle_uuid']
         sorted_bundles = sorted(bundle_list, key=keyfn)
         grouped_bundles = groupby(sorted_bundles, keyfn)
-        return [reduce(choose_more_recent_bundle, g) for k, g in grouped_bundles]
+        latest_bundles = [reduce(choose_more_recent_bundle, g) for k, g in grouped_bundles]
+        logging.info(f'Duplicate bundle versions detected. Got {len(latest_bundles)} latest bundles.')
+        return latest_bundles
 
 def choose_more_recent_bundle(bundle1, bundle2):
     bundle_version_1 = get_bundle_datetime(bundle1['bundle_version'])
