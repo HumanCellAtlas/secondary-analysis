@@ -2,10 +2,20 @@ import click
 import hvac
 import hvac.exceptions
 import json
+import logging
 import requests
 import uuid
 from requests_http_signature import HTTPSignatureAuth
 import pathlib
+from datetime import datetime
+from itertools import groupby
+from functools import reduce
+
+
+SUBSCRIPTION_QUERIES = {
+    'AdapterSmartSeq2SingleCell': './subscription_queries/smartseq2_query.json',
+    'AdapterOptimus': './subscription_queries/tenx_query.json',
+}
 
 
 def compose_label(label_string):
@@ -70,8 +80,9 @@ def load_es_query(es_query_path):
 def prepare_notification(
     bundle_uuid,
     bundle_version,
-    es_query_path,
     subscription_id,
+    workflow_name,
+    es_query_path=None,
     label=None,
     transaction_id=None,
 ):
@@ -80,15 +91,20 @@ def prepare_notification(
     Args:
         bundle_uuid (str): A Blue Box bundle uuid.
         bundle_version (str): A Blue Box bundle version.
-        es_query_path (str): The path to the ES query json file which is used for making subscription in BlueBox.
         subscription_id (str): A valid Lira subscription id in Blue Box.
-        label (str): A label to be added to the notification, which will then be added to the workflow started by Lira.
+        workflow_name (str): The name of the workflow to start.
+        es_query_path (str): The path to the ES query json file which is used for making subscription in BlueBox.
+        label (dict): A label to be added to the notification, which will then be added to the workflow started by Lira.
         transaction_id (str): A valid transaction id.
 
     Returns:
         notification (dict): A dict of valid notification content.
 
     """
+    es_query_path = es_query_path or SUBSCRIPTION_QUERIES.get(workflow_name)
+    if not es_query_path:
+        raise ValueError(f'No subscription query available for {workflow_name}.')
+
     notification = {
         'match': {'bundle_uuid': bundle_uuid, 'bundle_version': bundle_version},
         'subscription_id': subscription_id,
@@ -212,6 +228,12 @@ def auth_checker(ctx):
     """
     auth_method = None
     lira_auth_dict = {'method': auth_method, 'value': {}}
+    lira_url = ctx.obj['lira_url']
+    env = lira_url.split('.')[1]
+    if env in ('dev', 'integration', 'staging'):
+        lira_env = env
+    else:
+        lira_env = 'prod'
 
     while auth_method not in ('token', 'hmac'):
         auth_method = click.prompt(
@@ -249,7 +271,7 @@ def auth_checker(ctx):
             'Please enter the path to HMAC credentials in your Vault',
             type=str,
             hide_input=False,
-            default="secret/dsde/mint/prod/lira/hmac_keys",
+            default=f"secret/dsde/mint/{lira_env}/lira/hmac_keys",
         )
 
         valid_auth_dict = prepare_auth(lira_auth_dict)
@@ -347,6 +369,81 @@ def prepare_auth(lira_auth_dict):
             )
         )
     return valid_auth_dict
+
+
+def get_bundles(query_json, dss_url, output_format='summary', replica='gcp'):
+    """ Search for bundles in the HCA Data Storage Service using an elasticsearch query.
+
+    Args:
+        query_json (dict): Elasticsearch JSON query.
+        dss_url (str): URL for the HCA Data Storage Service.
+        output_format (str): Format of the query results, either "summary" for a list of UUIDs or "raw" to include'
+            the bundle JSON metadata.
+        replica (str): The cloud replica to search in, either "gcp" or "aws".
+
+    Returns:
+        list: List of dicts in the format { bundle_uuid: <uuid>, bundle_version: <version> }
+
+    """
+    dss_url = dss_url.strip('/')
+    search_url = f'{dss_url}/v1/search?output_format={output_format}&replica={replica}&per_page=500'
+    headers = {'Content-type': 'application/json'}
+    response = requests.post(search_url, json=query_json, headers=headers)
+    results = response.json()['results']
+    total_hits = response.json()['total_hits']
+    logging.info(f'{total_hits} matching bundles found in {dss_url}')
+    bundles = [format_bundle(r['bundle_fqid']) for r in results]
+
+    # The 'link' header refers to the next page of results to fetch. If there is no link header present,
+    # all results have been fetched.
+    # Example:
+    # link: <https://dss.dev.data.humancellatlas.org/v1/search?output_format=summary&replica=gcs&per_page=500&scroll_id=123>; rel="next"
+    link_header = response.headers.get('link', None)
+    while link_header:
+        next_link = link_header.split(';')[0]
+        next_url = next_link.strip('<').strip('>')
+        response = requests.post(next_url, json=query_json, headers=headers)
+        results = response.json()['results']
+        bundles.extend(format_bundle(r['bundle_fqid']) for r in results)
+        link_header = response.headers.get('link', None)
+    return bundles
+
+
+def get_latest_bundle_versions(bundle_list):
+    bundle_ids = [b['bundle_uuid'] for b in bundle_list]
+    if len(bundle_ids) == len(set(bundle_ids)):
+        return bundle_list
+    else:
+
+        def keyfn(x):
+            return x['bundle_uuid']
+
+        sorted_bundles = sorted(bundle_list, key=keyfn)
+        grouped_bundles = groupby(sorted_bundles, keyfn)
+        latest_bundles = [
+            reduce(choose_more_recent_bundle, g) for k, g in grouped_bundles
+        ]
+        logging.info(
+            f'Duplicate bundle versions detected. Got {len(latest_bundles)} latest bundles.'
+        )
+        return latest_bundles
+
+
+def choose_more_recent_bundle(bundle1, bundle2):
+    bundle_version_1 = get_bundle_datetime(bundle1['bundle_version'])
+    bundle_version_2 = get_bundle_datetime(bundle2['bundle_version'])
+    if bundle_version_1 > bundle_version_2:
+        return bundle1
+    return bundle2
+
+
+def get_bundle_datetime(bundle_version):
+    return datetime.strptime(bundle_version, '%Y-%m-%dT%H%M%S.%fZ')
+
+
+def format_bundle(bundle_fqid):
+    bundle_components = bundle_fqid.split('.', 1)
+    return {'bundle_uuid': bundle_components[0], 'bundle_version': bundle_components[1]}
 
 
 class AuthException(Exception):
