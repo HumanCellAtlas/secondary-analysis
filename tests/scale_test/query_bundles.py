@@ -5,6 +5,7 @@ import argparse
 import logging
 from utils import utils
 
+
 def prep_json(query_json):
     with open(query_json) as f:
         query = json.load(f)
@@ -41,6 +42,8 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
     es_query = prep_json(args.query_json)
-    bundles_list = utils.get_bundles(es_query, args.dss_url, args.output_format, args.replica)
+    bundles_list = utils.get_bundles(
+        es_query, args.dss_url, args.output_format, args.replica
+    )
     with open(args.output_file_path, 'w') as f:
         json.dump(bundles_list, f, indent=2)

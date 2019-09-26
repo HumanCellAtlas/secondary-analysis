@@ -180,50 +180,31 @@ def test_prepare_auth_returns_valid_auth_dict_for_token_method():
 
 def test_get_latest_bundle_no_duplicates():
     bundle_list = [
-        {
-            'bundle_uuid': '123',
-            'bundle_version': '2019-09-23T000000.000000Z'
-        },
-        {
-            'bundle_uuid': '456',
-            'bundle_version': '2019-09-23T000000.000000Z'
-        }
+        {'bundle_uuid': '123', 'bundle_version': '2019-09-23T000000.000000Z'},
+        {'bundle_uuid': '456', 'bundle_version': '2019-09-23T000000.000000Z'},
     ]
     results = utils.get_latest_bundle_versions(bundle_list)
     assert len(results) == 2
 
+
 def test_get_latest_bundle_returns_most_recent():
     bundle_list = [
-        {
-            'bundle_uuid': '123',
-            'bundle_version': '2019-09-23T000000.000000Z'
-        },
-        {
-            'bundle_uuid': '123',
-            'bundle_version': '2019-09-23T120000.000000Z'
-        },
-        {
-            'bundle_uuid': '123',
-            'bundle_version': '2019-09-24T000000.000000Z'
-        }
+        {'bundle_uuid': '123', 'bundle_version': '2019-09-23T000000.000000Z'},
+        {'bundle_uuid': '123', 'bundle_version': '2019-09-23T120000.000000Z'},
+        {'bundle_uuid': '123', 'bundle_version': '2019-09-24T000000.000000Z'},
     ]
     results = utils.get_latest_bundle_versions(bundle_list)
     latest_bundle_version = {
         'bundle_uuid': '123',
-        'bundle_version': '2019-09-24T000000.000000Z'
+        'bundle_version': '2019-09-24T000000.000000Z',
     }
     assert len(results) == 1
     assert results[0]['bundle_uuid'] == latest_bundle_version['bundle_uuid']
     assert results[0]['bundle_version'] == latest_bundle_version['bundle_version']
 
+
 def test_choose_more_recent_bundle():
-    old = {
-        'bundle_uuid': '123',
-        'bundle_version': '2019-09-23T000000.000000Z'
-    }
-    new = {
-        'bundle_uuid': '123',
-        'bundle_version': '2019-09-24T000000.000000Z'
-    }
+    old = {'bundle_uuid': '123', 'bundle_version': '2019-09-23T000000.000000Z'}
+    new = {'bundle_uuid': '123', 'bundle_version': '2019-09-24T000000.000000Z'}
     result = utils.choose_more_recent_bundle(old, new)
     assert result['bundle_version'] == new['bundle_version']

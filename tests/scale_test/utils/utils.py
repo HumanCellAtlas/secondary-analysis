@@ -14,8 +14,9 @@ from functools import reduce
 
 SUBSCRIPTION_QUERIES = {
     'AdapterSmartSeq2SingleCell': './subscription_queries/smartseq2_query.json',
-    'AdapterOptimus': './subscription_queries/tenx_query.json'
+    'AdapterOptimus': './subscription_queries/tenx_query.json',
 }
+
 
 def compose_label(label_string):
     """Compose a valid label for Lira from a string of object.
@@ -407,17 +408,24 @@ def get_bundles(query_json, dss_url, output_format='summary', replica='gcp'):
         link_header = response.headers.get('link', None)
     return bundles
 
+
 def get_latest_bundle_versions(bundle_list):
     bundle_ids = [b['bundle_uuid'] for b in bundle_list]
     if len(bundle_ids) == len(set(bundle_ids)):
         return bundle_list
     else:
-        keyfn = lambda x : x['bundle_uuid']
+        def keyfn(x):
+            return x['bundle_uuid']
         sorted_bundles = sorted(bundle_list, key=keyfn)
         grouped_bundles = groupby(sorted_bundles, keyfn)
-        latest_bundles = [reduce(choose_more_recent_bundle, g) for k, g in grouped_bundles]
-        logging.info(f'Duplicate bundle versions detected. Got {len(latest_bundles)} latest bundles.')
+        latest_bundles = [
+            reduce(choose_more_recent_bundle, g) for k, g in grouped_bundles
+        ]
+        logging.info(
+            f'Duplicate bundle versions detected. Got {len(latest_bundles)} latest bundles.'
+        )
         return latest_bundles
+
 
 def choose_more_recent_bundle(bundle1, bundle2):
     bundle_version_1 = get_bundle_datetime(bundle1['bundle_version'])
@@ -426,8 +434,10 @@ def choose_more_recent_bundle(bundle1, bundle2):
         return bundle1
     return bundle2
 
+
 def get_bundle_datetime(bundle_version):
     return datetime.strptime(bundle_version, '%Y-%m-%dT%H%M%S.%fZ')
+
 
 def format_bundle(bundle_fqid):
     bundle_components = bundle_fqid.split('.', 1)

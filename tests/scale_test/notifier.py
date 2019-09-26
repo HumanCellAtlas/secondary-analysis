@@ -252,19 +252,13 @@ def batch(ctx, bundle_list_file, run_mode):
     logging.info('Talking to Lira instance: {}'.format(lira_url))
 
     if run_mode == 'async':
-        async_notify(
-            bundles, lira_url, label, workflow_name, auth_dict, save_path
-        )
+        async_notify(bundles, lira_url, label, workflow_name, auth_dict, save_path)
 
     if run_mode == 'sync':
-        linear_notify(
-            bundles, lira_url, label, workflow_name, auth_dict, save_path
-        )
+        linear_notify(bundles, lira_url, label, workflow_name, auth_dict, save_path)
 
 
-def linear_notify(
-    bundles, lira_url, label, workflow_name, auth_dict, save_path
-):
+def linear_notify(bundles, lira_url, label, workflow_name, auth_dict, save_path):
     logging.info('Sending notifications synchronously...\n')
 
     # Start the timer
@@ -308,9 +302,7 @@ def linear_notify(
     logging.info('Saved the metrics file to {}'.format(save_file))
 
 
-def async_notify(
-    bundles, lira_url, label, workflow_name, auth_dict, save_path
-):
+def async_notify(bundles, lira_url, label, workflow_name, auth_dict, save_path):
     logging.info('Sending notifications asynchronously...\n')
 
     # Start the timer
