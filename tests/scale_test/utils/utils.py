@@ -94,7 +94,7 @@ def prepare_notification(
         subscription_id (str): A valid Lira subscription id in Blue Box.
         workflow_name (str): The name of the workflow to start.
         es_query_path (str): The path to the ES query json file which is used for making subscription in BlueBox.
-        label (str): A label to be added to the notification, which will then be added to the workflow started by Lira.
+        label (dict): A label to be added to the notification, which will then be added to the workflow started by Lira.
         transaction_id (str): A valid transaction id.
 
     Returns:
@@ -414,8 +414,10 @@ def get_latest_bundle_versions(bundle_list):
     if len(bundle_ids) == len(set(bundle_ids)):
         return bundle_list
     else:
+
         def keyfn(x):
             return x['bundle_uuid']
+
         sorted_bundles = sorted(bundle_list, key=keyfn)
         grouped_bundles = groupby(sorted_bundles, keyfn)
         latest_bundles = [

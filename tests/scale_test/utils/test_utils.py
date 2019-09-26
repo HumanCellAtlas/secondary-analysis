@@ -51,8 +51,9 @@ def test_load_es_query_returns_valid_dict():
 def test_prepare_notification_returns_valid_notification_body():
     bundle_uuid, bundle_version = 'uuid', 'version'
     subscription_id, transaction_id = 's_id', 't_id'
-    label = {'test-label-key', 'test-label-value'}
+    label = {'test-label-key': 'test-label-value'}
     es_query_path = curr_path + '/test_data/smartseq2-query.json'
+    workflow_name = "AdapterSmartSeq2SingleCell"
 
     expected = {
         'match': {'bundle_uuid': bundle_uuid, 'bundle_version': bundle_version},
@@ -64,8 +65,9 @@ def test_prepare_notification_returns_valid_notification_body():
     assert expected == utils.prepare_notification(
         bundle_uuid,
         bundle_version,
-        es_query_path,
         subscription_id,
+        workflow_name,
+        es_query_path,
         label,
         transaction_id,
     )
