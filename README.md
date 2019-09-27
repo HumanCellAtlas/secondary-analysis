@@ -13,8 +13,8 @@
 
 This repo is the gateway of the Secondary Analysis Service which is part of the Human Cell Atlas Data Coordination Platform, containing the testing suites, automations and utility scripts of the Secondary Analysis Service. This repo also serves as a issue tracker and hosting all of the tickets of the Secondary Analysis Service.
 
-**[Architectural Diagram](https://www.lucidchart.com/invitations/accept/b992daa6-9c66-41ef-9a12-7d47541d8024)**
-![Secondary Analysis Tech Arch Diagram](https://www.lucidchart.com/publicSegments/view/81f35afc-2fcb-4f75-8d78-abfc8d2681fa/image.png)
+**[Architectural Diagram](https://www.lucidchart.com/invitations/accept/2cb0c91a-bee3-4b4d-a8f8-f2e8b0a4869f)**
+![Secondary Analysis Tech Arch Diagram](https://www.lucidchart.com/invitations/accept/2cb0c91a-bee3-4b4d-a8f8-f2e8b0a4869f)
 
 Other Secondary Analysis Service repos:
 
