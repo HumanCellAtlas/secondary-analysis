@@ -7,7 +7,7 @@
 # an error to prevent incorrect analysis.
 #
 # The script uses DRY_RUN=true by default, which allows you to see how many primary bundles were found for
-# the specified project as well as which pipeline would be run. To run the analysis, set this parameter to true.
+# the specified project as well as which pipeline would be run. To run the analysis, set this parameter to false.
 #
 # If the workflows were previously analyzed and need to be re-run with a new pipeline version,
 # set FORCE_REANALYSIS=true, otherwise the AUDR mechanism will consider these to be duplicate workflows
