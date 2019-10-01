@@ -18,6 +18,8 @@ This repo is the gateway of the Secondary Analysis Service which is part of the 
 
 Other Secondary Analysis Service repos:
 
+- [Adapter Pipelines](https://github.com/HumanCellAtlas/adapter-pipelines): Contains Data Coordination Platform adapter pipelines
+
 - [Cromwell Tools](https://github.com/broadinstitute/cromwell-tools): A collection of Python clients and accessory scripts for interacting with the [Cromwell workflow execution engine](https://github.com/broadinstitute/cromwell) - a scientific workflow engine designed for simplicity and scalability
 
 - [Falcon](https://github.com/HumanCellAtlas/falcon): Queueing system that (after launching) throttles and inititates workflows 
