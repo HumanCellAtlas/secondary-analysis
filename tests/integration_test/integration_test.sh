@@ -146,25 +146,28 @@ SECONDARY_ANALYSIS_DIR=${7}
 PIPELINE_TOOLS_MODE=${8}
 PIPELINE_TOOLS_VERSION=${9}
 PIPELINE_TOOLS_DIR=${10}
-TENX_MODE=${11}
-TENX_VERSION=${12}
-TENX_DIR=${13}
-TENX_SUBSCRIPTION_ID=${14:-"placeholder_10x_subscription_id"}
-OPTIMUS_MODE=${15}
-OPTIMUS_VERSION=${16}
-OPTIMUS_DIR=${17}
-OPTIMUS_SUBSCRIPTION_ID=${18:-"placeholder_optimus_subscription_id"}
-SS2_MODE=${19}
-SS2_VERSION=${20}
-SS2_DIR=${21}
-SS2_SUBSCRIPTION_ID=${22:-"placeholder_ss2_subscription_id"}
-VAULT_TOKEN_PATH=${23}
-SUBMIT_WDL_DIR=${24}
-USE_CAAS=${25}
-USE_HMAC=${26}
-SUBMIT_AND_HOLD=${27}
-REMOVE_TEMP_DIR=${28:-"true"}
-COLLECTION_NAME=${29:-"lira-${LIRA_ENVIRONMENT}"}
+ADAPTER_PIPELINES_MODE=${11}
+ADAPTER_PIPELINES_VERSION=${12}
+ADAPTER_PIPELINES_DIR=${13}
+TENX_MODE=${14}
+TENX_VERSION=${15}
+TENX_DIR=${16}
+TENX_SUBSCRIPTION_ID=${17:-"placeholder_10x_subscription_id"}
+OPTIMUS_MODE=${18}
+OPTIMUS_VERSION=${19}
+OPTIMUS_DIR=${20}
+OPTIMUS_SUBSCRIPTION_ID=${21:-"placeholder_optimus_subscription_id"}
+SS2_MODE=${22}
+SS2_VERSION=${23}
+SS2_DIR=${24}
+SS2_SUBSCRIPTION_ID=${25:-"placeholder_ss2_subscription_id"}
+VAULT_TOKEN_PATH=${26}
+SUBMIT_WDL_DIR=${27}
+USE_CAAS=${28}
+USE_HMAC=${29}
+SUBMIT_AND_HOLD=${30}
+REMOVE_TEMP_DIR=${31:-"true"}
+COLLECTION_NAME=${32:-"lira-${LIRA_ENVIRONMENT}"}
 
 DOMAIN="localhost"
 TEST_MODE="true"
@@ -180,6 +183,9 @@ CAAS_ENVIRONMENT="caas-prod"
 LIRA_CONFIG_FILE="lira-config.json"
 
 PIPELINE_TOOLS_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/pipeline-tools/${PIPELINE_TOOLS_VERSION}"
+
+ADAPTER_PIPELINES_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/adapter-pipelines/${ADAPTER_PIPELINES_VERSION}"
+
 MAX_CROMWELL_RETRIES=${MAX_CROMWELL_RETRIES:-"1"}
 
 # Cromwell URL - usually will be caas, but can be set to local environment
@@ -304,6 +310,26 @@ function clone_pipeline_tools_repo {
     cd "${WORK_DIR}/${TEMP_DIR}"
 }
 
+function clone_adapter_pipelines_repo {
+    print_style "info" "Cloning adapter-pipelines"
+    git clone git@github.com:HumanCellAtlas/adapter-pipelines.git
+
+    export ADAPTER_PIPELINES_DIR="${PWD}/adapter-pipelines"
+    cd "${ADAPTER_PIPELINES_DIR}"
+
+    if [ ${ADAPTER_PIPELINES_VERSION} == "latest_released" ];
+    then
+        print_style "info" "Determining latest released version of adapter-pipelines"
+        export ADAPTER_PIPELINES_VERSION=$(python ${SCRIPT_DIR}/get_latest_release.py --repo HumanCellAtlas/adapter-pipelines)
+    else
+        export ADAPTER_PIPELINES_VERSION=$(get_version adapter-pipelines ${ADAPTER_PIPELINES_VERSION})
+    fi
+
+    print_style "info" "Checking out ${ADAPTER_PIPELINES_VERSION}"
+    git checkout ${ADAPTER_PIPELINES_VERSION}
+    cd "${WORK_DIR}/${TEMP_DIR}"
+}
+
 function build_lira {
     if [ ${LIRA_MODE} == "image" ];
     then
@@ -398,9 +424,9 @@ function get_10x_analysis_pipeline {
     export TENX_ANALYSIS_WDLS="[
                     \"${TENX_PREFIX}/pipelines/cellranger/cellranger.wdl\"
                 ]"
-    export TENX_OPTIONS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/cellranger/options.json"
-    export TENX_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/cellranger/adapter_example_static.json"
-    export TENX_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/cellranger/adapter.wdl"
+    export TENX_OPTIONS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/cellranger/options.json"
+    export TENX_WDL_STATIC_INPUTS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/cellranger/static_inputs.json"
+    export TENX_WDL_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/cellranger/adapter.wdl"
     export TENX_WORKFLOW_NAME="Adapter10xCount"
 }
 
@@ -436,12 +462,11 @@ function get_ss2_analysis_pipeline {
                     \"${SS2_PREFIX}/library/tasks/GroupMetricsOutputs.wdl\",
                     \"${SS2_PREFIX}/library/tasks/ZarrUtils.wdl\"
                 ]"
-    export SS2_OPTIONS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/ss2_single_sample/options.json"
-    export SS2_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/ss2_single_sample/adapter_example_static.json"
-    export SS2_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/ss2_single_sample/adapter.wdl"
+    export SS2_OPTIONS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/ss2_single_sample/options.json"
+    export SS2_WDL_STATIC_INPUTS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/ss2_single_sample/static_inputs.json"
+    export SS2_WDL_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/ss2_single_sample/adapter.wdl"
     export SS2_WORKFLOW_NAME="AdapterSmartSeq2SingleCell"
 }
-
 
 function get_optimus_analysis_pipeline {
     if [ "${OPTIMUS_MODE}" == "github" ];
@@ -485,12 +510,11 @@ function get_optimus_analysis_pipeline {
                         \"${OPTIMUS_PREFIX}/library/tasks/UmiCorrection.wdl\",
                         \"${OPTIMUS_PREFIX}/library/tasks/ScatterBam.wdl\"
                     ]"
-    export OPTIMUS_OPTIONS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/options.json"
-    export OPTIMUS_WDL_STATIC_INPUTS_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/adapter_example_static.json"
-    export OPTIMUS_WDL_LINK="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/Optimus/adapter.wdl"
+    export OPTIMUS_OPTIONS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/optimus/options.json"
+    export OPTIMUS_WDL_STATIC_INPUTS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/optimus/static_inputs.json"
+    export OPTIMUS_WDL_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/optimus/adapter.wdl"
     export OPTIMUS_WORKFLOW_NAME="AdapterOptimus"
 }
-
 
 function stop_lira_on_error {
     print_style "error" "Stopping Lira"
@@ -521,6 +545,12 @@ function stop_lira_on_error {
 
 function start_lira {
     print_style "info" "Starting Lira docker image"
+
+    if [ ${ADAPTER_PIPELINES_MODE} == "local" ];
+    then
+        export MOUNT_ADAPTER_PIPELINES="-v ${ADAPTER_PIPELINES_DIR}:/adapter-pipelines"
+        print_style "info" "Mounting ADAPTER_PIPELINES_DIR: ${ADAPTER_PIPELINES_DIR}\n"
+    fi
     if [ ${PIPELINE_TOOLS_MODE} == "local" ];
     then
         export MOUNT_PIPELINE_TOOLS="-v ${PIPELINE_TOOLS_DIR}:/pipeline-tools"
@@ -555,6 +585,7 @@ function start_lira {
             -v ${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json:/etc/lira/${CAAS_ENVIRONMENT}-key.json \
             --name=${LIRA_DOCKER_CONTAINER_NAME} \
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
+            $(echo ${MOUNT_ADAPTER_PIPELINES} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
             $(echo ${MOUNT_OPTIMUS} | xargs) \
@@ -568,6 +599,7 @@ function start_lira {
             -v "${CONFIG_DIR}/${CAAS_ENVIRONMENT}-key.json":/etc/lira/${CAAS_ENVIRONMENT}-key.json \
             --name="${LIRA_DOCKER_CONTAINER_NAME}" \
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
+            $(echo ${MOUNT_ADAPTER_PIPELINES} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
             $(echo ${MOUNT_OPTIMUS} | xargs) \
@@ -579,6 +611,7 @@ function start_lira {
             -v "${CONFIG_DIR}/lira-config.json":/etc/lira/lira-config.json \
             --name=${LIRA_DOCKER_CONTAINER_NAME} \
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
+            $(echo ${MOUNT_ADAPTER_PIPELINES} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
             $(echo ${MOUNT_OPTIMUS} | xargs) \
@@ -590,6 +623,7 @@ function start_lira {
             -v "${CONFIG_DIR}/lira-config.json":/etc/lira/lira-config.json \
             --name="${LIRA_DOCKER_CONTAINER_NAME}" \
             $(echo ${MOUNT_PIPELINE_TOOLS} | xargs) \
+            $(echo ${MOUNT_ADAPTER_PIPELINES} | xargs) \
             $(echo ${MOUNT_TENX} | xargs) \
             $(echo ${MOUNT_SS2} | xargs) \
             $(echo ${MOUNT_OPTIMUS} | xargs) \
@@ -688,7 +722,6 @@ function send_ss2_notification {
 
     fi
 }
-
 
 function send_optimus_notification {
     if [ "${USE_HMAC}" == "true" ];
@@ -902,7 +935,22 @@ print_style "debug" "PIPELINE_TOOLS_VERSION=${PIPELINE_TOOLS_VERSION}"
 print_style "debug" "PIPELINE_TOOLS_DIR=${PIPELINE_TOOLS_DIR}"
 
 
-# 4. Define the pipeline tools prefix:
+# 4. Define Location of adapter-pipelines (Repo or Local)
+
+if [ ${ADAPTER_PIPELINES_MODE} == "github" ];
+then
+    clone_adapter_pipelines_repo
+elif [ "${ADAPTER_PIPELINES_MODE}" == "local" ];
+then
+    print_style "info" "Using adapter-pipelines in dir: ${ADAPTER_PIPELINES_DIR}"
+fi
+
+# Check that the adapter-pipelines version is as expected
+
+print_style "debug" "ADAPTER_PIPELINES_VERSION=${ADAPTER_PIPELINES_VERSION}"
+print_style "debug" "ADAPTER_PIPELINES_DIR=${ADAPTER_PIPELINES_DIR}"
+
+# 5. Define the pipeline tools prefix:
 
 if [ ${PIPELINE_TOOLS_MODE} == "github" ] || [ ${PIPELINE_TOOLS_MODE} == "image" ];
 then
@@ -914,26 +962,43 @@ then
     print_style "info" "Configuring Lira to use adapter wdls from pipeline-tools in dir: ${PIPELINE_TOOLS_DIR}"
 fi
 
+# 6. Define the adapter-pipelines prefix:
+
+if [ ${ADAPTER_PIPELINES_MODE} == "github" ];
+then
+    export ADAPTER_PIPELINES_PREFIX="https://raw.githubusercontent.com/HumanCellAtlas/adapter-pipelines/${ADAPTER_PIPELINES_VERSION}"
+    print_style "info" "Configuring Lira to use adapter wdls from adapter-pipelines GitHub repo: ${ADAPTER_PIPELINES_VERSION}"
+elif [ "${ADAPTER_PIPELINES_MODE}" == "local" ];
+then
+    export ADAPTER_PIPELINES_PREFIX="/adapter-pipelines"
+    print_style "info" "Configuring Lira to use adapter wdls from adapter-pipelines in dir: ${ADAPTER_PIPELINES_DIR}"
+fi
+
 # Check that the pipeline-tools prefix is as expected
 
 print_style "debug" "PIPELINE_TOOLS_PREFIX=${PIPELINE_TOOLS_PREFIX}"
 
 
-# 5. Define the submit wdl path
+# Check that the adapter-pipelines prefix is as expected
+
+print_style "debug" "ADAPTER_PIPELINES_PREFIX=${ADAPTER_PIPELINES_PREFIX}"
+
+
+# 7. Define the submit wdl path
 
 if [ -n "${SUBMIT_WDL_DIR}" ];
 then
-    export SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/${SUBMIT_WDL_DIR}/submit.wdl"
+    export SUBMIT_WDL="${ADAPTER_PIPELINES_PREFIX}/shared/${SUBMIT_WDL_DIR}/submit.wdl"
 else
-    export SUBMIT_WDL="${PIPELINE_TOOLS_PREFIX}/adapter_pipelines/submit.wdl"
+    export SUBMIT_WDL="${ADAPTER_PIPELINES_PREFIX}/shared/submit/submit.wdl"
 fi
 
 # Check that the submit wdl path is as expected
 
-print_style "debug" "PIPELINE_TOOLS_PREFIX=${PIPELINE_TOOLS_PREFIX}"
+print_style "debug" "ADAPTER_PIPELINES_PREFIX=${ADAPTER_PIPELINES_PREFIX}"
 
 
-# 6. Build or Pull Lira Image
+# 8. Build or Pull Lira Image
 
 build_lira
 
@@ -942,7 +1007,7 @@ build_lira
 print_style "debug" "LIRA_IMAGE=${LIRA_IMAGE}"
 
 
-# 7. Build or pull pipeline-tools image
+# 9. Build or pull pipeline-tools image
 
 build_pipeline_tools
 
@@ -951,7 +1016,7 @@ build_pipeline_tools
 print_style "debug" "PIPELINE_TOOLS_IMAGE=${PIPELINE_TOOLS_IMAGE}"
 
 
-# 8. Get analysis pipeline versions to use
+# 10. Get analysis pipeline versions to use
 
 get_10x_analysis_pipeline
 
@@ -960,7 +1025,7 @@ get_ss2_analysis_pipeline
 get_optimus_analysis_pipeline
 
 
-# 9. Create config.json file
+# 11. Create config.json file
 
 cd "${SECONDARY_ANALYSIS_DIR}"
 export CONFIG_DIR="${SECONDARY_ANALYSIS_DIR}/config_files"
@@ -1057,7 +1122,7 @@ docker run -i --rm \
 cat "${CONFIG_DIR}/${LIRA_CONFIG_FILE}"
 
 
-# 10. Retrieve the caas-<<env>>-key.json file from vault
+# 12. Retrieve the caas-<<env>>-key.json file from vault
 
 if [ ${USE_CAAS} ];
 then
@@ -1071,12 +1136,12 @@ then
 fi
 
 
-# 11. Start Lira
+# 13. Start Lira
 
 start_lira
 
 
-# 12. Send in a notification
+# 14. Send in a notification
 
 send_ss2_notification
 
@@ -1085,18 +1150,18 @@ send_ss2_notification
 # send_10x_notification
 
 
-# 13. Stop Lira
+# 15. Stop Lira
 print_style "success" "Stopping Lira"
 docker stop "${LIRA_DOCKER_CONTAINER_NAME}"
 
 
-# 14. Cleanup - Remove the lira container
+# 16. Cleanup - Remove the lira container
 
 print_style "success" "Removing Lira"
 docker rm -v "${LIRA_DOCKER_CONTAINER_NAME}"
 
 
-# 15. Cleanup - Delete the temp directory
+# 17. Cleanup - Delete the temp directory
 
 cd ${WORK_DIR}
 if [ "${REMOVE_TEMP_DIR}" == "true" ];
