@@ -248,6 +248,12 @@ def batch(ctx, bundle_list_file, run_mode):
         ctx.obj['save_path'],
     )
 
+    if ctx.obj['force']:
+        if label is None:
+            label = {'force': None}
+        else:
+            label['force'] = None
+
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
 
