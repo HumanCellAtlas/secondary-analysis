@@ -172,9 +172,9 @@ def once(ctx, uuid, version):
     )
     if ctx.obj['force']:
         if label is None:
-            label = {'force': None}
+            label = {'force': 'true'}
         else:
-            label['force'] = None
+            label['force'] = 'true'
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
@@ -250,9 +250,9 @@ def batch(ctx, bundle_list_file, run_mode):
 
     if ctx.obj['force']:
         if label is None:
-            label = {'force': None}
+            label = {'force': 'true'}
         else:
-            label['force'] = None
+            label['force'] = 'true'
 
     # Print the information of Lira
     logging.info('Talking to Lira instance: {}'.format(lira_url))
