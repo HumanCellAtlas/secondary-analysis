@@ -39,6 +39,7 @@ def delete_blob(workflow: dict, deployment: str, storage_client: storage.Client)
     bucket = storage_client.get_bucket(EXECUTION_BUCKETS[deployment])
     gs_path = compose_gs_path(workflow=workflow, deployment=deployment)
     blobs = bucket.list_blobs(prefix=gs_path)
+    print(f"\tDeleting execution files under: {gs_path}")
     for blob in blobs:
         blob.delete()
     print("Done!")
