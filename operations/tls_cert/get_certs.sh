@@ -8,7 +8,7 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
-docker build -t humancellatlas/secondary-analysis:0.0.1 ..
+docker build -t humancellatlas/secondary-analysis:0.0.1 .
 
 docker run \
     -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \

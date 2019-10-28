@@ -1,3 +1,0 @@
-[submodule "deploy/job-manager/job-manager"]
-	path = deploy/job-manager/job-manager
-	url = https://github.com/DataBiosphere/job-manager

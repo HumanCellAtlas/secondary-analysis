@@ -37,7 +37,7 @@ VAULT_TOKEN_PATH=${VAULT_TOKEN_PATH:-"${HOME}/.vault-token"}
 # COLLECTION_NAME=${32:-"lira-${LIRA_ENVIRONMENT}"}
 # DOMAIN="localhost"
 
-SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration_test"
+SCRIPT_DIR="${SECONDARY_ANALYSIS_REPO_ROOT}/tests/integration"
 
 # Note: we use `dev` as the default branch in secondary-analysis-deploy repo, not `master`
 bash ${SCRIPT_DIR}/integration_test.sh \
