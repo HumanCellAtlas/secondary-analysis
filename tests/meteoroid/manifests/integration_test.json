@@ -1,0 +1,53 @@
+{
+    "name": "Pipelines Execution Service Integration Test",
+    "cromwell": "",
+    "env": "integration",
+    "pipelines": {
+        "AdapterSmartSeq2_PairedEnd": {
+            "name": "Adapter SmartSeq2 Paired-End",
+            "version": "master",
+            "scientific_pipeline_version": "",
+            "inputs": {
+                "bundle_uuid": "",
+                "bundle_version": "",
+                "static_inputs": ""
+            }
+        },
+        "AdapterSmartSeq2_SingleEnd": {
+            "name": "Adapter SmartSeq2 Single-End",
+            "version": "master",
+            "scientific_pipeline_version": "",
+            "inputs": {
+                "bundle_uuid": "",
+                "bundle_version": "",
+                "static_inputs": ""
+            }
+        },
+        "AdapterOptimus": {
+            "name": "Adapter Optimus",
+            "version": "master",
+            "scientific_pipeline_version": "",
+            "inputs": {
+                "bundle_uuid": "",
+                "bundle_version": "",
+                "static_inputs": ""
+            }
+        }
+    },
+    "softwares": {
+        "lira": {
+            "name": "Lira",
+            "version": "master",
+
+        },
+        "pipeline_tools": {
+            "name": "pipeline-tools",
+            "version": "master",
+            "external_submission": false
+        },
+        "falcon": {
+            "name": "Falcon",
+            "version": "master"
+        }
+    }
+}
