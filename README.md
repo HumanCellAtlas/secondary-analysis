@@ -41,17 +41,19 @@ Other Secondary Analysis Service repos:
 ### File Structure Layout
 
 ```
-./
-├── certs                  # The scripts to renew TLS certs
-├── dashboards             # The scripts to create log-based metrics on Google Cloud
-├── deploy
-│   └── job-manager        # The scripts to deploy Job Manager for Cromwell
-├── monitor                # The scripts to setup quotas monitors
-├── operations             # The "BIG RED BUTTON" scripts of Secondary Analysis
+.
+├── operations
+│   ├── big_red_button              # The "BIG RED BUTTON" scripts of Secondary Analysis
+│   ├── dashboard                   # The scripts to create log-based metrics on Google Cloud
+│   ├── data_cleanup                # The scripts to cleanup data from the Cromwell execution buckets
+│   ├── failure_analysis            # The scripts to perform failure analysis on failed workflows
+│   ├── gcp_quota                   # The scripts to setup quotas monitors and fetch results
+│   ├── re_analysis                 # The scripts to re-analyze some existing datasets in HCA DCP through Lira
+│   └── tls_cert                    # The scripts to renew TLS certs
 └── tests
-    ├── integration_test   # The integration test suite
-    ├── load_test          # The load test suite
-    └── scale_test         # The scaling test suite and associated scripts
+    ├── integration                 # The integration test suite
+    ├── meteoroid                   # The "Next-Gen Data Driven" test suite which is under construction
+    └── scaling                     # The scaling test suite
 ```
 
 ### Code Style
