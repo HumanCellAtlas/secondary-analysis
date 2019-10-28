@@ -48,7 +48,7 @@ Other Secondary Analysis Service repos:
 │   ├── data_cleanup                # The scripts to cleanup data from the Cromwell execution buckets
 │   ├── failure_analysis            # The scripts to perform failure analysis on failed workflows
 │   ├── gcp_quota                   # The scripts to setup quotas monitors and fetch results
-│   ├── re_analysis                 # The scripts to re-analyze some existing datasets in HCA DCP through Lira
+│   ├── run_analysis                # The scripts to trigger analysis manually in HCA DCP through Lira
 │   └── tls_cert                    # The scripts to renew TLS certs
 └── tests
     ├── integration                 # The integration test suite
