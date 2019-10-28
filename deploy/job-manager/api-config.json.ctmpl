@@ -1,4 +1,0 @@
-{
-    "cromwell_user":"{{ env "CROMWELL_USR" }}",
-    "cromwell_password":"{{ env "CROMWELL_PWD" }}"
-}
