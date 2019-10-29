@@ -1,0 +1,3 @@
+cromwell-tools>=2.3.0
+google-cloud-storage
+tqdm>=4.0.0,<5
