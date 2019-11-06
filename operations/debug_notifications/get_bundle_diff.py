@@ -124,16 +124,18 @@ def run(deployment: str, project: str, service_account_key: str, output: str):
         project_uuid=project, deployment=deployment
     )
 
+    bundles_diff = set(uuids_in_dss) - set(uuids_triggered_workflows)
+
     print(f"Found {len(uuids_in_dss)} bundles in DSS.")
 
     print(
-        f'Found {len(set(uuids_in_dss) - set(uuids_triggered_workflows))} bundles that in DSS but did not trigger workflows'
+        f'Found {len(bundles_diff)} bundles that in DSS but did not trigger workflows'
     )
 
     results = {
         'bundles_in_dss': uuids_in_dss,
         'bundles_triggered_workflows': uuids_triggered_workflows,
-        'diff': list(set(uuids_in_dss) - set(uuids_triggered_workflows)),
+        'diff': list(bundles_diff),
     }
 
     with Path(output).expanduser().resolve().open('w') as f:
