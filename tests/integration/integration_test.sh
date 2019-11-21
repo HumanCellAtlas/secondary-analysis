@@ -508,7 +508,9 @@ function get_optimus_analysis_pipeline {
                         \"${OPTIMUS_PREFIX}/library/tasks/ZarrUtils.wdl\",
                         \"${OPTIMUS_PREFIX}/library/tasks/Picard.wdl\",
                         \"${OPTIMUS_PREFIX}/library/tasks/UmiCorrection.wdl\",
-                        \"${OPTIMUS_PREFIX}/library/tasks/ScatterBam.wdl\"
+                        \"${OPTIMUS_PREFIX}/library/tasks/ScatterBam.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/ModifyGtf.wdl\",
+                        \"${OPTIMUS_PREFIX}/library/tasks/OptimusInputChecks.wdl\"
                     ]"
     export OPTIMUS_OPTIONS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/optimus/options.json"
     export OPTIMUS_WDL_STATIC_INPUTS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/optimus/static_inputs.json"
