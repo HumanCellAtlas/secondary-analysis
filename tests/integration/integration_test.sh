@@ -460,7 +460,8 @@ function get_ss2_analysis_pipeline {
                     \"${SS2_PREFIX}/library/tasks/Picard.wdl\",
                     \"${SS2_PREFIX}/library/tasks/RSEM.wdl\",
                     \"${SS2_PREFIX}/library/tasks/GroupMetricsOutputs.wdl\",
-                    \"${SS2_PREFIX}/library/tasks/ZarrUtils.wdl\"
+                    \"${SS2_PREFIX}/library/tasks/ZarrUtils.wdl\",
+                    \"${SS2_PREFIX}/library/tasks/SS2InputChecks.wdl\"
                 ]"
     export SS2_OPTIONS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/ss2_single_sample/options.json"
     export SS2_WDL_STATIC_INPUTS_LINK="${ADAPTER_PIPELINES_PREFIX}/pipelines/ss2_single_sample/static_inputs.json"
