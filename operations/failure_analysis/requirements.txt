@@ -3,3 +3,5 @@ pytest>=3.4.2
 requests-mock>=1.4.0
 requests==2.20.0
 git+git://github.com/broadinstitute/cromwell-tools.git@v0.3.1
+
+urllib3>=1.25.9 # not directly required, pinned by Snyk to avoid a vulnerability
