@@ -1,4 +1,4 @@
-arrow==0.12.1
+arrow==0.15.1
 pytest>=3.4.2
 requests-mock>=1.4.0
 requests==2.20.0
