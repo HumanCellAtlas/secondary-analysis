@@ -1,4 +1,4 @@
-arrow==0.12.1
+arrow==0.15.1
 click==6.7
 hvac==0.5.0
 pytest>=3.4.2
