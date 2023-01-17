@@ -1,3 +1,4 @@
 google-cloud==0.30.0
 
 rsa>=4.1 # not directly required, pinned by Snyk to avoid a vulnerability
+future>=0.18.3 # not directly required, pinned by Snyk to avoid a vulnerability
