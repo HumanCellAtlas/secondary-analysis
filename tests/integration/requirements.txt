@@ -1,2 +1,2 @@
-requests==2.20.0
+requests==2.31.0
 git+git://github.com/broadinstitute/cromwell-tools.git@v2.2.3
