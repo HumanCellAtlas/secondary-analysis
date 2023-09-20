@@ -1,3 +1,4 @@
 locustio==0.8.1
 click==6.7
 tqdm==4.19.4
+gevent>=23.9.0 # not directly required, pinned by Snyk to avoid a vulnerability
